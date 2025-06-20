@@ -1,0 +1,113 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom'; // ✅ import navigate
+import AdminSidebar from '../components/Common/AdminSidebar';
+
+const ViewEmployeeDetails = () => {
+  const { employeeId } = useParams();
+  const navigate = useNavigate(); // ✅ for redirecting
+  const [employee, setEmployee] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!employeeId) return;
+
+    const fetchEmployee = async () => {
+      try {
+        const res = await fetch(`http://localhost:9000/admin/employee-details/${employeeId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
+          },
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to fetch employee details');
+        setEmployee(data.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmployee();
+  }, [employeeId]);
+
+  const handleEdit = () => {
+    navigate(`/employee-details/${employeeId}`); // ✅ navigate to update route
+  };
+
+  return (
+    <div className="flex min-h-screen">
+      <AdminSidebar />
+      <main className="flex-1 bg-gray-50 p-6 overflow-auto">
+        <div className="max-w-5xl mx-auto bg-white p-8 rounded shadow border border-gray-200">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-yellow-600">View Employee Details</h2>
+            {!loading && !error && (
+              <button
+                onClick={handleEdit}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-2 rounded"
+              >
+                Edit
+              </button>
+            )}
+          </div>
+
+          {loading ? (
+            <p className="text-center text-yellow-700">Loading...</p>
+          ) : error ? (
+            <p className="text-center text-red-500">{error}</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-800">
+              <Detail label="Employee ID" value={employee.employeeId} />
+              <Detail label="Name" value={employee.name} />
+              <Detail label="Assigned Email" value={employee.assignedEmail} />
+
+              {employee.employeeDetails && (
+                <>
+                  <Detail label="Personal Email" value={employee.employeeDetails.personalEmail} />
+                  <Detail label="Employment Type" value={employee.employeeDetails.employmentType} />
+                  <Detail label="Employment Status" value={employee.employeeDetails.employmentStatus} />
+                  <Detail label="Date of Joining" value={formatDate(employee.employeeDetails.dateOfJoining)} />
+                  <Detail label="Confirmation Date" value={formatDate(employee.employeeDetails.confirmationDate)} />
+                  <Detail label="Phone Number" value={employee.employeeDetails.phoneNumber} />
+                  <Detail label="Emergency Contact" value={employee.employeeDetails.emergencyContactNumber} />
+                  <Detail label="Present Address" value={employee.employeeDetails.presentAddress} />
+                  <Detail label="Permanent Address" value={employee.employeeDetails.permanentAddress} />
+                  <Detail label="Aadhaar Card Number" value={employee.employeeDetails.aadhaarCardNumber} />
+                  <Detail label="PAN Card Number" value={employee.employeeDetails.panCardNumber} />
+                  <Detail label="Blood Group" value={employee.employeeDetails.bloodGroup} />
+                  <Detail label="Medical Notes" value={employee.employeeDetails.medicalNotes || 'N/A'} />
+                  <Detail label="Education" value={employee.employeeDetails.highestEducationalQualification} />
+                  <Detail label="Designation" value={employee.employeeDetails.designation} />
+                  <Detail label="Department" value={employee.employeeDetails.department} />
+                  <Detail label="Bank Name" value={employee.employeeDetails.bankName} />
+                  <Detail label="Bank Account Number" value={employee.employeeDetails.bankAccountNumber} />
+                  <Detail label="IFSC Code" value={employee.employeeDetails.ifsCode} />
+                  <Detail
+                    label="Assigned Shift ID"
+                    value={employee.employeeDetails.assignedShiftId || 'Not Assigned'}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+const Detail = ({ label, value }) => (
+  <div>
+    <p className="text-sm font-semibold text-yellow-700">{label}</p>
+    <p className="text-base bg-yellow-50 border border-yellow-200 rounded-md px-4 py-2 mt-1">{value}</p>
+  </div>
+);
+
+const formatDate = (str) =>
+  str ? new Date(str).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A';
+
+export default ViewEmployeeDetails;

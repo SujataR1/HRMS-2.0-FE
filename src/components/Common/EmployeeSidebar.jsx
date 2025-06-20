@@ -1,16 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
-import { MdDashboard, MdEventNote, MdPerson, MdCalendarToday } from 'react-icons/md';
+import {
+  MdDashboard,
+  MdPerson,
+  MdCalendarToday,
+  MdEventNote,
+} from 'react-icons/md';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const EmployeeSidebar = () => {
-  const [active, setActive] = useState('Dashboard');
+  const [active, setActive] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
-    { label: 'Dashboard', icon: <MdDashboard /> },
-    { label: 'My Profile', icon: <MdPerson /> },
-    { label: 'My Attendance', icon: <MdCalendarToday /> },
-    { label: 'Leave Applications', icon: <MdEventNote /> },
+    { label: 'Dashboard', path: '/employee/dashboard', icon: <MdDashboard size={18} /> },
+    { label: 'My Profile', path: '/employee/profile', icon: <MdPerson size={18} /> },
+    { label: 'My Attendance', path: '/employee/attendance', icon: <MdCalendarToday size={18} /> },
+    { label: 'Leave Applications', path: '/employee/leave-applications', icon: <MdEventNote size={18} /> },
   ];
+
+  useEffect(() => {
+    const current = menuItems.find(item => location.pathname.startsWith(item.path));
+    if (current) {
+      setActive(current.label);
+    } else {
+      setActive('');
+    }
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -18,14 +35,12 @@ const EmployeeSidebar = () => {
       const res = await fetch('http://localhost:9000/employee/logout', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({})
+        body: JSON.stringify({}),
       });
-
       const data = await res.json();
-
       if (data.status === 'success') {
         localStorage.removeItem('employeeToken');
         window.location.href = '/employee/login';
@@ -39,29 +54,34 @@ const EmployeeSidebar = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-white shadow-xl fixed flex flex-col border-r border-gray-200">
-      <div className="p-6 text-2xl font-bold text-orange-500 border-b border-gray-100">
-        Transmo<span className="text-green-400">grify</span> HRMS
+    <div className="w-64 h-screen bg-yellow-50 shadow-xl fixed flex flex-col border-r border-yellow-300">
+      <div className="p-6 text-2xl font-bold text-green-500 border-b border-green-200 select-none">
+        Transmo<span className="text-orange-400">grify</span> HRMS
       </div>
 
-      <ul className="text-gray-800 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
-        {menuItems.map((item) => (
+      <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
+        {menuItems.map(({ label, icon, path }) => (
           <li
-            key={item.label}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 ${
-              active === item.label ? 'bg-blue-100 text-blue-700' : 'hover:bg-blue-50'
+            key={label}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
+              active === label
+                ? 'bg-yellow-200 text-yellow-900 shadow-inner'
+                : 'hover:bg-yellow-100 hover:text-yellow-700'
             }`}
-            onClick={() => setActive(item.label)}
+            onClick={() => navigate(path)}
           >
-            {item.icon} {item.label}
+            {icon}
+            {label}
           </li>
         ))}
 
+        {/* Logout */}
         <li
-          className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-200"
+          className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300"
           onClick={handleLogout}
         >
-          <FaSignOutAlt size={16} /> Logout
+          <FaSignOutAlt size={16} />
+          Logout
         </li>
       </ul>
     </div>

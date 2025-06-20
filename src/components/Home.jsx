@@ -1,4 +1,3 @@
-// src/components/Home.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
@@ -23,21 +22,43 @@ const Home = () => {
     e.preventDefault();
     console.log(`Logging in as ${currentRole.label}`, { email, password });
 
-    if (selectedRole === "admin") {
-      try {
+    try {
+      if (selectedRole === "admin") {
         const response = await axios.post("http://localhost:9000/admin/login", {
           email,
           password,
         });
 
-        console.log("Login successful", response.data);
+        console.log("Admin login successful", response.data);
+        localStorage.setItem("admin_token", response.data.token); // optional if token returned in body
         navigate("/AdminDashboard");
-      } catch (error) {
-        console.error("Login failed", error.response?.data || error.message);
-        alert("Admin login failed. Please check your credentials.");
+
+      } else if (selectedRole === "Employee") {
+        const response = await axios.post("http://localhost:9000/employee/login", {
+          assignedEmail: email,
+          password,
+        });
+
+        // Check for status success without requiring token
+        if (response.data?.status === "success") {
+          console.log("Employee login successful");
+          // If token is returned, store it (optional)
+          if (response.data.token) {
+            localStorage.setItem("employee_token", response.data.token);
+          }
+          navigate("/EmployeeDashboard");
+        } else if (response.data?.requires2FA) {
+          alert("2FA is required. Please check your email for OTP.");
+        } else {
+          alert("Employee login failed. Please check your credentials.");
+        }
+
+      } else {
+        alert(`${currentRole.label} login not implemented yet.`);
       }
-    } else {
-      alert(`${currentRole.label} login not implemented yet.`);
+    } catch (error) {
+      console.error(`${currentRole.label} login failed`, error.response?.data || error.message);
+      alert(`${currentRole.label} login failed. Please check your credentials.`);
     }
   };
 
