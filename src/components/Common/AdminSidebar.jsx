@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
-import { MdDashboard, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
+import {
+  MdDashboard,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp
+} from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const AdminSidebar = () => {
@@ -16,7 +20,7 @@ const AdminSidebar = () => {
     'Financial Year',
     'MIS',
     'Employee Management',
-    'Company Master',
+    'Make HR',
     'HR',
     'Shift',
     'Holiday',
@@ -29,49 +33,58 @@ const AdminSidebar = () => {
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/CreateEmployee' },
     { name: 'All Employees List', path: '/All-Employees-list' },
-    //{ name: 'View Employee Details', path: '/View-Employee-Details/:employeeId' },
-    //{ name: 'Update Employee Details', path: '/employee-details/:employeeIdt' },
     { name: 'Assign Shift to Employee', path: '/Assign-Shift-to-Employee' },
-    //{ name: 'Manage Employee Details', path: '/Manage-Employee-Details-Page' },
     { name: 'Create Employee Details', path: '/Create-Employee-Details' }
-    
+  ];
+
+  const payrollSubItems = [
+    { name: 'Employee Attendance', path: '/EmployeeAttendance' },
+    { name: 'Salary Structure', path: '/SalaryStructure' },
+    { name: 'Generate Payslip', path: '/GeneratePayslip' }
   ];
 
   useEffect(() => {
-    // Check if current path matches employee submenu
     const empItem = employeeSubItems.find(item => item.path === location.pathname);
+    const payrollItem = payrollSubItems.find(item => item.path === location.pathname);
 
     if (empItem) {
       setActive(empItem.name);
       setEmployeeOpen(true);
+      setPayrollOpen(false);
       return;
     }
 
-    // TODO: Add payroll submenu path check if you add payroll submenu routes here
+    if (payrollItem) {
+      setActive(payrollItem.name);
+      setPayrollOpen(true);
+      setEmployeeOpen(false);
+      return;
+    }
 
-    // Check main menu paths
-    switch(location.pathname) {
+    switch (location.pathname) {
       case '/AdminDashboard':
         setActive('Dashboard');
-        setEmployeeOpen(false);
         break;
       case '/financial-year':
         setActive('Financial Year');
-        setEmployeeOpen(false);
         break;
-      // Add other main menu routes here as needed
+      case '/PromoteEmployeeToHR':
+        setActive('Make HR');
+        break;
       default:
-        setActive('');  // Clear active if no match or keep last active if you prefer
-        setEmployeeOpen(false);
+        setActive('');
         break;
     }
+
+    setEmployeeOpen(false);
+    setPayrollOpen(false);
   }, [location.pathname]);
 
   return (
     <div className="w-64 h-screen bg-yellow-50 shadow-xl fixed flex flex-col border-r border-yellow-300">
       <div className="p-6 text-2xl font-bold text-green-500 border-b border-green-200 select-none">
-  Transmo<span className="text-orange-400">grify</span> HRMS
-</div>
+        Transmo<span className="text-orange-400">grify</span> HRMS
+      </div>
 
       <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {/* Dashboard */}
@@ -99,19 +112,31 @@ const AdminSidebar = () => {
           Financial Year
         </li>
 
-        {/* Payroll Master */}
+        {/* Payroll Details */}
         <li
           className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
             payrollOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
           }`}
           onClick={() => setPayrollOpen(!payrollOpen)}
         >
-          <span className="flex gap-2 items-center">Payroll Master</span>
+          <span className="flex gap-2 items-center">Payroll Details</span>
           {payrollOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
         </li>
         {payrollOpen && (
           <ul className="ml-6 mt-1 space-y-1">
-            {/* Add payroll submenu items here */}
+            {payrollSubItems.map(item => (
+              <li
+                key={item.name}
+                className={`text-sm px-4 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  active === item.name
+                    ? 'bg-yellow-100 text-yellow-900 shadow-inner'
+                    : 'hover:text-yellow-700'
+                }`}
+                onClick={() => navigate(item.path)}
+              >
+                {item.name}
+              </li>
+            ))}
           </ul>
         )}
 
@@ -143,23 +168,26 @@ const AdminSidebar = () => {
           </ul>
         )}
 
-        {/* Other menu items */}
-        {menuItems.slice(4).map(
-          item =>
-            item !== 'Employee Management' && (
-              <li
-                key={item}
-                className={`px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-                  active === item
-                    ? 'bg-yellow-200 text-yellow-900 shadow-inner'
-                    : 'hover:bg-yellow-100 hover:text-yellow-700'
-                }`}
-                onClick={() => navigate(`/${item.replace(/\s+/g, '-')}`)} // Optional: generate path dynamically or hardcode
-              >
-                {item}
-              </li>
-            )
-        )}
+        {/* Other static menu items */}
+        {menuItems.slice(4).map(item => {
+          if (item === 'Employee Management') return null;
+
+          const path = item === 'Make HR' ? '/PromoteEmployeeToHR' : `/${item.replace(/\s+/g, '-')}`;
+
+          return (
+            <li
+              key={item}
+              className={`px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                active === item
+                  ? 'bg-yellow-200 text-yellow-900 shadow-inner'
+                  : 'hover:bg-yellow-100 hover:text-yellow-700'
+              }`}
+              onClick={() => navigate(path)}
+            >
+              {item}
+            </li>
+          );
+        })}
 
         {/* Logout */}
         <li className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300">

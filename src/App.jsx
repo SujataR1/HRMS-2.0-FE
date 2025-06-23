@@ -15,6 +15,12 @@ import AssignShift from './pages/AssignShift';
 import ManageEmployeeDetails from './pages/ManageEmployeeDetailsPage';
 import ContentWrapper from './components/Common/ContentWrapper';
 import CreateEmployeeDetails from './pages/CreateEmployeeDetails.JSX';
+import EmployeeAttendance from './pages/PayrollDetails/EmployeeAttendance';
+import SalaryStructure from './pages/PayrollDetails/SalaryStructure';
+import GeneratePayslip from './pages/PayrollDetails/GeneratePayslip';
+import PromoteEmployeeToHR from './pages/PromoteEmployeeToHR';
+import HRShiftmanagement from './pages/HrShiftmanagement/HRShiftmanagement';
+import HRShiftsList from './pages/HrShiftmanagement/HRShiftsList';
 
 
 function App() {
@@ -29,18 +35,26 @@ function App() {
         <Route path="/EmployeeDashboard" element={<EmployeeDashboard />} />
 
         {/* Employee Management Part */}
-          <Route path="/CreateEmployee" element={<CreateEmployee />} />
- <Route path="/All-Employees-list" element={<AllEmployees />} />
-<Route path="/View-Employee-Details/:employeeId" element={<ViewEmployeeDetails />} />
+        <Route path="/CreateEmployee" element={<CreateEmployee />} />
+        <Route path="/All-Employees-list" element={<AllEmployees />} />
+        <Route path="/View-Employee-Details/:employeeId" element={<ViewEmployeeDetails />} />
 
 
-   {/* <Route path="/Update-Employee-Info" element={<UpdateEmployee />} /> */}
-   <Route path="/employee-details/:employeeId" element={<UpdateEmployee />} />
-
-    <Route path="/Assign-Shift-to-Employee" element={<AssignShift />} />
-     <Route path="/Manage-Employee-Details-Page" element={<ManageEmployeeDetails />} />
-    <Route path="/Content-Wrapper" element={<ContentWrapper />} />
+        {/* <Route path="/Update-Employee-Info" element={<UpdateEmployee />} /> */}
+        <Route path="/employee-details/:employeeId" element={<UpdateEmployee />} />
+        <Route path="/Assign-Shift-to-Employee" element={<AssignShift />} />
+        <Route path="/Manage-Employee-Details-Page" element={<ManageEmployeeDetails />} />
+        <Route path="/Content-Wrapper" element={<ContentWrapper />} />
         <Route path="/Create-Employee-Details" element={<CreateEmployeeDetails />} />
+
+        {/* Payroll Details Route */}
+         <Route path="/EmployeeAttendance" element={<EmployeeAttendance />} />
+        <Route path="/SalaryStructure" element={<SalaryStructure />} />
+        <Route path="/GeneratePayslip" element={<GeneratePayslip />} />
+        <Route path="/PromoteEmployeeToHR" element={<PromoteEmployeeToHR />} />
+        <Route path="/HRShiftmanagement" element={<HRShiftmanagement />} />
+        <Route path="/HRShiftsList" element={<HRShiftsList />} />
+
 
       </Routes>
     </Router>

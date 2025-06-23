@@ -19,9 +19,11 @@ const HRSidebar = () => {
     { label: 'Attendance', path: '/hr/attendance', icon: <MdAccessTime size={18} /> },
     { label: 'Leave Requests', path: '/hr/leave-requests', icon: <MdCalendarToday size={18} /> },
     { label: 'Employee List', path: '/hr/employee-list', icon: <MdPeople size={18} /> },
-    { label: 'Shift Management', path: '/hr/shift-management', icon: <MdEventNote size={18} /> },
+    { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
+    { label: 'ALL Shift', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
     { label: 'Holiday Calendar', path: '/hr/holiday-calendar', icon: <MdCalendarToday size={18} /> },
     { label: 'Performance Review', path: '/hr/performance-review', icon: <MdEventNote size={18} /> },
+
   ];
 
   useEffect(() => {
