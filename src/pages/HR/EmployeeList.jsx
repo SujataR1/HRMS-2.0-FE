@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import AdminSidebar from "../components/Common/AdminSidebar";
+import HRSidebar from "../../components/Common/HRSidebar";
 
-const AllEmployees = () => {
+const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -46,6 +46,7 @@ const AllEmployees = () => {
     return (names[0][0] + names[1][0]).toUpperCase();
   };
 
+  // Color for role badges based on department
   const roleBadgeColors = {
     HR: "bg-yellow-300 text-yellow-900",
     IT: "bg-blue-300 text-blue-900",
@@ -60,7 +61,7 @@ const AllEmployees = () => {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-50">
-      <AdminSidebar />
+      <HRSidebar />
       <main className="flex-1 p-8 overflow-auto">
         <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-xl border border-yellow-300 p-8">
           <h2 className="text-4xl font-extrabold text-yellow-700 mb-8 text-center drop-shadow-sm">
@@ -79,14 +80,16 @@ const AllEmployees = () => {
             />
           </div>
 
+
           {loading ? (
-            <div className="flex justify-center mt-16" role="status" aria-live="polite">
+            <div className="flex justify-center mt-16">
+              {/* Spinner */}
               <svg
                 className="animate-spin h-16 w-16 text-yellow-500"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
+                aria-label="Loading spinner"
               >
                 <circle
                   className="opacity-25"
@@ -104,11 +107,10 @@ const AllEmployees = () => {
               </svg>
             </div>
           ) : error ? (
-            <p className="text-center text-red-600 font-semibold text-xl" role="alert">
-              {error}
-            </p>
+            <p className="text-center text-red-600 font-semibold text-xl">{error}</p>
           ) : filteredEmployees.length === 0 ? (
-            <div className="text-center mt-16 space-y-4" role="alert">
+            <div className="text-center mt-16 space-y-4">
+              {/* SVG No data illustration */}
               <svg
                 className="mx-auto w-40 h-40 opacity-40"
                 xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +126,9 @@ const AllEmployees = () => {
                   strokeLinecap="round"
                 />
               </svg>
-              <p className="text-gray-600 italic text-xl">No employees found matching your search.</p>
+              <p className="text-gray-600 italic text-xl">
+                No employees found matching your search.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -139,10 +143,13 @@ const AllEmployees = () => {
                     backdrop-blur-md bg-opacity-30
                     "
                   style={{
-                    background: "rgba(255 246 205 / 0.6)",
-                    boxShadow: "0 8px 24px rgba(251,191,36,0.3)",
+                    background:
+                      "rgba(255 246 205 / 0.6)",
+                    boxShadow:
+                      "0 8px 24px rgba(251,191,36,0.3)",
                     borderImageSlice: 1,
-                    borderImageSource: "linear-gradient(45deg, #fbbf24, #f59e0b, #fbbf24)",
+                    borderImageSource:
+                      "linear-gradient(45deg, #fbbf24, #f59e0b, #fbbf24)",
                     borderWidth: "2px",
                   }}
                   aria-label={`Employee card for ${emp.name}`}
@@ -200,7 +207,7 @@ const AllEmployees = () => {
 
                   {/* View button */}
                   <Link
-                    to={`/View-Employee-Details/${emp.employeeId}`}
+                    to={`/HRViewEmployeeDetails/${emp.employeeId}`}
                     className="inline-block mt-6 w-full py-3 text-center bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-3xl shadow-md transition"
                     aria-label={`View details of ${emp.name}`}
                     tabIndex={-1}
@@ -217,4 +224,4 @@ const AllEmployees = () => {
   );
 };
 
-export default AllEmployees;
+export default EmployeeList;

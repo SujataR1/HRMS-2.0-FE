@@ -14,10 +14,12 @@ const EmployeeSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { label: 'Dashboard', path: '/employee/dashboard', icon: <MdDashboard size={18} /> },
-    { label: 'My Profile', path: '/employee/profile', icon: <MdPerson size={18} /> },
-    { label: 'My Attendance', path: '/employee/attendance', icon: <MdCalendarToday size={18} /> },
-    { label: 'Leave Applications', path: '/employee/leave-applications', icon: <MdEventNote size={18} /> },
+    { label: 'Dashboard', path: '/EmployeeDashboard', icon: <MdDashboard size={18} /> },
+    { label: 'My Profile', path: '/MyProfile', icon: <MdPerson size={18} /> },
+    { label: 'My Attendance', path: '/MyAttendance', icon: <MdCalendarToday size={18} /> },
+    { label: 'My Leaves', path: '/MyLeaves', icon: <MdEventNote size={18} /> },
+    { label: 'Shift Details', path: '/EmployeeShiftDetails', icon: <MdEventNote size={18} /> },
+    { label: 'My Training', path: '/EmployeeTraining', icon: <MdEventNote size={18} /> },
   ];
 
   useEffect(() => {
@@ -32,24 +34,27 @@ const EmployeeSidebar = () => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('employeeToken');
-      const res = await fetch('http://localhost:9000/employee/logout', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (data.status === 'success') {
-        localStorage.removeItem('employeeToken');
-        window.location.href = '/employee/login';
-      } else {
-        alert('Logout failed: ' + (data.message || 'Unknown error'));
+
+      // Remove token before making any API call
+      localStorage.removeItem('employeeToken');
+
+      // If token existed, call logout API (optional)
+      if (token) {
+        await fetch('http://localhost:9000/employee/logout', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
       }
+
+      // Redirect to root (login/home)
+      window.location.href = '/';
     } catch (err) {
       console.error('Logout error:', err);
-      alert('Something went wrong. Please try again.');
+      window.location.href = '/';
     }
   };
 

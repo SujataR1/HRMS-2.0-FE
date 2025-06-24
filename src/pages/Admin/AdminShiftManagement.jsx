@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import HRSidebar from "../../components/Common/HRSidebar";
+import AdminSidebar from "../../components/Common/AdminSidebar";
 
-const HRShiftmanagement = () => {
+const AdminShiftmanagement = () => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -132,7 +132,7 @@ const HRShiftmanagement = () => {
     <div className="flex min-h-screen bg-yellow-50">
       {/* Sidebar */}
       <aside className="w-64 bg-yellow-700 text-yellow-100 shadow-lg sticky top-0 h-screen">
-        <HRSidebar />
+        <AdminSidebar />
       </aside>
 
       {/* Main content */}
@@ -457,4 +457,4 @@ const HRShiftmanagement = () => {
   );
 };
 
-export default HRShiftmanagement;
+export default AdminShiftmanagement;

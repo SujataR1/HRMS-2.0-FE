@@ -16,25 +16,25 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    'Dashboard',
-    'Financial Year',
-    'MIS',
-    'Employee Management',
-    'Make HR',
-    'HR',
-    'Shift',
-    'Holiday',
-    'Leaves',
-    'Performance',
-    'HR Calendar',
-    'Training'
+
+    { name: 'Employee Management' }, // handled separately with submenu
+    { name: 'Make HR', path: '/PromoteEmployeeToHR' },
+    { name: 'HR Profile', path: '/HRDetailsPage' },
+    { name: 'Shift Management', path: '/Adminshiftmanagement' },
+    { name: 'Assign Shift to Employee', path: '/AdminAllShift' },
+    { name: 'Holiday', path: '/AdminHolidayList' },
+    { name: 'Leaves', path: '/AdminLeavePage' },
+    { name: 'Performance', path: '/AdminPerformance' },
+    { name: 'HR Calendar', path: '/AdminHRCalender' },
+    { name: 'Training', path: '/AdminTraining' },
   ];
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/CreateEmployee' },
-    { name: 'All Employees List', path: '/All-Employees-list' },
-    { name: 'Assign Shift to Employee', path: '/Assign-Shift-to-Employee' },
-    { name: 'Create Employee Details', path: '/Create-Employee-Details' }
+    { name: 'Create Employee Details', path: '/Create-Employee-Details' },
+    { name: 'All Employees List', path: '/All-Employees-list' }
+    //{ name: 'Assign Shift to Employee', path: '/Assign-Shift-to-Employee' },
+
   ];
 
   const payrollSubItems = [
@@ -44,9 +44,8 @@ const AdminSidebar = () => {
   ];
 
   useEffect(() => {
+    // Check if current path matches any employee submenu
     const empItem = employeeSubItems.find(item => item.path === location.pathname);
-    const payrollItem = payrollSubItems.find(item => item.path === location.pathname);
-
     if (empItem) {
       setActive(empItem.name);
       setEmployeeOpen(true);
@@ -54,6 +53,8 @@ const AdminSidebar = () => {
       return;
     }
 
+    // Check payroll submenu
+    const payrollItem = payrollSubItems.find(item => item.path === location.pathname);
     if (payrollItem) {
       setActive(payrollItem.name);
       setPayrollOpen(true);
@@ -61,21 +62,15 @@ const AdminSidebar = () => {
       return;
     }
 
-    switch (location.pathname) {
-      case '/AdminDashboard':
-        setActive('Dashboard');
-        break;
-      case '/financial-year':
-        setActive('Financial Year');
-        break;
-      case '/PromoteEmployeeToHR':
-        setActive('Make HR');
-        break;
-      default:
-        setActive('');
-        break;
+    // Check main menu items
+    const mainItem = menuItems.find(item => item.path === location.pathname);
+    if (mainItem) {
+      setActive(mainItem.name);
+    } else {
+      setActive('');
     }
 
+    // Close submenus if no match
     setEmployeeOpen(false);
     setPayrollOpen(false);
   }, [location.pathname]);
@@ -107,12 +102,12 @@ const AdminSidebar = () => {
               ? 'bg-yellow-200 text-yellow-900 shadow-inner'
               : 'hover:bg-yellow-100 hover:text-yellow-700'
           }`}
-          onClick={() => navigate('/financial-year')}
+          onClick={() => navigate('/AdminFinancialYear')}
         >
           Financial Year
         </li>
 
-        {/* Payroll Details */}
+        {/* Payroll Details Dropdown */}
         <li
           className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
             payrollOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
@@ -140,7 +135,7 @@ const AdminSidebar = () => {
           </ul>
         )}
 
-        {/* Employee Management */}
+        {/* Employee Management Dropdown */}
         <li
           className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
             employeeOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
@@ -169,22 +164,20 @@ const AdminSidebar = () => {
         )}
 
         {/* Other static menu items */}
-        {menuItems.slice(4).map(item => {
-          if (item === 'Employee Management') return null;
-
-          const path = item === 'Make HR' ? '/PromoteEmployeeToHR' : `/${item.replace(/\s+/g, '-')}`;
+        {menuItems.map(item => {
+          if (item.name === 'Employee Management') return null; // handled above
 
           return (
             <li
-              key={item}
+              key={item.name}
               className={`px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-                active === item
+                active === item.name
                   ? 'bg-yellow-200 text-yellow-900 shadow-inner'
                   : 'hover:bg-yellow-100 hover:text-yellow-700'
               }`}
-              onClick={() => navigate(path)}
+              onClick={() => item.path && navigate(item.path)}
             >
-              {item}
+              {item.name}
             </li>
           );
         })}

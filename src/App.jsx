@@ -21,12 +21,37 @@ import GeneratePayslip from './pages/PayrollDetails/GeneratePayslip';
 import PromoteEmployeeToHR from './pages/PromoteEmployeeToHR';
 import HRShiftmanagement from './pages/HrShiftmanagement/HRShiftmanagement';
 import HRShiftsList from './pages/HrShiftmanagement/HRShiftsList';
-
+import EmployeeShiftDetails from './pages/Employee/EmployeeShiftDetails';
+import MyAttendance from './pages/Employee/MyAttendance';
+import MyProfile from './pages/Employee/MyProfile';
+import MyLeaves from './pages/Employee/MyLeaves';
+import EmployeeList from './pages/HR/EmployeeList.jsX';
+import HRViewEmployeeDetails from './pages/HR/HRViewEmployeeDetails';
+import HRAllEmployeeslist from './pages/HR/HRAllEmployeeslist';
+import HRCreateEmployeeDetails from './pages/HR/HRCreateEmployeeDetails';
+import HRCreateEmployee from './pages/HR/HRCreateEmployee';
+import HRAssignShifttoEmployee from './pages/HR/HRAssignShifttoEmployee';
+import HRHolidayCalendar from './pages/HR/HRHolidayCalendar';
+import PerformanceReview from './pages/HR/PerformanceReview';
+import HRLeave from './pages/HR/HRLeave';
+import HRAttendance from './pages/HR/HRAttendance';
+import AdminFinancialYear from './pages/Admin/AdminFinancialYear';
+import HRDetailsPage from './pages/Admin/HRDetailsPage';
+import AdminShiftmanagement from './pages/Admin/AdminShiftManagement';
+import AdminAllShift from './pages/Admin/AdminAllShift';
+import AdminHolidayList from './pages/Admin/AdminHolidayList';
+import AdminLeavePage from './pages/Admin/AdminLeave';
+import AdminPerformance from './pages/Admin/AdminPerformance';
+import AdminHRCalender from './pages/Admin/AdminHRCalender';
+import AdminTraining from './pages/Admin/AdminTraining';
+import HRTraining from './pages/HR/HRTraining';
+import EmployeeTraining from './pages/Employee/EmployeeTraining';
 
 function App() {
   return (
     <Router>
       <Routes>
+
         <Route path="/" element={<Home />} />
         <Route path="/AdminSidebar" element={<AdminSidebar />} />
         <Route path="/AdminDashboard" element={<AdminDashboard />} />
@@ -54,8 +79,33 @@ function App() {
         <Route path="/PromoteEmployeeToHR" element={<PromoteEmployeeToHR />} />
         <Route path="/HRShiftmanagement" element={<HRShiftmanagement />} />
         <Route path="/HRShiftsList" element={<HRShiftsList />} />
-
-
+        <Route path="/EmployeeShiftDetails" element={<EmployeeShiftDetails />} />
+        <Route path="/MyAttendance" element={<MyAttendance />} />
+        <Route path="/MyProfile" element={<MyProfile />} />
+        <Route path="/MyLeaves" element={<MyLeaves />} />
+        <Route path="/EmployeeList" element={<EmployeeList />} />
+        <Route path="/HRViewEmployeeDetails/:employeeId" element={<HRViewEmployeeDetails />} />
+        <Route path="/HRAllEmployeeslist" element={<HRAllEmployeeslist />} />
+        <Route path="/HRCreateEmployeeDetails" element={<HRCreateEmployeeDetails />} />
+        <Route path="/HRCreateEmployee" element={<HRCreateEmployee />} />
+        <Route path="/HRAssignShifttoEmployee" element={<HRAssignShifttoEmployee />} />
+        <Route path="/HRHolidayCalendar" element={<HRHolidayCalendar />} />
+        <Route path="/PerformanceReview" element={<PerformanceReview />} />
+        <Route path="/HRLeave" element={<HRLeave />} />
+        <Route path="/HRLeave" element={<HRLeave />} />
+        <Route path="/HRAttendance" element={<HRAttendance />} />
+        <Route path="/AdminFinancialYear" element={<AdminFinancialYear />} />
+        <Route path="/HRDetailsPage" element={<HRDetailsPage />} />
+        <Route path="/AdminShiftmanagement" element={<AdminShiftmanagement />} />
+        <Route path="/AdminAllShift" element={<AdminAllShift />} />
+        <Route path="/AdminHolidayList" element={<AdminHolidayList />} />
+        <Route path="/AdminLeavePage" element={<AdminLeavePage />} />
+        <Route path="/AdminPerformance" element={<AdminPerformance />} />
+        <Route path="/AdminHRCalender" element={<AdminHRCalender />} />
+        <Route path="/AdminTraining" element={<AdminTraining />} />
+        <Route path="/HRTraining" element={<HRTraining />} />
+        <Route path="/EmployeeTraining" element={<EmployeeTraining />} />
+       
       </Routes>
     </Router>
   );

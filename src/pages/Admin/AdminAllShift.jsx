@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import HRSidebar from "../../components/Common/HRSidebar";
+import AdminSidebar from "../../components/Common/AdminSidebar";
 
-const HRShiftsList = () => {
+const AdminAllShift = () => {
   const [shifts, setShifts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [assigned, setAssigned] = useState([]);
@@ -87,7 +87,7 @@ const HRShiftsList = () => {
 
   return (
     <div className="flex min-h-screen bg-yellow-50">
-      <HRSidebar />
+      <AdminSidebar />
 
       <main className="ml-64 flex-1 p-10 max-w-6xl mx-auto">
         {loading ? (
@@ -176,4 +176,4 @@ const Select = ({ label, options, value, onChange, isEmployee }) => (
   </div>
 );
 
-export default HRShiftsList;
+export default AdminAllShift;
