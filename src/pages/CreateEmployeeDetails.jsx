@@ -76,51 +76,64 @@ const CreateEmployeeDetails = () => {
     }
   };
 
-const token = localStorage.getItem('token'); // or wherever you keep your auth token
+  const validateForm = () => {
+    if (!formData.employeeId.trim()) return false;
 
-const handleSubmit = async () => {
-  setIsSubmitting(true);
-  setMessage(null);
-
-  try {
-    // Clone and prepare formData
-    const payload = {
-      ...formData,
-      details: {
-        ...formData.details,
-        dateOfJoining: new Date(formData.details.dateOfJoining).toISOString(),
-        confirmationDate: formData.details.confirmationDate
-          ? new Date(formData.details.confirmationDate).toISOString()
-          : null,
-        assignedShiftId: formData.details.assignedShiftId || null // Handle empty string
+    const details = formData.details;
+    for (const key in details) {
+      if (!details[key] || details[key].toString().trim() === '') {
+        return false;
       }
-    };
+    }
+    return true;
+  };
 
-    const token = localStorage.getItem('token'); // Or however you store the token
+  const token = localStorage.getItem('token');
 
-    const res = await fetch('http://localhost:9000/admin/create-employee-details', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`, // Add if required
-      },
-      body: JSON.stringify(payload),
-    });
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setMessage(null);
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Submission failed');
+    if (!validateForm()) {
+      setMessage({ type: 'error', text: 'Please fill out all required fields.' });
+      setIsSubmitting(false);
+      return;
+    }
 
-    setMessage({ type: 'success', text: 'Employee details created successfully!' });
-    setFormData(initialFormData);
-    setStep(1);
-  } catch (err) {
-    setMessage({ type: 'error', text: err.message });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    try {
+      const payload = {
+        ...formData,
+        details: {
+          ...formData.details,
+          dateOfJoining: new Date(formData.details.dateOfJoining).toISOString(),
+          confirmationDate: formData.details.confirmationDate
+            ? new Date(formData.details.confirmationDate).toISOString()
+            : null,
+          assignedShiftId: formData.details.assignedShiftId || null,
+        },
+      };
 
+      const res = await fetch('http://192.168.0.100:9000/admin/create-employee-details', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Submission failed');
+
+      setMessage({ type: 'success', text: 'Employee details created successfully!' });
+      setFormData(initialFormData);
+      setStep(1);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -134,8 +147,8 @@ const handleSubmit = async () => {
           {message && (
             <div
               className={`mb-6 p-4 rounded-md text-sm ${message.type === 'success'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
                 }`}
             >
               {message.text}
@@ -144,8 +157,9 @@ const handleSubmit = async () => {
 
           {step === 1 ? (
             <div className="max-w-md mx-auto bg-yellow-50 border border-yellow-300 rounded-lg p-8 shadow-md space-y-5">
-              <label className="block text-yellow-700 font-semibold text-lg">Employee ID</label>
-
+              <label className="block text-yellow-700 font-semibold text-lg">
+                Employee ID<span className="text-red-500 ml-1">*</span>
+              </label>
               <input
                 type="text"
                 name="employeeId"
@@ -175,11 +189,14 @@ const handleSubmit = async () => {
             <form onSubmit={(e) => e.preventDefault()} className="space-y-8 bg-yellow-50 p-8 rounded-lg shadow-md border border-yellow-300 max-w-4xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
                 {Object.entries(formData.details).map(([key, value]) => {
-                  // Dropdowns for enums
+                  const label = key.replace(/([A-Z])/g, ' $1');
+
                   if (key === 'employmentType') {
                     return (
                       <div key={key} className="flex flex-col">
-                        <label className="mb-2 font-semibold text-yellow-700 capitalize">Employment Type</label>
+                        <label className="mb-2 font-semibold text-yellow-700 capitalize">
+                          Employment Type<span className="text-red-500 ml-1">*</span>
+                        </label>
                         <select
                           name={`details.${key}`}
                           value={value || ''}
@@ -196,10 +213,13 @@ const handleSubmit = async () => {
                       </div>
                     );
                   }
+
                   if (key === 'employmentStatus') {
                     return (
                       <div key={key} className="flex flex-col">
-                        <label className="mb-2 font-semibold text-yellow-700 capitalize">Employment Status</label>
+                        <label className="mb-2 font-semibold text-yellow-700 capitalize">
+                          Employment Status<span className="text-red-500 ml-1">*</span>
+                        </label>
                         <select
                           name={`details.${key}`}
                           value={value || ''}
@@ -216,10 +236,13 @@ const handleSubmit = async () => {
                       </div>
                     );
                   }
+
                   if (key === 'bloodGroup') {
                     return (
                       <div key={key} className="flex flex-col">
-                        <label className="mb-2 font-semibold text-yellow-700 capitalize">Blood Group</label>
+                        <label className="mb-2 font-semibold text-yellow-700 capitalize">
+                          Blood Group<span className="text-red-500 ml-1">*</span>
+                        </label>
                         <select
                           name={`details.${key}`}
                           value={value || ''}
@@ -237,12 +260,11 @@ const handleSubmit = async () => {
                     );
                   }
 
-                  // Date inputs
                   if (key.toLowerCase().includes('date')) {
                     return (
                       <div key={key} className="flex flex-col">
                         <label className="mb-2 font-semibold text-yellow-700 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1')}
+                          {label}<span className="text-red-500 ml-1">*</span>
                         </label>
                         <input
                           type="date"
@@ -255,18 +277,17 @@ const handleSubmit = async () => {
                     );
                   }
 
-                  // Default text inputs
                   return (
                     <div key={key} className="flex flex-col">
                       <label className="mb-2 font-semibold text-yellow-700 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1')}
+                        {label}<span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
                         type="text"
                         name={`details.${key}`}
                         value={value || ''}
                         onChange={handleChange}
-                        placeholder={`Enter ${key.replace(/([A-Z])/g, ' $1')}`}
+                        placeholder={`Enter ${label}`}
                         className="border border-yellow-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-400 outline-none"
                       />
                     </div>
@@ -292,7 +313,6 @@ const handleSubmit = async () => {
                 </button>
               </div>
             </form>
-
           )}
         </div>
       </main>

@@ -1,41 +1,70 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // ✅ import navigate
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import AdminSidebar from '../components/Common/AdminSidebar';
 
 const ViewEmployeeDetails = () => {
   const { employeeId } = useParams();
-  const navigate = useNavigate(); // ✅ for redirecting
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
+  // Fetch employee data from backend
+  const fetchEmployee = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:9000/admin/employee-details/${employeeId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
+        },
+      });
+
+      const data = await res.json();
+      console.log('Fetched employee data:', data); // Debug output
+
+      if (!res.ok) throw new Error(data.message || 'Failed to fetch employee details');
+
+      // Use deep clone to ensure React state update triggers rerender
+      setEmployee(JSON.parse(JSON.stringify(data.data)));
+
+      setError('');
+    } catch (err) {
+      setError(err.message);
+      setEmployee(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch on mount or employeeId change
   useEffect(() => {
     if (!employeeId) return;
-
-    const fetchEmployee = async () => {
-      try {
-        const res = await fetch(`http://localhost:9000/admin/employee-details/${employeeId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-          },
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Failed to fetch employee details');
-        setEmployee(data.data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEmployee();
   }, [employeeId]);
 
+  // On navigation with successMessage in location.state,
+  // show success message and refetch employee data
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setSuccessMessage(location.state.successMessage);
+
+      // Small delay to ensure backend update is complete before fetching
+      setTimeout(() => {
+        fetchEmployee();
+      }, 100);
+
+      // Clear successMessage from history so it doesn't show on back/refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, location.pathname]);
+
+  // Navigate to edit page
   const handleEdit = () => {
-    navigate(`/employee-details/${employeeId}`); // ✅ navigate to update route
+    navigate(`/employee-details/${employeeId}`);
   };
 
   return (
@@ -54,6 +83,13 @@ const ViewEmployeeDetails = () => {
               </button>
             )}
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+              {successMessage}
+            </div>
+          )}
 
           {loading ? (
             <p className="text-center text-yellow-700">Loading...</p>

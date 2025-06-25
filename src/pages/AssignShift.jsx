@@ -13,7 +13,7 @@ const AssignShift = () => {
     const fetchEmployees = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:9000/admin/employee-profiles", {
+        const res = await fetch("http://192.168.0.100:9000/admin/employee-profiles", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
@@ -43,7 +43,7 @@ const AssignShift = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:9000/admin/assign-shift", {
+      const res = await fetch("http://192.168.0.100:9000/admin/assign-shift", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

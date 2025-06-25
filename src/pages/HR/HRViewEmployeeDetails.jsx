@@ -14,7 +14,7 @@ const HRViewEmployeeDetails = () => {
 
     const fetchEmployee = async () => {
       try {
-        const res = await fetch(`http://localhost:9000/admin/employee-details/${employeeId}`, {
+        const res = await fetch(`http://192.168.0.100:9000/admin/employee-details/${employeeId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('admin_token')}`, // Still using admin token

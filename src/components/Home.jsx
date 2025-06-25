@@ -40,7 +40,7 @@ const Home = () => {
     try {
       if (selectedRole === "admin") {
         const response = await axios.post(
-          "http://localhost:9000/admin/login",
+          "http://192.168.0.100:9000/admin/login",
           { email, password },
           { withCredentials: true }
         );
@@ -53,7 +53,7 @@ const Home = () => {
 
       } else if (selectedRole === "Employee") {
         const response = await axios.post(
-          "http://localhost:9000/employee/login",
+          "http://192.168.0.100:9000/employee/login",
           { assignedEmail: email, password }
         );
 
@@ -71,7 +71,7 @@ const Home = () => {
 
       } else if (selectedRole === "hr") {
         const response = await axios.post(
-          "http://localhost:9000/hr/login",
+          "http://192.168.0.100:9000/hr/login",
           { email, password },
           { withCredentials: true }
         );
@@ -104,7 +104,7 @@ const Home = () => {
 
     try {
       const verifyResponse = await axios.post(
-        "http://localhost:9000/hr/login/2fa",
+        "http://192.168.0.100:9000/hr/login/2fa",
         { email, password, otp },
         { withCredentials: true }
       );
@@ -131,7 +131,7 @@ const Home = () => {
 
   const handleResendOtp = async () => {
     try {
-      const response = await axios.post("http://localhost:9000/hr/resend-otp", {
+      const response = await axios.post("http://192.168.0.100:9000/hr/resend-otp", {
         email,
       });
       if (response.data?.status === "success") {

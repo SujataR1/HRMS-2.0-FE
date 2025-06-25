@@ -28,7 +28,7 @@
 //   try {
 //     const token = localStorage.getItem('token'); // or wherever you store your token
 
-//     const res = await fetch('http://localhost:9000/admin/create-employee', {
+//     const res = await fetch('http://192.168.0.100:9000/admin/create-employee', {
 //       method: 'POST',
 //       headers: {
 //         'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ const handleSubmit = async () => {
 
     const token = localStorage.getItem('token'); // Or however you store the token
 
-    const res = await fetch('http://localhost:9000/admin/create-employee-details', {
+    const res = await fetch('http://192.168.0.100:9000/admin/create-employee-details', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

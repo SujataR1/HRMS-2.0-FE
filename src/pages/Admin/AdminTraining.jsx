@@ -76,7 +76,7 @@ const AdminTraining = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("http://localhost:9000/admin/employee-profiles", {
+        const res = await fetch("http://192.168.0.100:9000/admin/employee-profiles", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("admin_token")}`,

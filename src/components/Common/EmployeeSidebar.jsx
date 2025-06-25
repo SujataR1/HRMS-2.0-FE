@@ -40,7 +40,7 @@ const EmployeeSidebar = () => {
 
       // If token existed, call logout API (optional)
       if (token) {
-        await fetch('http://localhost:9000/employee/logout', {
+        await fetch('http://192.168.0.100:9000/employee/logout', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,

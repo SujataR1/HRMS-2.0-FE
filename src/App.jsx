@@ -46,6 +46,7 @@ import AdminHRCalender from './pages/Admin/AdminHRCalender';
 import AdminTraining from './pages/Admin/AdminTraining';
 import HRTraining from './pages/HR/HRTraining';
 import EmployeeTraining from './pages/Employee/EmployeeTraining';
+import AttendancePage from './pages/Admin/AttendancePage';
 
 function App() {
   return (
@@ -105,7 +106,9 @@ function App() {
         <Route path="/AdminTraining" element={<AdminTraining />} />
         <Route path="/HRTraining" element={<HRTraining />} />
         <Route path="/EmployeeTraining" element={<EmployeeTraining />} />
-       
+        <Route path="/EmployeeTraining" element={<EmployeeTraining />} />
+        <Route path="/AdminAttendancePage" element={<AttendancePage />} />
+
       </Routes>
     </Router>
   );

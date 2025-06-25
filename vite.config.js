@@ -12,7 +12,7 @@ export default defineConfig({
     port: 5173,        // explicitly specify port (default is 5173 anyway)
     proxy: {
       '/admin': {
-        target: 'http://localhost:9000',
+        target: 'http://192.168.0.100:9000',
         changeOrigin: true,
         secure: false,
       },

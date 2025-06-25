@@ -11,12 +11,12 @@ const AdminSidebar = () => {
   const [active, setActive] = useState('');
   const [payrollOpen, setPayrollOpen] = useState(false);
   const [employeeOpen, setEmployeeOpen] = useState(false);
+  const [attendanceOpen, setAttendanceOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-
     { name: 'Employee Management' }, // handled separately with submenu
     { name: 'Make HR', path: '/PromoteEmployeeToHR' },
     { name: 'HR Profile', path: '/HRDetailsPage' },
@@ -27,14 +27,13 @@ const AdminSidebar = () => {
     { name: 'Performance', path: '/AdminPerformance' },
     { name: 'HR Calendar', path: '/AdminHRCalender' },
     { name: 'Training', path: '/AdminTraining' },
+    { name: 'Attendance Management', path: '/AttendancePage' }
   ];
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/CreateEmployee' },
     { name: 'Create Employee Details', path: '/Create-Employee-Details' },
     { name: 'All Employees List', path: '/All-Employees-list' }
-    //{ name: 'Assign Shift to Employee', path: '/Assign-Shift-to-Employee' },
-
   ];
 
   const payrollSubItems = [
@@ -43,36 +42,62 @@ const AdminSidebar = () => {
     { name: 'Generate Payslip', path: '/GeneratePayslip' }
   ];
 
+  // <-- Attendance submenu items must be defined here
+  const attendanceSubItems = [
+    { name: 'Attendance', path: '/AdminAttendancePage' },
+    // Add more attendance related submenu items if needed
+  ];
+
   useEffect(() => {
-    // Check if current path matches any employee submenu
+    // Check if location is in employee submenu
     const empItem = employeeSubItems.find(item => item.path === location.pathname);
     if (empItem) {
       setActive(empItem.name);
       setEmployeeOpen(true);
       setPayrollOpen(false);
+      setAttendanceOpen(false);
       return;
     }
 
-    // Check payroll submenu
+    // Check if location is in payroll submenu
     const payrollItem = payrollSubItems.find(item => item.path === location.pathname);
     if (payrollItem) {
       setActive(payrollItem.name);
       setPayrollOpen(true);
       setEmployeeOpen(false);
+      setAttendanceOpen(false);
       return;
     }
 
-    // Check main menu items
+    // Check if location is in attendance submenu
+    const attendanceItem = attendanceSubItems.find(item => item.path === location.pathname);
+    if (attendanceItem) {
+      setActive(attendanceItem.name);
+      setAttendanceOpen(true);
+      setEmployeeOpen(false);
+      setPayrollOpen(false);
+      return;
+    }
+
+    // Check if location matches any main menu item (non-submenu)
     const mainItem = menuItems.find(item => item.path === location.pathname);
     if (mainItem) {
       setActive(mainItem.name);
-    } else {
-      setActive('');
+      if (mainItem.name === 'Attendance Management') {
+        setAttendanceOpen(true);
+      } else {
+        setAttendanceOpen(false);
+      }
+      setEmployeeOpen(false);
+      setPayrollOpen(false);
+      return;
     }
 
-    // Close submenus if no match
+    // If no match found, reset all
+    setActive('');
     setEmployeeOpen(false);
     setPayrollOpen(false);
+    setAttendanceOpen(false);
   }, [location.pathname]);
 
   return (
@@ -127,7 +152,41 @@ const AdminSidebar = () => {
                     ? 'bg-yellow-100 text-yellow-900 shadow-inner'
                     : 'hover:text-yellow-700'
                 }`}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  setActive(item.name);
+                }}
+              >
+                {item.name}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Attendance Management Dropdown */}
+        <li
+          className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
+            attendanceOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
+          }`}
+          onClick={() => setAttendanceOpen(!attendanceOpen)}
+        >
+          <span className="flex gap-2 items-center">Attendance Management</span>
+          {attendanceOpen ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
+        </li>
+        {attendanceOpen && (
+          <ul className="ml-6 mt-1 space-y-1">
+            {attendanceSubItems.map(item => (
+              <li
+                key={item.name}
+                className={`text-sm px-4 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  active === item.name
+                    ? 'bg-yellow-100 text-yellow-900 shadow-inner'
+                    : 'hover:text-yellow-700'
+                }`}
+                onClick={() => {
+                  navigate(item.path);
+                  setActive(item.name);
+                }}
               >
                 {item.name}
               </li>
@@ -155,7 +214,10 @@ const AdminSidebar = () => {
                     ? 'bg-yellow-100 text-yellow-900 shadow-inner'
                     : 'hover:text-yellow-700'
                 }`}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  navigate(item.path);
+                  setActive(item.name);
+                }}
               >
                 {item.name}
               </li>
@@ -166,7 +228,7 @@ const AdminSidebar = () => {
         {/* Other static menu items */}
         {menuItems.map(item => {
           if (item.name === 'Employee Management') return null; // handled above
-
+          if (item.name === 'Attendance Management') return null; // handled above
           return (
             <li
               key={item.name}
@@ -175,7 +237,12 @@ const AdminSidebar = () => {
                   ? 'bg-yellow-200 text-yellow-900 shadow-inner'
                   : 'hover:bg-yellow-100 hover:text-yellow-700'
               }`}
-              onClick={() => item.path && navigate(item.path)}
+              onClick={() => {
+                if (item.path) {
+                  navigate(item.path);
+                  setActive(item.name);
+                }
+              }}
             >
               {item.name}
             </li>
