@@ -47,6 +47,9 @@ import AdminTraining from './pages/Admin/AdminTraining';
 import HRTraining from './pages/HR/HRTraining';
 import EmployeeTraining from './pages/Employee/EmployeeTraining';
 import AttendancePage from './pages/Admin/AttendancePage';
+import ForgotPasswordEmployee from './pages/Employee/ForgotPasswordEmployee';
+import ForgotPasswordAdmin from './pages/Admin/ForgotPasswordAdmin';
+import ForgotPasswordHR from './pages/HR/ForgotPasswordHR';
 
 function App() {
   return (
@@ -108,6 +111,9 @@ function App() {
         <Route path="/EmployeeTraining" element={<EmployeeTraining />} />
         <Route path="/EmployeeTraining" element={<EmployeeTraining />} />
         <Route path="/AdminAttendancePage" element={<AttendancePage />} />
+        <Route path="/forgot-password/admin" element={<ForgotPasswordAdmin />} />
+        <Route path="/forgot-password/hr" element={<ForgotPasswordHR />} />
+        <Route path="/forgot-password/employee" element={<ForgotPasswordEmployee />} />
 
       </Routes>
     </Router>

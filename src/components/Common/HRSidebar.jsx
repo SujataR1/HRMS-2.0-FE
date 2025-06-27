@@ -17,10 +17,9 @@ const HRSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Main menu items, Employee Management has no path, used only to toggle submenu
   const menuItems = [
     { label: 'Dashboard', path: '/HRDashboard', icon: <MdDashboard size={18} /> },
-     { label: 'Employee Management', icon: <MdPeople size={18} /> },
+    { label: 'Employee Management', icon: <MdPeople size={18} /> },
     { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
     { label: 'Leave Requests', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
     { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
@@ -28,31 +27,46 @@ const HRSidebar = () => {
     { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
     { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
     { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
-
-    
   ];
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/HRCreateEmployee' },
     { name: 'Create Employee Details', path: '/HRCreateEmployeeDetails' },
     { name: 'All Employees List', path: '/EmployeeList' },
-    //{ name: 'Assign Shift to Employee', path: '/HRAssignShifttoEmployee' },
-    
   ];
 
   useEffect(() => {
-    // Highlight active menu (only if path exists)
     const current = menuItems.find(item => item.path && location.pathname.startsWith(item.path));
     if (current) setActive(current.label);
 
-    // Also open employee menu if current path matches submenu path
     if (employeeSubItems.some(sub => location.pathname.startsWith(sub.path))) {
       setEmployeeMenuOpen(true);
     }
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    // logout code...
+    try {
+      const token = localStorage.getItem('hrToken');
+
+      // Remove token before request
+      localStorage.removeItem('hrToken');
+
+      if (token) {
+        await fetch('http://192.168.0.100:9000/hr/logout', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
+      }
+
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Logout error:', err);
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -63,7 +77,6 @@ const HRSidebar = () => {
 
       <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {menuItems.map(({ label, icon, path }) => {
-          // If it's the Employee Management item, render with submenu toggle
           if (label === 'Employee Management') {
             return (
               <li
@@ -100,7 +113,6 @@ const HRSidebar = () => {
             );
           }
 
-          // Normal menu items with paths
           return (
             <li
               key={label}

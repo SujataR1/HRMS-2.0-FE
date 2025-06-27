@@ -260,9 +260,21 @@ const Home = () => {
         )}
 
         <div className="mt-6 sm:mt-10 w-full max-w-md flex justify-center">
-          <button className="text-sm text-yellow-600 bg-yellow-50 px-7 py-3 rounded-full border border-yellow-400 hover:bg-yellow-100 transition whitespace-nowrap shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400">
-            Forgot Password?
-          </button>
+         <button
+  onClick={() => {
+    if (selectedRole === "admin") {
+      navigate("/forgot-password/admin");
+    } else if (selectedRole === "hr") {
+      navigate("/forgot-password/hr");
+    } else {
+      navigate("/forgot-password/employee");
+    }
+  }}
+  className="text-sm text-yellow-600 bg-yellow-50 px-7 py-3 rounded-full border border-yellow-400 hover:bg-yellow-100 transition whitespace-nowrap shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+>
+  Forgot Password?
+</button>
+
         </div>
       </div>
 

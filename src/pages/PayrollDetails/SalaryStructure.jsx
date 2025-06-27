@@ -4,20 +4,31 @@ import AdminSidebar from '../../components/Common/AdminSidebar';
 const SalaryStructure = () => {
   const structures = [
     {
-      id: 1,
-      title: 'Software Engineer Level 1',
-      description: 'Basic: ₹30,000, HRA: ₹15,000, Bonus: ₹5,000',
-    },
-    {
-      id: 2,
-      title: 'Senior Developer',
-      description: 'Basic: ₹50,000, HRA: ₹20,000, Bonus: ₹10,000',
-    },
-    {
-      id: 3,
-      title: 'Team Lead',
-      description: 'Basic: ₹70,000, HRA: ₹30,000, Bonus: ₹15,000',
-    },
+    id: 1,
+    title: 'Team Lead',
+    description: 'Basic: ₹70,000, HRA: ₹30,000, Bonus: ₹15,000',
+
+  },
+  {
+    id: 2,
+    title: 'Senior Developer',
+    description: 'Basic: ₹50,000, HRA: ₹20,000, Bonus: ₹10,000',
+  },
+  {
+    id: 3,
+    title: 'Software Engineer Level 1',
+    description: 'Basic: ₹30,000, HRA: ₹15,000, Bonus: ₹5,000',
+  },
+  {
+    id: 4,
+    title: 'Trainee',
+    description: 'Basic: ₹10,000, HRA: ₹2,000, Bonus: ₹1,000',
+  },
+  {
+    id: 4,
+    title: 'Freelancer',
+    description: 'Basic: ₹2,000, HRA: ₹500, Bonus: ₹100',
+  },
   ];
 
   return (

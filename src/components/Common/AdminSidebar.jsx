@@ -17,7 +17,7 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { name: 'Employee Management' }, // handled separately with submenu
+    { name: 'Employee Management' },
     { name: 'Make HR', path: '/PromoteEmployeeToHR' },
     { name: 'HR Profile', path: '/HRDetailsPage' },
     { name: 'Shift Management', path: '/Adminshiftmanagement' },
@@ -42,14 +42,11 @@ const AdminSidebar = () => {
     { name: 'Generate Payslip', path: '/GeneratePayslip' }
   ];
 
-  // <-- Attendance submenu items must be defined here
   const attendanceSubItems = [
-    { name: 'Attendance', path: '/AdminAttendancePage' },
-    // Add more attendance related submenu items if needed
+    { name: 'Attendance', path: '/AdminAttendancePage' }
   ];
 
   useEffect(() => {
-    // Check if location is in employee submenu
     const empItem = employeeSubItems.find(item => item.path === location.pathname);
     if (empItem) {
       setActive(empItem.name);
@@ -59,7 +56,6 @@ const AdminSidebar = () => {
       return;
     }
 
-    // Check if location is in payroll submenu
     const payrollItem = payrollSubItems.find(item => item.path === location.pathname);
     if (payrollItem) {
       setActive(payrollItem.name);
@@ -69,7 +65,6 @@ const AdminSidebar = () => {
       return;
     }
 
-    // Check if location is in attendance submenu
     const attendanceItem = attendanceSubItems.find(item => item.path === location.pathname);
     if (attendanceItem) {
       setActive(attendanceItem.name);
@@ -79,26 +74,44 @@ const AdminSidebar = () => {
       return;
     }
 
-    // Check if location matches any main menu item (non-submenu)
     const mainItem = menuItems.find(item => item.path === location.pathname);
     if (mainItem) {
       setActive(mainItem.name);
-      if (mainItem.name === 'Attendance Management') {
-        setAttendanceOpen(true);
-      } else {
-        setAttendanceOpen(false);
-      }
+      if (mainItem.name === 'Attendance Management') setAttendanceOpen(true);
+      else setAttendanceOpen(false);
       setEmployeeOpen(false);
       setPayrollOpen(false);
       return;
     }
 
-    // If no match found, reset all
     setActive('');
     setEmployeeOpen(false);
     setPayrollOpen(false);
     setAttendanceOpen(false);
   }, [location.pathname]);
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      localStorage.removeItem('adminToken');
+
+      if (token) {
+        await fetch('http://192.168.0.100:9000/admin/logout', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
+      }
+
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Logout error:', err);
+      window.location.href = '/';
+    }
+  };
 
   return (
     <div className="w-64 h-screen bg-yellow-50 shadow-xl fixed flex flex-col border-r border-yellow-300">
@@ -107,12 +120,9 @@ const AdminSidebar = () => {
       </div>
 
       <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
-        {/* Dashboard */}
         <li
           className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-            active === 'Dashboard'
-              ? 'bg-yellow-200 text-yellow-900 shadow-inner'
-              : 'hover:bg-yellow-100 hover:text-yellow-700'
+            active === 'Dashboard' ? 'bg-yellow-200 shadow-inner' : 'hover:bg-yellow-100 hover:text-yellow-700'
           }`}
           onClick={() => navigate('/AdminDashboard')}
         >
@@ -120,22 +130,19 @@ const AdminSidebar = () => {
           Dashboard
         </li>
 
-        {/* Financial Year */}
         <li
           className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-            active === 'Financial Year'
-              ? 'bg-yellow-200 text-yellow-900 shadow-inner'
-              : 'hover:bg-yellow-100 hover:text-yellow-700'
+            active === 'Financial Year' ? 'bg-yellow-200 shadow-inner' : 'hover:bg-yellow-100 hover:text-yellow-700'
           }`}
           onClick={() => navigate('/AdminFinancialYear')}
         >
           Financial Year
         </li>
 
-        {/* Payroll Details Dropdown */}
+        {/* Payroll Dropdown */}
         <li
           className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-            payrollOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
+            payrollOpen ? 'bg-yellow-200 shadow-inner' : 'hover:bg-yellow-100'
           }`}
           onClick={() => setPayrollOpen(!payrollOpen)}
         >
@@ -148,9 +155,7 @@ const AdminSidebar = () => {
               <li
                 key={item.name}
                 className={`text-sm px-4 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
-                  active === item.name
-                    ? 'bg-yellow-100 text-yellow-900 shadow-inner'
-                    : 'hover:text-yellow-700'
+                  active === item.name ? 'bg-yellow-100 shadow-inner' : 'hover:text-yellow-700'
                 }`}
                 onClick={() => {
                   navigate(item.path);
@@ -163,10 +168,10 @@ const AdminSidebar = () => {
           </ul>
         )}
 
-        {/* Attendance Management Dropdown */}
+        {/* Attendance Dropdown */}
         <li
           className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-            attendanceOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
+            attendanceOpen ? 'bg-yellow-200 shadow-inner' : 'hover:bg-yellow-100'
           }`}
           onClick={() => setAttendanceOpen(!attendanceOpen)}
         >
@@ -179,9 +184,7 @@ const AdminSidebar = () => {
               <li
                 key={item.name}
                 className={`text-sm px-4 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
-                  active === item.name
-                    ? 'bg-yellow-100 text-yellow-900 shadow-inner'
-                    : 'hover:text-yellow-700'
+                  active === item.name ? 'bg-yellow-100 shadow-inner' : 'hover:text-yellow-700'
                 }`}
                 onClick={() => {
                   navigate(item.path);
@@ -194,10 +197,10 @@ const AdminSidebar = () => {
           </ul>
         )}
 
-        {/* Employee Management Dropdown */}
+        {/* Employee Dropdown */}
         <li
           className={`flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-            employeeOpen ? 'bg-yellow-200 text-yellow-900 shadow-inner' : 'hover:bg-yellow-100'
+            employeeOpen ? 'bg-yellow-200 shadow-inner' : 'hover:bg-yellow-100'
           }`}
           onClick={() => setEmployeeOpen(!employeeOpen)}
         >
@@ -210,9 +213,7 @@ const AdminSidebar = () => {
               <li
                 key={item.name}
                 className={`text-sm px-4 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
-                  active === item.name
-                    ? 'bg-yellow-100 text-yellow-900 shadow-inner'
-                    : 'hover:text-yellow-700'
+                  active === item.name ? 'bg-yellow-100 shadow-inner' : 'hover:text-yellow-700'
                 }`}
                 onClick={() => {
                   navigate(item.path);
@@ -225,17 +226,14 @@ const AdminSidebar = () => {
           </ul>
         )}
 
-        {/* Other static menu items */}
+        {/* Static menu */}
         {menuItems.map(item => {
-          if (item.name === 'Employee Management') return null; // handled above
-          if (item.name === 'Attendance Management') return null; // handled above
+          if (['Employee Management', 'Attendance Management'].includes(item.name)) return null;
           return (
             <li
               key={item.name}
               className={`px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-                active === item.name
-                  ? 'bg-yellow-200 text-yellow-900 shadow-inner'
-                  : 'hover:bg-yellow-100 hover:text-yellow-700'
+                active === item.name ? 'bg-yellow-200 shadow-inner' : 'hover:bg-yellow-100 hover:text-yellow-700'
               }`}
               onClick={() => {
                 if (item.path) {
@@ -249,8 +247,11 @@ const AdminSidebar = () => {
           );
         })}
 
-        {/* Logout */}
-        <li className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300">
+        {/* ✅ Logout Button */}
+        <li
+          className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300"
+          onClick={handleLogout}
+        >
           <FaSignOutAlt size={16} />
           Logout
         </li>
