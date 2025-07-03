@@ -68,7 +68,7 @@ const AllEmployees = () => {
           </h2>
 
           {/* Sticky search bar */}
-          <div className="mb-15 mx-auto sticky top-8 bg-yellow-50 z-10 rounded-full shadow-lg p-4 border border-yellow-300 max-w-sm sm:max-w-md">
+          <div className="mb-15 mx-auto sticky top-8 bg-yellow-50 z-10 rounded-full shadow-lg p-4 bordcer border-yellow-300 max-w-sm sm:max-w-md">
             <input
               type="search"
               placeholder="Search by name, ID, designation, or department..."

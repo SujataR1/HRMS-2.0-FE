@@ -110,7 +110,6 @@ const GeneratePayslip = () => {
               {loading ? 'Uploading...' : 'Upload Payslip'}
             </button>
           </div>
-
           {message && (
             <p className="mt-6 text-yellow-900 font-medium bg-yellow-100 border border-yellow-300 rounded px-4 py-2">
               {message}
