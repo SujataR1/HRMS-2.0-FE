@@ -163,7 +163,6 @@ const AllEmployees = () => {
                     >
                       {emp.name}
                     </h3>
-
                     <p
                       className="text-yellow-800 font-semibold truncate"
                       title={`Employee ID: ${emp.employeeId}`}

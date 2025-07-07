@@ -51,23 +51,32 @@ const Home = () => {
         }
         navigate("/AdminDashboard");
 
-      } else if (selectedRole === "Employee") {
-        const response = await axios.post(
-          "http://192.168.0.100:9000/employee/login",
-          { assignedEmail: email, password }
-        );
+    } else if (selectedRole === "Employee") {
+  try {
+    const response = await axios.post(
+      "http://192.168.0.100:9000/employee/login",
+      { assignedEmail: email, password }
+    );
 
-        if (response.data?.status === "success") {
-          const token = response?.data?.token || response?.data?.data?.token;
-          if (token) {
-            localStorage.setItem("employee_token", token);
-          }
-          navigate("/EmployeeDashboard");
-        } else if (response.data?.requires2FA) {
-          alert("2FA is required. Please check your email for OTP.");
-        } else {
-          alert("Employee login failed. Please check your credentials.");
-        }
+    if (response.data?.status === "success") {
+      // Extract token from headers
+      const authHeader = response.data.authorization;
+
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split(" ")[1]; // Remove "Bearer " prefix
+        localStorage.setItem("employee_token", token);
+      }
+
+      navigate("/EmployeeDashboard");
+    } else if (response.data?.requires2FA) {
+      alert("2FA is required. Please check your email for OTP.");
+    } else {
+      alert("Employee login failed. Please check your credentials.");
+    }
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("An error occurred during login.");
+  }
 
       } else if (selectedRole === "hr") {
         const response = await axios.post(
