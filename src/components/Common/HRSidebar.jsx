@@ -18,16 +18,18 @@ const HRSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { label: 'Dashboard', path: '/HRDashboard', icon: <MdDashboard size={18} /> },
-    { label: 'Employee Management', icon: <MdPeople size={18} /> },
-    { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
-    { label: 'Leave Requests', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
-    { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
-    { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
-    { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
-    { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
-    { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
-  ];
+  { label: 'Dashboard', path: '/HRDashboard', icon: <MdDashboard size={18} /> },
+  { label: 'Employee Management', icon: <MdPeople size={18} /> },
+  { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
+  { label: 'Leave Requests', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
+  { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
+  { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
+  { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
+  { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
+  { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
+  { label: 'Employee Concerns', path: '/HRConcernList', icon: <MdEventNote size={18} /> },  // ✅ Added
+];
+
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/HRCreateEmployee' },
@@ -46,10 +48,10 @@ const HRSidebar = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem('hrToken');
+      const token = localStorage.getItem('hr_token');
 
       // Remove token before request
-      localStorage.removeItem('hrToken');
+      localStorage.removeItem('hr_token');
 
       if (token) {
         await fetch('http://192.168.0.100:9000/hr/logout', {

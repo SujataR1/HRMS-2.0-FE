@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
 
 const MyAttendance = () => {
-  const [startDate, setStartDate] = useState(() => {
+  const [filterType, setFilterType] = useState("monthYear"); // "date", "monthYear", or "year"
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [monthYear, setMonthYear] = useState(() => {
     const d = new Date();
-    d.setDate(d.getDate() - 7);
-    return d.toISOString().slice(0, 10);
+    return `${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
   });
-  const [endDate, setEndDate] = useState(() => {
-    const d = new Date();
-    return d.toISOString().slice(0, 10);
-  });
+  const [year, setYear] = useState(new Date().getFullYear().toString());
 
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,6 +24,15 @@ const MyAttendance = () => {
     setLoading(true);
     setError("");
 
+    let body = {};
+    if (filterType === "date") {
+      body = { date };
+    } else if (filterType === "monthYear") {
+      body = { monthYear };
+    } else if (filterType === "year") {
+      body = { year };
+    }
+
     try {
       const res = await fetch("http://192.168.0.100:9000/employee/attendance/view", {
         method: "POST",
@@ -33,10 +40,7 @@ const MyAttendance = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          startDate,
-          endDate,
-        }),
+        body: JSON.stringify(body),
       });
 
       const json = await res.json();
@@ -63,29 +67,73 @@ const MyAttendance = () => {
             My Attendance
           </h1>
 
-          {/* Date selectors and fetch button */}
-          <div className="mb-8 flex flex-wrap gap-6 items-center justify-center">
-            <label className="font-semibold text-yellow-900 text-lg">
-              From:{" "}
+          {/* Filter Type Selection */}
+          <div className="mb-6 flex flex-wrap gap-4 justify-center">
+            <label className="text-yellow-900 font-semibold">
               <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                max={endDate}
-                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                type="radio"
+                value="date"
+                checked={filterType === "date"}
+                onChange={() => setFilterType("date")}
+                className="mr-1"
               />
+              Single Date
             </label>
+            <label className="text-yellow-900 font-semibold">
+              <input
+                type="radio"
+                value="monthYear"
+                checked={filterType === "monthYear"}
+                onChange={() => setFilterType("monthYear")}
+                className="mr-1"
+              />
+              Month-Year
+            </label>
+            <label className="text-yellow-900 font-semibold">
+              <input
+                type="radio"
+                value="year"
+                checked={filterType === "year"}
+                onChange={() => setFilterType("year")}
+                className="mr-1"
+              />
+              Full Year
+            </label>
+          </div>
 
-            <label className="font-semibold text-yellow-900 text-lg">
-              To:{" "}
+          {/* Input based on selection */}
+          <div className="mb-8 flex flex-wrap gap-6 items-center justify-center">
+            {filterType === "date" && (
               <input
                 type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={startDate}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
               />
-            </label>
+            )}
+
+            {filterType === "monthYear" && (
+              <input
+                type="month"
+                value={`${monthYear.split("-").reverse().join("-")}`}
+                onChange={(e) => {
+                  const [y, m] = e.target.value.split("-");
+                  setMonthYear(`${m}-${y}`);
+                }}
+                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              />
+            )}
+
+            {filterType === "year" && (
+              <input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                min="2000"
+                max="2100"
+                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-32"
+              />
+            )}
 
             <button
               onClick={fetchAttendance}
@@ -115,21 +163,21 @@ const MyAttendance = () => {
                 {attendanceData.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="text-center py-8 text-yellow-700 italic">
-                      No attendance records found for the selected date range.
+                      No attendance records found.
                     </td>
                   </tr>
                 ) : (
-                  attendanceData.map(({ date, status, checkIn, checkOut }) => (
+                  attendanceData.map(({ id, date, status, punchIn, punchOut }) => (
                     <tr
-                      key={date}
+                      key={id}
                       className={`border-b border-yellow-100 ${
-                        status === "Absent" ? "bg-red-50 text-red-700" : "text-yellow-900"
+                        status === "absent" ? "bg-red-50 text-red-700" : "text-yellow-900"
                       } hover:bg-yellow-50 transition-colors duration-200`}
                     >
                       <td className="p-4">{new Date(date).toLocaleDateString()}</td>
                       <td className="p-4 font-semibold">{status}</td>
-                      <td className="p-4">{checkIn || "-"}</td>
-                      <td className="p-4">{checkOut || "-"}</td>
+                      <td className="p-4">{punchIn || "-"}</td>
+                      <td className="p-4">{punchOut || "-"}</td>
                     </tr>
                   ))
                 )}

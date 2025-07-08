@@ -50,6 +50,9 @@ import AttendancePage from './pages/Admin/AttendancePage';
 import ForgotPasswordEmployee from './pages/Employee/ForgotPasswordEmployee';
 import ForgotPasswordAdmin from './pages/Admin/ForgotPasswordAdmin';
 import ForgotPasswordHR from './pages/HR/ForgotPasswordHR';
+import EmployeeRaiseConcern from './pages/Employee/EmployeeRaiseConcern';
+import HRConcernList from './pages/HR/HRConcernList';
+import AdminConcernList from './pages/Admin/AdminConcernList';
 
 function App() {
   return (
@@ -114,6 +117,9 @@ function App() {
         <Route path="/forgot-password/admin" element={<ForgotPasswordAdmin />} />
         <Route path="/forgot-password/hr" element={<ForgotPasswordHR />} />
         <Route path="/forgot-password/employee" element={<ForgotPasswordEmployee />} />
+        <Route path="/EmployeeRaiseConcern" element={<EmployeeRaiseConcern />} />
+        <Route path="/HRConcernList" element={<HRConcernList />} />
+        <Route path="/AdminConcernList" element={<AdminConcernList />} />
 
       </Routes>
     </Router>

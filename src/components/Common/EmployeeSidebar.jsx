@@ -5,7 +5,8 @@ import {
   MdPerson,
   MdCalendarToday,
   MdEventNote,
-} from 'react-icons/md';
+  MdReportProblem,
+} from 'react-icons/md'; // added MdReportProblem icon
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const EmployeeSidebar = () => {
@@ -20,6 +21,9 @@ const EmployeeSidebar = () => {
     { label: 'My Leaves', path: '/MyLeaves', icon: <MdEventNote size={18} /> },
     { label: 'Shift Details', path: '/EmployeeShiftDetails', icon: <MdEventNote size={18} /> },
     { label: 'My Training', path: '/EmployeeTraining', icon: <MdEventNote size={18} /> },
+
+    // 👇 New menu item: Raise a Concern
+    { label: 'Raise a Concern', path: '/EmployeeRaiseConcern', icon: <MdReportProblem size={18} /> },
   ];
 
   useEffect(() => {
@@ -34,11 +38,8 @@ const EmployeeSidebar = () => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('employeeToken');
-
-      // Remove token before making any API call
       localStorage.removeItem('employeeToken');
 
-      // If token existed, call logout API (optional)
       if (token) {
         await fetch('http://192.168.0.100:9000/employee/logout', {
           method: 'POST',
@@ -50,7 +51,6 @@ const EmployeeSidebar = () => {
         });
       }
 
-      // Redirect to root (login/home)
       window.location.href = '/';
     } catch (err) {
       console.error('Logout error:', err);

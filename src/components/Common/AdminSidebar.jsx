@@ -6,6 +6,8 @@ import {
   MdKeyboardArrowUp
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { MdReportProblem } from 'react-icons/md';
+
 
 const AdminSidebar = () => {
   const [active, setActive] = useState('');
@@ -16,19 +18,21 @@ const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    { name: 'Employee Management' },
-    { name: 'Make HR', path: '/PromoteEmployeeToHR' },
-    { name: 'HR Profile', path: '/HRDetailsPage' },
-    { name: 'Shift Management', path: '/Adminshiftmanagement' },
-    { name: 'Assign Shift to Employee', path: '/AdminAllShift' },
-    { name: 'Holiday', path: '/AdminHolidayList' },
-    { name: 'Leaves', path: '/AdminLeavePage' },
-    { name: 'Performance', path: '/AdminPerformance' },
-    { name: 'HR Calendar', path: '/AdminHRCalender' },
-    { name: 'Training', path: '/AdminTraining' },
-    { name: 'Attendance Management', path: '/AttendancePage' }
-  ];
+ const menuItems = [
+  { name: 'Employee Management' },
+  { name: 'Make HR', path: '/PromoteEmployeeToHR' },
+  { name: 'HR Profile', path: '/HRDetailsPage' },
+  { name: 'Shift Management', path: '/Adminshiftmanagement' },
+  { name: 'Assign Shift to Employee', path: '/AdminAllShift' },
+  { name: 'Holiday', path: '/AdminHolidayList' },
+  { name: 'Leaves', path: '/AdminLeavePage' },
+  { name: 'Performance', path: '/AdminPerformance' },
+  { name: 'HR Calendar', path: '/AdminHRCalender' },
+  { name: 'Training', path: '/AdminTraining' },
+  { name: 'Attendance Management', path: '/AttendancePage' },
+  { name: 'Employee Concerns', path: '/AdminConcernList', icon: <MdReportProblem size={18} /> }, // ✅ NEW
+];
+
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/CreateEmployee' },
