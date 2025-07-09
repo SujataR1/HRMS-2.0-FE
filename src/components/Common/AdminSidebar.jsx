@@ -7,6 +7,7 @@ import {
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MdReportProblem } from 'react-icons/md';
+import logo from "../../assets/TransmogriffyLogo.png"; // Adjust path if needed
 
 
 const AdminSidebar = () => {
@@ -119,9 +120,17 @@ const AdminSidebar = () => {
 
   return (
     <div className="w-64 h-screen bg-yellow-50 shadow-xl fixed flex flex-col border-r border-yellow-300">
-      <div className="p-6 text-2xl font-bold text-green-500 border-b border-green-200 select-none">
-        Transmo<span className="text-orange-400">grify</span> HRMS
-      </div>
+  <div className="pt-6 pb-4 flex flex-col items-center border-b border-yellow-300 select-none">
+  <img
+    src={logo}
+    alt="Company Logo"
+    className="w-24 h-auto"  // bigger logo
+  />
+</div>
+
+
+
+
 
       <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
         <li

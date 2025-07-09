@@ -53,6 +53,7 @@ import ForgotPasswordHR from './pages/HR/ForgotPasswordHR';
 import EmployeeRaiseConcern from './pages/Employee/EmployeeRaiseConcern';
 import HRConcernList from './pages/HR/HRConcernList';
 import AdminConcernList from './pages/Admin/AdminConcernList';
+import HrProfile from './pages/HR/HrProfile';
 
 function App() {
   return (
@@ -120,6 +121,8 @@ function App() {
         <Route path="/EmployeeRaiseConcern" element={<EmployeeRaiseConcern />} />
         <Route path="/HRConcernList" element={<HRConcernList />} />
         <Route path="/AdminConcernList" element={<AdminConcernList />} />
+        <Route path="/HrProfile" element={<HrProfile />} />
+        
 
       </Routes>
     </Router>
