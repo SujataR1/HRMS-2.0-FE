@@ -207,8 +207,6 @@ const saveAttendance = async () => {
   }
 };
 
-
-
   return (
     <div className="flex min-h-screen bg-yellow-50">
       <HRSidebar />

@@ -84,7 +84,7 @@ const ForgotPasswordEmployee = () => {
         {/* Right side form */}
         <div className="md:w-1/2 p-8 md:p-12">
           <h2 className="text-3xl font-bold text-[#f1d245] mb-3">
-            {step === 1 ? "Forgot Password?" : "Reset Password"}
+            {step === 1 ? "Employee Forgot Password" : "Reset Password"}
           </h2>
           <p className="text-gray-600 mb-8">
             {step === 1
