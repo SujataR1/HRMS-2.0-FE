@@ -54,6 +54,7 @@ import EmployeeRaiseConcern from './pages/Employee/EmployeeRaiseConcern';
 import HRConcernList from './pages/HR/HRConcernList';
 import AdminConcernList from './pages/Admin/AdminConcernList';
 import HrProfile from './pages/HR/HrProfile';
+import HRAttendanceReportGenerate from './pages/HR/HRAttendanceReportGenerate';
 
 function App() {
   return (
@@ -122,7 +123,7 @@ function App() {
         <Route path="/HRConcernList" element={<HRConcernList />} />
         <Route path="/AdminConcernList" element={<AdminConcernList />} />
         <Route path="/HrProfile" element={<HrProfile />} />
-        
+        <Route path="/HRAttendanceReportGenerate" element={<HRAttendanceReportGenerate />} />
 
       </Routes>
     </Router>

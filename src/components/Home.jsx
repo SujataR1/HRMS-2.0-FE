@@ -10,30 +10,72 @@ const roles = [
   { key: "hr", label: "HR", color: "text-green-500", bg: "bg-green-500", gradientFrom: "from-green-500" },
 ];
 
+const RESEND_DELAY = 60; // seconds (1 minute)
+
 const Home = () => {
   const [selectedRole, setSelectedRole] = useState("Employee");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(new Array(6).fill("")); // array of 6 digits
   const [requires2FA, setRequires2FA] = useState(false);
   const [resendVisible, setResendVisible] = useState(false);
-  const [timerId, setTimerId] = useState(null);
+  const [timer, setTimer] = useState(RESEND_DELAY);
   const navigate = useNavigate();
 
   const currentRole = roles.find((r) => r.key === selectedRole);
 
+  // Timer for resend OTP
   useEffect(() => {
-    if (requires2FA) {
-      const id = setTimeout(() => {
-        setResendVisible(true);
-      }, 60000); // 1 minute
-      setTimerId(id);
-    } else {
-      clearTimeout(timerId);
+    if (!requires2FA) {
       setResendVisible(false);
+      setTimer(RESEND_DELAY);
+      return;
     }
-    return () => clearTimeout(timerId);
+
+    setResendVisible(false);
+    setTimer(RESEND_DELAY);
+
+    const countdown = setInterval(() => {
+      setTimer((prev) => {
+        if (prev === 1) {
+          clearInterval(countdown);
+          setResendVisible(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(countdown);
   }, [requires2FA]);
+
+  const formatTime = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  // Handle OTP input change
+  const handleOtpChange = (element, index) => {
+    if (/^[0-9]?$/.test(element.value)) { // allow only single digit number or empty
+      const newOtp = [...otp];
+      newOtp[index] = element.value;
+      setOtp(newOtp);
+
+      // Move focus to next input
+      if (element.value !== "" && element.nextSibling) {
+        element.nextSibling.focus();
+      }
+    }
+  };
+
+  // Handle backspace to go to previous input
+  const handleOtpKeyDown = (e, index) => {
+    if (e.key === "Backspace" && otp[index] === "" && index > 0) {
+      const prevInput = e.target.previousSibling;
+      if (prevInput) prevInput.focus();
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,32 +93,29 @@ const Home = () => {
         }
         navigate("/AdminDashboard");
 
-    } else if (selectedRole === "Employee") {
-  try {
-    const response = await axios.post(
-      "http://192.168.0.100:9000/employee/login",
-      { assignedEmail: email, password }
-    );
+      } else if (selectedRole === "Employee") {
+        try {
+          const response = await axios.post(
+            "http://192.168.0.100:9000/employee/login",
+            { assignedEmail: email, password }
+          );
 
-    if (response.data?.status === "success") {
-      // Extract token from headers
-      const authHeader = response.data.authorization;
-
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.split(" ")[1]; // Remove "Bearer " prefix
-        localStorage.setItem("employee_token", token);
-      }
-
-      navigate("/EmployeeDashboard");
-    } else if (response.data?.requires2FA) {
-      alert("2FA is required. Please check your email for OTP.");
-    } else {
-      alert("Employee login failed. Please check your credentials.");
-    }
-  } catch (error) {
-    console.error("Login error:", error);
-    alert("An error occurred during login.");
-  }
+          if (response.data?.status === "success") {
+            const authHeader = response.data.authorization;
+            if (authHeader && authHeader.startsWith("Bearer ")) {
+              const token = authHeader.split(" ")[1];
+              localStorage.setItem("employee_token", token);
+            }
+            navigate("/EmployeeDashboard");
+          } else if (response.data?.requires2FA) {
+            alert("2FA is required. Please check your email for OTP.");
+          } else {
+            alert("Employee login failed. Please check your credentials.");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("An error occurred during login.");
+        }
 
       } else if (selectedRole === "hr") {
         const response = await axios.post(
@@ -106,15 +145,18 @@ const Home = () => {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (!otp) {
-      alert("Please enter the OTP.");
+
+    if (otp.some((d) => d === "")) {
+      alert("Please enter the complete 6-digit OTP.");
       return;
     }
+
+    const otpCode = otp.join("");
 
     try {
       const verifyResponse = await axios.post(
         "http://192.168.0.100:9000/hr/login/2fa",
-        { email, password, otp },
+        { email, password, otp: otpCode },
         { withCredentials: true }
       );
 
@@ -146,8 +188,7 @@ const Home = () => {
       if (response.data?.status === "success") {
         alert("OTP resent to your email.");
         setResendVisible(false);
-        const id = setTimeout(() => setResendVisible(true), 60000);
-        setTimerId(id);
+        setTimer(RESEND_DELAY);
       } else {
         alert(response.data?.message || "Failed to resend OTP.");
       }
@@ -189,111 +230,123 @@ const Home = () => {
                 setSelectedRole(key);
                 setEmail("");
                 setPassword("");
-                setOtp("");
+                setOtp(new Array(6).fill(""));
                 setRequires2FA(false);
               }}
-              className={`px-5 py-2 rounded-full font-semibold shadow-md transition-transform transform hover:scale-105 active:scale-95
-                ${selectedRole === key
-                  ? `${bg} text-gray-900 shadow-lg`
-                  : `text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-${color.replace("text-", "")}-400`
-                }`}
+              className={`px-5 py-2 rounded-full font-semibold shadow-md transition-transform transform hover:scale-105 active:scale-95 
+                ${selectedRole === key ? `bg-gradient-to-r ${bg} to-yellow-300 text-white shadow-${color}` : "bg-gray-200 text-gray-700"}`}
             >
               {label}
             </button>
           ))}
         </div>
 
-        {!requires2FA ? (
-          <form onSubmit={handleSubmit} className="w-full max-w-md space-y-7 px-4 sm:px-0">
-            <div className="relative">
-              <FaEnvelope className={`absolute left-4 top-1/2 -translate-y-1/2 text-xl ${currentRole.color}`} />
-              <input
-                type="email"
-                placeholder={`${currentRole.label.toLowerCase()}@email.com`}
-                className="w-full pl-14 pr-4 py-4 rounded-2xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:border-yellow-400 shadow-sm transition"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="relative">
-              <FaLock className={`absolute left-4 top-1/2 -translate-y-1/2 text-xl ${currentRole.color}`} />
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full pl-14 pr-4 py-4 rounded-2xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-yellow-300 focus:border-yellow-400 shadow-sm transition"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <button
-              type="submit"
-              className={`w-full py-4 rounded-2xl bg-gradient-to-r ${currentRole.gradientFrom} to-yellow-400 text-white font-extrabold shadow-lg hover:brightness-110 active:brightness-90 transition`}
-            >
-              Login
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="w-full max-w-md space-y-7 px-4 sm:px-0">
-            <div className="relative">
-              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-green-500" />
-              <input
-                type="text"
-                placeholder="Enter OTP"
-                className="w-full pl-14 pr-4 py-4 rounded-2xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-green-300 focus:border-green-400 shadow-sm transition"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                required
-                autoComplete="one-time-code"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-green-400 to-green-600 text-white font-extrabold shadow-lg hover:brightness-110 active:brightness-90 transition"
-            >
-              Verify OTP
-            </button>
-            {resendVisible && (
+        <form
+          className="w-full max-w-md"
+          onSubmit={requires2FA ? handleVerifyOtp : handleSubmit}
+          autoComplete="off"
+        >
+          <label htmlFor="email" className="block mb-1 text-gray-700 font-medium">
+            Email address
+          </label>
+          <div className="relative mb-4">
+            <FaEnvelope className="absolute top-3 left-3 text-gray-400" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email address"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              disabled={requires2FA}
+            />
+          </div>
+
+          {!requires2FA && (
+            <>
+              <label htmlFor="password" className="block mb-1 text-gray-700 font-medium">
+                Password
+              </label>
+              <div className="relative mb-6">
+                <FaLock className="absolute top-3 left-3 text-gray-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+              </div>
+            </>
+          )}
+
+          {/* OTP inputs for 2FA */}
+          {requires2FA && (
+            <>
+              <label className="block mb-2 text-gray-700 font-medium">
+                Enter 6-digit OTP
+              </label>
+              <div className="flex justify-center space-x-3 mb-4">
+                {otp.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    type="text"
+                    maxLength="1"
+                    value={digit}
+                    onChange={(e) => handleOtpChange(e.target, idx)}
+                    onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                    className="w-12 h-12 text-center text-xl rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                  />
+                ))}
+              </div>
+
               <button
-                type="button"
-                onClick={handleResendOtp}
-                className="block mx-auto text-sm text-blue-600 underline hover:text-blue-800 mt-2 focus:outline-none"
+                type="submit"
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200"
               >
-                Resend OTP
+                Verify OTP
               </button>
-            )}
-          </form>
-        )}
 
-        <div className="mt-6 sm:mt-10 w-full max-w-md flex justify-center">
-         <button
-  onClick={() => {
-    if (selectedRole === "admin") {
-      navigate("/forgot-password/admin");
-    } else if (selectedRole === "hr") {
-      navigate("/forgot-password/hr");
-    } else {
-      navigate("/forgot-password/employee");
-    }
-  }}
-  className="text-sm text-yellow-600 bg-yellow-50 px-7 py-3 rounded-full border border-yellow-400 hover:bg-yellow-100 transition whitespace-nowrap shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
->
-  Forgot Password?
-</button>
+              <div className="text-center mt-4 text-gray-600">
+                {resendVisible ? (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    className="underline text-green-600 hover:text-green-800 font-medium"
+                  >
+                    Resend OTP
+                  </button>
+                ) : (
+                  <p>Resend OTP available in {formatTime(timer)}</p>
+                )}
+              </div>
+            </>
+          )}
 
-        </div>
+          {!requires2FA && (
+            <button
+              type="submit"
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-lg shadow-md transition duration-200"
+            >
+              Log In
+            </button>
+          )}
+        </form>
       </div>
 
-      {/* Right side: illustration */}
-      <div className="sm:w-1/2 w-full bg-yellow-50 flex items-center justify-center p-6 sm:p-0 min-h-screen h-screen flex-grow">
+      {/* Right side: Illustration */}
+      <div className="sm:w-1/2 w-full flex items-center justify-center bg-yellow-200 rounded-tl-3xl rounded-bl-3xl shadow-lg">
         <img
           src={loginIllustration}
-          alt="HRMS Illustration"
-          className="max-w-full max-h-full rounded-xl shadow-2xl object-contain"
-          loading="lazy"
+          alt="Login Illustration"
+          className="object-contain max-h-full max-w-full"
         />
       </div>
     </div>

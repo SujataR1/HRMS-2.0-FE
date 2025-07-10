@@ -17,8 +17,28 @@ const HRAttendance = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+
+
+const formatTime = (time) => {
+  if (!time) return "-";
+
+  // If already in am/pm format, return as is
+  if (time.toLowerCase().includes("am") || time.toLowerCase().includes("pm")) {
+    return time;
+  }
+
+  // Otherwise, parse 24-hour format and convert
+  const [hourStr, minuteStr] = time.split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "pm" : "am";
+  hour = hour % 12 || 12;
+  return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
+};
+
+
+
   // Update date range based on selected filter
-  useEffect(() => {
+useEffect(() => {
   const now = new Date();
   let start, end;
 
@@ -27,14 +47,19 @@ const HRAttendance = () => {
     start = end = d;
   } else if (filterType === "month") {
     const year = filterYear;
-    const month = filterMonth - 1;
+    const month = filterMonth - 1; // JS Date months are 0-indexed (0 = Jan)
 
-    // Fix: use local time to avoid timezone-related issues
-    const startDateObj = new Date(year, month, 1);
-    const endDateObj = new Date(year, month + 1, 0);
+    const startDateObj = new Date(year, month, 1); // e.g., July 1
+    const today = new Date();
+    const isCurrentMonth =
+      today.getFullYear() === year && today.getMonth() === month;
 
-    start = startDateObj.toLocaleDateString("en-CA"); // 'YYYY-MM-DD'
-    end = endDateObj.toLocaleDateString("en-CA");
+    const endDateObj = isCurrentMonth
+      ? today // cap to today if it's the current month
+      : new Date(year, month + 1, 0); // otherwise, last day of the selected month
+
+    start = startDateObj.toISOString().slice(0, 10);
+    end = endDateObj.toISOString().slice(0, 10);
   } else {
     start = `${filterYear}-01-01`;
     end = `${filterYear}-12-31`;
@@ -80,7 +105,6 @@ const fetchAttendance = async () => {
     return;
   }
 
-  // If all validations pass
   setError("");
   setLoadingAttendance(true);
   setAttendanceData([]);
@@ -102,20 +126,46 @@ const fetchAttendance = async () => {
     const json = await res.json();
     if (!res.ok) throw new Error(json.message || "Failed to fetch attendance");
 
-    const filtered = (json.data || []).filter((entry) => {
-      const entryDate = new Date(entry.date);
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      return entryDate >= start && entryDate <= end;
+    // Create a map for quick access
+    const dataMap = {};
+    (json.data || []).forEach((entry) => {
+      dataMap[entry.date] = entry;
     });
 
-    setAttendanceData(filtered);
+    // Create full date range and fill missing days
+    const fullData = [];
+    let current = new Date(startDate);
+    const last = new Date(endDate);
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    while (current <= last) {
+      const dateStr = current.toISOString().slice(0, 10);
+
+      // Prevent showing future dates
+      if (dateStr > todayStr) break;
+
+      const entry = dataMap[dateStr];
+      fullData.push({
+        id: entry?.id || dateStr,
+        date: dateStr,
+        punchIn: entry?.punchIn || null,
+        punchOut: entry?.punchOut || null,
+        status: entry?.status || "Holiday",
+        comments: entry?.comments || "",
+      });
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    setAttendanceData(fullData);
   } catch (err) {
     setError(err.message);
   } finally {
     setLoadingAttendance(false);
   }
 };
+
+
 
 
 const saveAttendance = async () => {
@@ -270,8 +320,9 @@ const saveAttendance = async () => {
                     {attendanceData.map((row) => (
                       <tr key={row.id} className="hover:bg-yellow-50">
                         <td className="px-4 py-2">{row.date}</td>
-                        <td className="px-4 py-2">{row.punchIn}</td>
-                        <td className="px-4 py-2">{row.punchOut}</td>
+                       <td className="px-4 py-2">{formatTime(row.punchIn)}</td>
+                        <td className="px-4 py-2">{formatTime(row.punchOut)}</td>
+
                         <td className="px-4 py-2">{row.status}</td>
                         <td className="px-4 py-2">{row.comments || "-"}</td>
                         <td className="px-4 py-2">

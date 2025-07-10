@@ -8,32 +8,30 @@ import {
   MdEventNote,
   MdExpandMore,
   MdExpandLess,
+  MdAssessment
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from "../../assets/TransmogriffyLogo.png"; // Adjust path if needed
 
-
 const HRSidebar = () => {
-  const [active, setActive] = useState('');
   const [employeeMenuOpen, setEmployeeMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
-  { label: 'Dashboard', path: '/HRDashboard', icon: <MdDashboard size={18} /> },
-  { label: 'Profile', path: '/HrProfile', icon: <MdEventNote size={18} /> },  // ✅ Added
-  { label: 'Employee Management', icon: <MdPeople size={18} /> },
-  { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
-  { label: 'Leave Requests', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
-  { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
-  { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
-  { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
-  { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
-  { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
-  { label: 'Employee Concerns', path: '/HRConcernList', icon: <MdEventNote size={18} /> },  // ✅ Added
-  
-];
-
+    { label: 'Dashboard', path: '/HRDashboard', icon: <MdDashboard size={18} /> },
+    { label: 'Profile', path: '/HrProfile', icon: <MdEventNote size={18} /> },
+    { label: 'Employee Management', icon: <MdPeople size={18} /> },
+    { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
+    { label: 'Attendance Report Generate ', path: '/HRAttendanceReportGenerate', icon: <MdAssessment size={18} /> },
+    { label: 'Leave Requests', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
+    { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
+    { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
+    { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
+    { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
+    { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
+    { label: 'Employee Concerns', path: '/HRConcernList', icon: <MdEventNote size={18} /> },
+  ];
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/HRCreateEmployee' },
@@ -42,9 +40,6 @@ const HRSidebar = () => {
   ];
 
   useEffect(() => {
-    const current = menuItems.find(item => item.path && location.pathname.startsWith(item.path));
-    if (current) setActive(current.label);
-
     if (employeeSubItems.some(sub => location.pathname.startsWith(sub.path))) {
       setEmployeeMenuOpen(true);
     }
@@ -53,8 +48,6 @@ const HRSidebar = () => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('hr_token');
-
-      // Remove token before request
       localStorage.removeItem('hr_token');
 
       if (token) {
@@ -77,18 +70,12 @@ const HRSidebar = () => {
 
   return (
     <div className="w-64 h-screen bg-yellow-50 shadow-xl fixed flex flex-col border-r border-yellow-300">
+      {/* Logo */}
       <div className="pt-6 pb-4 flex flex-col items-center border-b border-yellow-300 select-none">
-  <img
-    src={logo}
-    alt="Company Logo"
-    className="w-24 h-auto"  // bigger logo
-  />
-</div>
+        <img src={logo} alt="Company Logo" className="w-24 h-auto" />
+      </div>
 
-
-
-
-
+      {/* Sidebar Menu */}
       <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
         {menuItems.map(({ label, icon, path }) => {
           if (label === 'Employee Management') {
@@ -131,8 +118,8 @@ const HRSidebar = () => {
             <li
               key={label}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
-                active === label
-                  ? 'bg-yellow-200 text-yellow-900 shadow-inner'
+                location.pathname === path
+                  ? 'bg-yellow-200 text-yellow-900 shadow-inner font-semibold'
                   : 'hover:bg-yellow-100 hover:text-yellow-700'
               }`}
               onClick={() => path && navigate(path)}
@@ -143,6 +130,7 @@ const HRSidebar = () => {
           );
         })}
 
+        {/* Logout */}
         <li
           className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300"
           onClick={handleLogout}
