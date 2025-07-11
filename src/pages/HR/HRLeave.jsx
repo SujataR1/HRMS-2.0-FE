@@ -1,323 +1,403 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import HRSidebar from "../../components/Common/HRSidebar";
 
-const dummyLeaveRequests = [
-  {
-    id: "req1",
-    employeeId: "E1001",
-    employeeName: "Alice Johnson",
-    leaveType: "Paid",
-    startDate: "2025-07-10",
-    endDate: "2025-07-12",
-    reason: "Family Function",
-    status: "Pending",
-  },
-  {
-    id: "req2",
-    employeeId: "E1002",
-    employeeName: "Bob Smith",
-    leaveType: "Non-Paid",
-    startDate: "2025-07-15",
-    endDate: "2025-07-18",
-    reason: "Personal Work",
-    status: "Pending",
-  },
-];
-
-const dummyLeaveBalances = {
-  E1001: { paidLeavesRemaining: 8, nonPaidLeavesRemaining: 5 },
-  E1002: { paidLeavesRemaining: 4, nonPaidLeavesRemaining: 7 },
-};
-
-const dummyLeaveHistory = {
-  E1001: [
-    { type: "Paid", from: "2025-06-01", to: "2025-06-03", status: "Approved" },
-    { type: "Paid", from: "2025-05-15", to: "2025-05-15", status: "Approved" },
-    { type: "Non-Paid", from: "2025-04-10", to: "2025-04-11", status: "Approved" },
-  ],
-  E1002: [
-    { type: "Paid", from: "2025-06-05", to: "2025-06-06", status: "Approved" },
-    { type: "Non-Paid", from: "2025-05-20", to: "2025-05-22", status: "Disapproved" },
-    { type: "Paid", from: "2025-03-12", to: "2025-03-15", status: "Approved" },
-  ],
-};
-
-const Modal = ({ title, children, onClose }) => (
-  <>
-    <div
-      onClick={onClose}
-      className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40 cursor-pointer"
-    />
-   <div className="fixed z-50 top-1/2 left-1/2 max-w-md w-full -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 space-y-5 font-sans">
-      <button
-        onClick={onClose}
-        aria-label="Close modal"
-        className="absolute top-4 right-4 text-yellow-600 hover:text-yellow-800 transition text-2xl font-bold leading-none"
-      >
-        &times;
-      </button>
-      <h3 className="text-2xl font-semibold text-yellow-900">{title}</h3>
-      {children}
-    </div>
-  </>
-);
-
 const HRLeave = () => {
-  const [leaveRequests, setLeaveRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  const [employees, setEmployees] = useState([]);
+  const [registeredEmployees, setRegisteredEmployees] = useState([]);
+  const [selectedRegisteredEmp, setSelectedRegisteredEmp] = useState(null);
+  const [leaveDetails, setLeaveDetails] = useState(null);
+  const [form, setForm] = useState({
+    employeeId: "",
+    casualCurrent: "",
+    sickCurrent: "",
+    bereavementCurrent: "",
+    maternityCurrent: "",
+    paternityCurrent: "",
+    earnedCurrent: "",
+    compOffCurrent: "",
+    otherCurrent: "",
+  });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalRequestId, setModalRequestId] = useState(null);
-  const [modalAction, setModalAction] = useState(null);
-  const [modalReason, setModalReason] = useState("");
 
+  // Fetch all employees on mount
   useEffect(() => {
-    setTimeout(() => {
-      const saved = localStorage.getItem("hr_leave_requests");
-      if (saved) setLeaveRequests(JSON.parse(saved));
-      else setLeaveRequests(dummyLeaveRequests);
-      setLoading(false);
-    }, 700);
+    const fetchEmployees = async () => {
+      try {
+        const token = localStorage.getItem("admin_token");
+        if (!token) throw new Error("No admin token found");
+        const res = await fetch(
+          "http://192.168.0.100:9000/admin/employee-profiles",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to fetch employees");
+        setEmployees(data.data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchEmployees();
   }, []);
 
+  // Fetch all registered employees by checking leave register for each employee
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("hr_leave_requests", JSON.stringify(leaveRequests));
-    }
-  }, [leaveRequests, loading]);
+    const fetchRegisteredEmployees = async () => {
+      try {
+        const token = localStorage.getItem("hr_token");
+        if (!token || employees.length === 0) return;
 
-  const openModal = (requestId, action) => {
-    setModalRequestId(requestId);
-    setModalAction(action);
-    setModalReason("");
-    setModalOpen(true);
-  };
+        const registered = [];
 
-  const closeModal = () => {
-    setModalOpen(false);
-    setModalRequestId(null);
-    setModalAction(null);
-    setModalReason("");
-  };
-
-  const handleDecision = () => {
-    if (!modalRequestId || !modalAction) return;
-
-    setLeaveRequests((prev) =>
-      prev.map((req) =>
-        req.id === modalRequestId
-          ? {
-              ...req,
-              status: modalAction === "approve" ? "Approved" : "Disapproved",
-              hrComment: modalReason.trim() || "-",
-              decisionDate: new Date().toISOString().split("T")[0],
+        for (const emp of employees) {
+          try {
+            const res = await fetch(
+              `http://192.168.0.100:9000/hr/get-leave-register?employeeId=${emp.employeeId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            const data = await res.json();
+            if (data.status === "success") {
+              registered.push({ employeeId: emp.employeeId, name: emp.name });
             }
-          : req
-      )
-    );
-    closeModal();
+          } catch {
+            // Ignore individual fetch errors
+          }
+        }
+
+        setRegisteredEmployees(registered);
+      } catch (e) {
+        console.error("Failed to fetch registered employees", e);
+      }
+    };
+
+    fetchRegisteredEmployees();
+  }, [employees]);
+
+  // Handle form input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (
+      [
+        "casualCurrent",
+        "sickCurrent",
+        "bereavementCurrent",
+        "maternityCurrent",
+        "paternityCurrent",
+        "earnedCurrent",
+        "compOffCurrent",
+        "otherCurrent",
+      ].includes(name)
+    ) {
+      if (value === "" || /^[0-9]+$/.test(value)) {
+        setForm((f) => ({ ...f, [name]: value }));
+      }
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
   };
 
-  if (loading)
-    return (
-      <div className="flex min-h-screen bg-yellow-50">
-        <HRSidebar />
-        <main className="ml-64 flex-1 flex items-center justify-center font-sans">
-          <p className="text-yellow-600 animate-pulse font-semibold text-xl">
-            Loading leave requests...
-          </p>
-        </main>
-      </div>
-    );
+  // Submit register leave
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setError("");
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("hr_token");
+      if (!token) throw new Error("No HR token found");
+
+      if (!form.employeeId) throw new Error("Please select an employee");
+
+      const payload = {
+        employeeId: form.employeeId,
+        casualCurrent: Number(form.casualCurrent) || 0,
+        sickCurrent: Number(form.sickCurrent) || 0,
+        bereavementCurrent: Number(form.bereavementCurrent) || 0,
+        maternityCurrent: Number(form.maternityCurrent) || 0,
+        paternityCurrent: Number(form.paternityCurrent) || 0,
+        earnedCurrent: Number(form.earnedCurrent) || 0,
+        compOffCurrent: Number(form.compOffCurrent) || 0,
+        otherCurrent: Number(form.otherCurrent) || 0,
+      };
+
+      const res = await fetch(
+        "http://192.168.0.100:9000/hr/create-leave-register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || data.status === "error") {
+        if (data.message.includes("already")) {
+          setMessage("Leave register already created for this employee.");
+        } else {
+          throw new Error(data.message || "Failed to create leave register");
+        }
+      } else {
+        setMessage(data.message);
+        if (
+          !registeredEmployees.some(
+            (emp) => emp.employeeId === form.employeeId
+          )
+        ) {
+          const empName =
+            employees.find((emp) => emp.employeeId === form.employeeId)?.name ||
+            form.employeeId;
+          setRegisteredEmployees((prev) => [
+            ...prev,
+            { employeeId: form.employeeId, name: empName },
+          ]);
+        }
+        setForm({
+          employeeId: "",
+          casualCurrent: "",
+          sickCurrent: "",
+          bereavementCurrent: "",
+          maternityCurrent: "",
+          paternityCurrent: "",
+          earnedCurrent: "",
+          compOffCurrent: "",
+          otherCurrent: "",
+        });
+        setLeaveDetails(null);
+        setSelectedRegisteredEmp(null);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+    setLoading(false);
+  };
+
+  // Fetch leave details and open modal
+  const handleRegisteredSelect = async (employeeId) => {
+    setSelectedRegisteredEmp(employeeId);
+    setLeaveDetails(null);
+    setMessage("");
+    setError("");
+    if (!employeeId) {
+      setModalOpen(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("hr_token");
+      const res = await fetch(
+        `http://192.168.0.100:9000/hr/get-leave-register?employeeId=${employeeId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        setLeaveDetails(data.data);
+        setModalOpen(true);
+      } else {
+        setError(data.message || "Failed to fetch leave details");
+        setModalOpen(false);
+      }
+    } catch (err) {
+      setError(err.message);
+      setModalOpen(false);
+    }
+    setLoading(false);
+  };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 to-yellow-100 font-sans">
+    <div className="flex min-h-screen bg-yellow-50">
       <HRSidebar />
+      <main className="flex-1 p-6 max-w-7xl mx-auto">
+        <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 text-center tracking-wide">
+          HR Leave Management
+        </h1>
 
-      <main className="ml-64 flex-1 flex flex-col items-center p-10">
-        <div className="w-full max-w-7xl bg-white rounded-2xl shadow-xl border border-yellow-200 p-10 space-y-10">
-          <h1 className="text-5xl font-extrabold text-yellow-900 text-center tracking-wide drop-shadow-md">
-            HR Leave Requests
-          </h1>
+        {/* Register Leave Form */}
+        <section className="bg-white p-8 rounded-lg shadow-lg mb-12 max-w-full mx-auto">
+          <h2 className="text-2xl font-extrabold mb-6 text-yellow-900 tracking-wide">
+            Register Leave
+          </h2>
 
-          {leaveRequests.length === 0 ? (
-            <p className="text-center text-yellow-700 font-semibold text-lg">
-              No leave requests found.
-            </p>
-          ) : (
-            leaveRequests.map((req) => {
-              const leaveBalance = dummyLeaveBalances[req.employeeId] || {
-                paidLeavesRemaining: 0,
-                nonPaidLeavesRemaining: 0,
-              };
-              const history = dummyLeaveHistory[req.employeeId] || [];
-
-              return (
-                <div
-                  key={req.id}
-                  className="border border-yellow-300 rounded-2xl p-8 shadow-md bg-yellow-50 hover:shadow-2xl transition-shadow duration-300"
-                >
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-8">
-                    <div className="space-y-3 max-w-lg">
-                      <h2 className="text-2xl font-semibold text-yellow-900 tracking-wide">
-                        {req.employeeName}{" "}
-                        <span className="text-yellow-700 font-normal">({req.employeeId})</span>
-                      </h2>
-                      <p className="text-yellow-800 font-semibold">
-                        Leave Type:{" "}
-                        <span
-                          className={`font-extrabold ${
-                            req.leaveType === "Paid"
-                              ? "text-green-700"
-                              : "text-red-700"
-                          }`}
-                        >
-                          {req.leaveType} Leave
-                        </span>
-                      </p>
-                      <p className="text-yellow-700">
-                        Requested Dates:{" "}
-                        <span className="font-semibold">
-                          {req.startDate} to {req.endDate}
-                        </span>
-                      </p>
-                      <p className="text-yellow-700">{req.reason}</p>
-                      <p className="italic text-yellow-600 text-sm mt-2">
-                        Status:{" "}
-                        <span
-                          className={`font-semibold ${
-                            req.status === "Pending"
-                              ? "text-yellow-600"
-                              : req.status === "Approved"
-                              ? "text-green-700"
-                              : "text-red-700"
-                          }`}
-                        >
-                          {req.status}
-                        </span>
-                      </p>
-                      {req.status !== "Pending" && (
-                        <>
-                          <p className="mt-1 text-yellow-700">
-                            HR Comment: <em>{req.hrComment || "-"}</em>
-                          </p>
-                          <p className="text-yellow-700 text-sm">
-                            Decision Date: {req.decisionDate}
-                          </p>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col gap-4 md:items-end text-yellow-900 font-medium">
-                      <div className="bg-yellow-100 p-4 rounded-xl w-48 text-center shadow-inner border border-yellow-200">
-                        <p className="mb-1 font-semibold tracking-wide">Leave Balance</p>
-                        <p className="text-green-700">
-                          Paid: <span className="font-bold">{leaveBalance.paidLeavesRemaining}</span>{" "}
-                          days
-                        </p>
-                        <p className="text-red-600">
-                          Non-Paid:{" "}
-                          <span className="font-bold">{leaveBalance.nonPaidLeavesRemaining}</span>{" "}
-                          days
-                        </p>
-                      </div>
-
-                      {req.status === "Pending" && (
-                        <div className="flex space-x-5">
-                          <button
-                            onClick={() => openModal(req.id, "approve")}
-                            className="bg-green-600 hover:bg-green-700 focus:outline-yellow-300 focus:ring-4 focus:ring-green-400 text-white font-semibold px-5 py-2 rounded-xl shadow-md transition"
-                            aria-label={`Approve leave request for ${req.employeeName}`}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => openModal(req.id, "disapprove")}
-                            className="bg-red-600 hover:bg-red-700 focus:outline-yellow-300 focus:ring-4 focus:ring-red-400 text-white font-semibold px-5 py-2 rounded-xl shadow-md transition"
-                            aria-label={`Disapprove leave request for ${req.employeeName}`}
-                          >
-                            Disapprove
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Leave History */}
-                  <div className="mt-8 border-t border-yellow-200 pt-5">
-                    <h3 className="text-yellow-900 font-semibold text-lg mb-3 tracking-wide">
-                      Recent Leave History
-                    </h3>
-                    {history.length === 0 ? (
-                      <p className="text-yellow-700 italic">No recent leaves.</p>
-                    ) : (
-                      <ul className="text-yellow-800 text-sm space-y-2 max-w-md">
-                        {history.map((h, i) => (
-                          <li
-                            key={i}
-                            className="flex justify-between bg-yellow-100 rounded-lg px-4 py-2 shadow-inner"
-                          >
-                            <span>
-                              {h.type} Leave: {h.from} to {h.to}
-                            </span>
-                            <span
-                              className={`font-semibold ${
-                                h.status === "Approved"
-                                  ? "text-green-700"
-                                  : h.status === "Disapproved"
-                                  ? "text-red-700"
-                                  : "text-yellow-700"
-                              }`}
-                            >
-                              {h.status}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+          {message && (
+            <div className="mb-6 p-4 bg-green-100 text-green-800 rounded font-semibold text-center">
+              {message}
+            </div>
           )}
-        </div>
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded font-semibold text-center">
+              {error}
+            </div>
+          )}
 
-        {modalOpen && (
-          <Modal
-            title={`${modalAction === "approve" ? "Approve" : "Disapprove"} Leave Request`}
-            onClose={closeModal}
+          <form onSubmit={handleSubmit} className="max-w-full">
+<div className="overflow-x-auto">
+  {/* Header row */}
+  <div className="grid grid-cols-[180px_repeat(8,1fr)] gap-4 font-extrabold text-yellow-900 text-xs border-b-4 border-yellow-400 pb-2 select-none uppercase tracking-wide min-w-[900px] items-center">
+    <div className="flex items-center h-8">Employee</div>
+    <div className="flex justify-center items-center h-8">Casual Current</div>
+    <div className="flex justify-center items-center h-8">Sick Current</div>
+    <div className="flex justify-center items-center h-8">Bereavement Current</div>
+    <div className="flex justify-center items-center h-8">Maternity Current</div>
+    <div className="flex justify-center items-center h-8">Paternity Current</div>
+    <div className="flex justify-center items-center h-8">Earned Current</div>
+    <div className="flex justify-center items-center h-8">Comp Off Current</div>
+    <div className="flex justify-center items-center h-8">Other Current</div>
+  </div>
+
+  {/* Inputs row */}
+  <div className="grid grid-cols-[180px_repeat(8,1fr)] gap-4 mt-3 items-center min-w-[900px]">
+    <select
+      name="employeeId"
+      value={form.employeeId}
+      onChange={handleChange}
+      required
+      className="border-2 border-yellow-500 bg-yellow-50 rounded-md px-2 py-1 text-xs font-semibold text-yellow-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 transition w-full hover:border-yellow-600 h-8"
+    >
+      <option value="" disabled>
+        Select employee
+      </option>
+      {employees.map((emp) => (
+        <option key={emp.employeeId} value={emp.employeeId}>
+          {emp.name} ({emp.employeeId})
+        </option>
+      ))}
+    </select>
+
+    {[
+      "casualCurrent",
+      "sickCurrent",
+      "bereavementCurrent",
+      "maternityCurrent",
+      "paternityCurrent",
+      "earnedCurrent",
+      "compOffCurrent",
+      "otherCurrent",
+    ].map((name) => (
+      <input
+        key={name}
+        type="text"
+        name={name}
+        value={form[name]}
+        onChange={handleChange}
+        inputMode="numeric"
+        pattern="[0-9]*"
+        placeholder="0"
+        className="border-2 border-yellow-500 rounded-md px-2 text-center text-xs font-semibold text-yellow-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 transition hover:border-yellow-600 h-8"
+        style={{ maxWidth: "60px" }}
+      />
+    ))}
+  </div>
+</div>
+
+
+
+  <div className="mt-8 flex justify-center">
+    <button
+      type="submit"
+      disabled={loading}
+      className="bg-yellow-600 hover:bg-yellow-700 active:scale-95 focus:outline-none focus:ring-4 focus:ring-yellow-400 text-white font-extrabold px-14 py-3 rounded-full shadow-lg transition transform text-lg select-none"
+    >
+      {loading ? "Registering..." : "Register Leave"}
+    </button>
+  </div>
+</form>
+
+        </section>
+
+        {/* Get Registered Leave Section */}
+        <section className="bg-white p-8 rounded-lg shadow-lg max-w-xl mx-auto">
+          <h2 className="text-2xl font-extrabold mb-6 text-yellow-900 tracking-wide">
+            Get Registered Leave
+          </h2>
+
+          <select
+            value={selectedRegisteredEmp || ""}
+            onChange={(e) => handleRegisteredSelect(e.target.value)}
+            className="border-2 border-yellow-500 bg-yellow-50 rounded-lg px-4 py-3 text-sm font-semibold text-yellow-900 shadow-sm focus:outline-none focus:ring-4 focus:ring-yellow-300 transition w-full hover:border-yellow-600"
           >
-            <label className="block text-yellow-900 font-medium mb-2">
-              {modalAction === "disapprove"
-                ? "Reason for Disapproval"
-                : "Optional Comment"}
-            </label>
-            <textarea
-              value={modalReason}
-              onChange={(e) => setModalReason(e.target.value)}
-              placeholder="Write a comment or reason (optional)"
-              className="w-full border border-yellow-300 rounded-lg px-4 py-3 resize-none focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-300 transition"
-              rows={5}
-            />
-            <div className="flex justify-end space-x-5 mt-6">
+            <option value="" disabled>
+              Select Registered Employee
+            </option>
+            {registeredEmployees.length === 0 && (
+              <option disabled>No registered employees found</option>
+            )}
+            {registeredEmployees.map((emp) => (
+              <option key={emp.employeeId} value={emp.employeeId}>
+                {emp.name} ({emp.employeeId})
+              </option>
+            ))}
+          </select>
+        </section>
+
+        {/* Modal Popup */}
+        {leaveDetails && modalOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+          >
+            <div className="bg-yellow-50 rounded-lg p-6 max-w-md w-full shadow-lg relative">
+              <h3 className="text-lg font-extrabold mb-4 text-yellow-900 uppercase tracking-wide">
+                Leave Details
+              </h3>
+              <table className="w-full text-yellow-900 text-sm font-semibold">
+                <tbody>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Casual Current</td>
+                    <td className="text-right">{leaveDetails.casualCurrent}</td>
+                  </tr>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Sick Current</td>
+                    <td className="text-right">{leaveDetails.sickCurrent}</td>
+                  </tr>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Bereavement Current</td>
+                    <td className="text-right">{leaveDetails.bereavementCurrent}</td>
+                  </tr>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Maternity Current</td>
+                    <td className="text-right">{leaveDetails.maternityCurrent}</td>
+                  </tr>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Paternity Current</td>
+                    <td className="text-right">{leaveDetails.paternityCurrent}</td>
+                  </tr>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Earned Current</td>
+                    <td className="text-right">{leaveDetails.earnedCurrent}</td>
+                  </tr>
+                  <tr className="border-b border-yellow-300">
+                    <td className="py-2 font-bold">Comp Off Current</td>
+                    <td className="text-right">{leaveDetails.compOffCurrent}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 font-bold">Other Current</td>
+                    <td className="text-right">{leaveDetails.otherCurrent}</td>
+                  </tr>
+                </tbody>
+              </table>
+
               <button
-                onClick={closeModal}
-                className="px-6 py-2 rounded-lg border border-yellow-400 text-yellow-700 hover:bg-yellow-100 transition focus:outline-yellow-400 focus:ring-2 focus:ring-yellow-300"
+                onClick={() => setModalOpen(false)}
+                className="mt-6 px-6 py-2 rounded bg-yellow-600 hover:bg-yellow-700 text-white font-extrabold focus:outline-none focus:ring-4 focus:ring-yellow-400 transition"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleDecision}
-                className={`px-6 py-2 rounded-lg font-semibold text-white ${
-                  modalAction === "approve"
-                    ? "bg-green-600 hover:bg-green-700 focus:ring-green-400 focus:outline-none focus:ring-4"
-                    : "bg-red-600 hover:bg-red-700 focus:ring-red-400 focus:outline-none focus:ring-4"
-                } transition`}
-              >
-                {modalAction === "approve" ? "Approve" : "Disapprove"}
+                Close
               </button>
             </div>
-          </Modal>
+          </div>
         )}
       </main>
     </div>

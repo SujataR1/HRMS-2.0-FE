@@ -50,12 +50,13 @@ const MultiSelectDropdown = ({
     selectedValues.length === options.length - 1 && options.length > 1;
 
   // Display selected count or placeholder
-  const displayText =
-    selectedValues.length === 0
-      ? placeholder
-      : isAllSelected
-      ? `All selected (${selectedValues.length})`
-      : `${selectedValues.length} selected`;
+ const displayText =
+  selectedValues.length === 0
+    ? placeholder
+    : isAllSelected
+    ? `All selected (${selectedValues.length})`
+    : `${selectedValues.length} selected`;
+
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -85,21 +86,28 @@ const MultiSelectDropdown = ({
       </button>
       {open && (
         <div className="absolute z-50 mt-1 w-full bg-white border border-yellow-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-          {options.map(({ value, label }) => (
-            <label
-              key={value}
-              className="flex items-center px-4 py-2 cursor-pointer hover:bg-yellow-50"
-            >
-              <input
-                type="checkbox"
-                checked={value === "all" ? isAllSelected : selectedValues.includes(value)}
-                onChange={() => toggleOption(value)}
-                className="mr-3 cursor-pointer"
-                disabled={disabled}
-              />
-              <span className="text-yellow-900">{label}</span>
-            </label>
-          ))}
+          {options.map(({ value, label }) => {
+  const isChecked = value === "all" ? isAllSelected : selectedValues.includes(value);
+
+  return (
+    <label
+      key={value}
+      className="flex items-center px-4 py-2 hover:bg-yellow-50 cursor-pointer gap-2"
+    >
+      <input
+        type="checkbox"
+        checked={isChecked}
+        onChange={() => toggleOption(value)}
+        className="cursor-pointer"
+        disabled={disabled}
+      />
+      <span className="text-yellow-900">{label}</span>
+    </label>
+  );
+})}
+
+
+
         </div>
       )}
     </div>
