@@ -47,7 +47,8 @@ const HRShiftsList = () => {
         const res = await fetch("http://192.168.0.100:9000/admin/employee-profiles", {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+                        Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+            // Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
           },
         });
         if (!res.ok) throw new Error(res.statusText);

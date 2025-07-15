@@ -139,37 +139,37 @@ const LeaveFormAndView = () => {
     }
   };
   const handleCancelLeave = async (leaveId) => {
-  const employee_token = localStorage.getItem("employee_token");
-  if (!employee_token) {
-    setError("Authentication token missing. Please login.");
-    return;
-  }
-
-  const confirmCancel = window.confirm("Are you sure you want to cancel this leave?");
-  if (!confirmCancel) return;
-
-  try {
-    const res = await fetch("http://192.168.0.100:9000/employee/leave/cancel", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${employee_token}`,
-      },
-      body: JSON.stringify({ leaveId }),
-    });
-
-    const data = await res.json();
-   if (res.ok && data.status === "success") {
-  alert("Leave cancelled successfully."); // ✅ basic confirmation
-  setMessage("✅ " + data.message);
-  fetchAppliedLeaves();
-    } else {
-      setError(data.message || "Failed to cancel leave.");
+    const employee_token = localStorage.getItem("employee_token");
+    if (!employee_token) {
+      setError("Authentication token missing. Please login.");
+      return;
     }
-  } catch {
-    setError("❌ Failed to cancel leave.");
-  }
-};
+
+    const confirmCancel = window.confirm("Are you sure you want to cancel this leave?");
+    if (!confirmCancel) return;
+
+    try {
+      const res = await fetch("http://192.168.0.100:9000/employee/leave/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${employee_token}`,
+        },
+        body: JSON.stringify({ leaveId }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        alert("Leave cancelled successfully."); // ✅ basic confirmation
+        setMessage("✅ " + data.message);
+        fetchAppliedLeaves();
+      } else {
+        setError(data.message || "Failed to cancel leave.");
+      }
+    } catch {
+      setError("❌ Failed to cancel leave.");
+    }
+  };
 
 
   const handleSubmit = async (e) => {
@@ -421,94 +421,92 @@ const LeaveFormAndView = () => {
                 </tr>
               </thead>
               {message && (
-  <p className="text-green-700 font-semibold mb-4">
-    {message}
-  </p>
-)}
+                <p className="text-green-700 font-semibold mb-4">
+                  {message}
+                </p>
+              )}
 
-            <tbody>
-  {appliedLeaves.map((leave, idx) => (
-    <tr
-      key={leave.id}
-      className={`${
-        idx % 2 === 0 ? "bg-yellow-50" : "bg-yellow-100"
-      } hover:bg-yellow-200 transition-colors duration-150`}
-    >
-      <td className="py-3 px-4 border border-yellow-300 font-medium text-gray-700">
-        {leave.fromDate || "-"}
-      </td>
-      <td className="py-3 px-4 border border-yellow-300 font-medium text-gray-700">
-        {leave.toDate || "-"}
-      </td>
-      <td className="py-3 px-4 border border-yellow-300 font-medium text-gray-700">
-        {leave.leaveType?.join(", ") || "-"}
-      </td>
-      <td className="py-3 px-4 border border-yellow-300">
-        <span
-          className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-            leave.status === "cancelled"
-              ? "bg-red-200 text-red-800"
-              : leave.status === "approved"
-              ? "bg-green-200 text-green-800"
-              : "bg-yellow-200 text-yellow-800"
-          }`}
-        >
-          {leave.status || "-"}
-        </span>
-      </td>
-      <td className="py-3 px-4 border border-yellow-300 text-gray-700">
-        {editLeaveId === leave.id ? (
-          <div className="space-y-2">
-            <textarea
-              value={editNotes}
-              onChange={(e) => setEditNotes(e.target.value)}
-              rows={2}
-              className="w-full border border-yellow-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={handleUpdateNotes}
-                className="bg-green-500 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-green-600 transition"
-              >
-                ✅ Save
-              </button>
-              <button
-                onClick={handleCancelEdit}
-                className="bg-gray-400 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-500 transition"
-              >
-                ❌ Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <span className="text-sm leading-relaxed">
-              {leave.applicationNotes || leave.otherTypeDescription || "-"}
-            </span>
+              <tbody>
+                {appliedLeaves.map((leave, idx) => (
+                  <tr
+                    key={leave.id}
+                    className={`${idx % 2 === 0 ? "bg-yellow-50" : "bg-yellow-100"
+                      } hover:bg-yellow-200 transition-colors duration-150`}
+                  >
+                    <td className="py-3 px-4 border border-yellow-300 font-medium text-gray-700">
+                      {leave.fromDate || "-"}
+                    </td>
+                    <td className="py-3 px-4 border border-yellow-300 font-medium text-gray-700">
+                      {leave.toDate || "-"}
+                    </td>
+                    <td className="py-3 px-4 border border-yellow-300 font-medium text-gray-700">
+                      {leave.leaveType?.join(", ") || "-"}
+                    </td>
+                    <td className="py-3 px-4 border border-yellow-300">
+                      <span
+                        className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${leave.status === "cancelled"
+                            ? "bg-red-200 text-red-800"
+                            : leave.status === "approved"
+                              ? "bg-green-200 text-green-800"
+                              : "bg-yellow-200 text-yellow-800"
+                          }`}
+                      >
+                        {leave.status || "-"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 border border-yellow-300 text-gray-700">
+                      {editLeaveId === leave.id ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={editNotes}
+                            onChange={(e) => setEditNotes(e.target.value)}
+                            rows={2}
+                            className="w-full border border-yellow-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleUpdateNotes}
+                              className="bg-green-500 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-green-600 transition"
+                            >
+                              ✅ Save
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="bg-gray-400 text-white px-4 py-1.5 rounded-md text-sm font-semibold hover:bg-gray-500 transition"
+                            >
+                              ❌ Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                          <span className="text-sm leading-relaxed">
+                            {leave.applicationNotes || leave.otherTypeDescription || "-"}
+                          </span>
 
-            {/* 👇 Only show buttons if not cancelled */}
-            {leave.status !== "cancelled" && (
-              <div className="flex gap-2 mt-1 md:mt-0">
-                <button
-                  onClick={() => handleEditClick(leave)}
-                  className="inline-flex items-center px-4 py-1.5 text-sm font-semibold text-yellow-900 bg-yellow-400 rounded-md shadow-sm hover:bg-yellow-500 hover:shadow-md transition-all duration-200"
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  onClick={() => handleCancelLeave(leave.id)}
-                  className="inline-flex items-center px-4 py-1.5 text-sm font-semibold text-red-600 bg-red-100 rounded-md shadow-sm hover:bg-red-200 hover:shadow-md transition-all duration-200"
-                >
-                  ❌ Cancel
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
+                          {/* 👇 Only show buttons if not cancelled */}
+                          {leave.status !== "cancelled" && (
+                            <div className="flex gap-2 mt-1 md:mt-0">
+                              <button
+                                onClick={() => handleEditClick(leave)}
+                                className="inline-flex items-center px-4 py-1.5 text-sm font-semibold text-yellow-900 bg-yellow-400 rounded-md shadow-sm hover:bg-yellow-500 hover:shadow-md transition-all duration-200"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                onClick={() => handleCancelLeave(leave.id)}
+                                className="inline-flex items-center px-4 py-1.5 text-sm font-semibold text-red-600 bg-red-100 rounded-md shadow-sm hover:bg-red-200 hover:shadow-md transition-all duration-200"
+                              >
+                                ❌ Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
 
 
 

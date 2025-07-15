@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HRSidebar from '../components/Common/HRSidebar';
 import {
   MdPeople,
@@ -8,12 +8,7 @@ import {
   MdCalendarToday,
 } from 'react-icons/md';
 import { FaMoon, FaSun } from 'react-icons/fa';
-import {
-  Bar,
-  Pie,
-  Line,
-  Doughnut,
-} from 'react-chartjs-2';
+import { Bar, Pie, Line, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -25,6 +20,8 @@ import {
   Tooltip,
   PointElement,
 } from 'chart.js';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 ChartJS.register(
   ArcElement,
@@ -37,69 +34,87 @@ ChartJS.register(
   PointElement
 );
 
-const overviewCards = [
-  { label: 'Total Employees', icon: <MdPeople /> },
-  { label: 'Present Today', icon: <MdPersonOutline /> },
-  { label: 'On Leave', icon: <MdPersonOff /> },
-  { label: 'Pending Leave Requests', icon: <MdCalendarToday /> },
-  { label: 'Attendance Records', icon: <MdAccessTime /> },
+const HRDashboard = () => {
+  const navigate = useNavigate();
+
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      try {
+        const res = await axios.get("http://192.168.0.100:9000/hr/leaves/pending", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("hr_token")}` }
+        });
+        setPendingCount(res.data.data.leaveIds?.length || 0);
+      } catch {
+        setPendingCount(0);
+      }
+    };
+    fetchPending();
+  }, []);
+
+  const overviewCards = [
+    { label: 'Total Employees', icon: <MdPeople />, count: '—' },
+    { label: 'Present Today', icon: <MdPersonOutline />, count: '—' },
+    { label: 'On Leave', icon: <MdPersonOff />, count: '—' },
+    { label: 'Pending Leave Requests', icon: <MdCalendarToday />, count: pendingCount, route: '/HRLeaveApproval' },
+    { label: 'Attendance Records', icon: <MdAccessTime />, count: 'check', route: '/HRAttendance' }, // ✅ Added route
 ];
 
-const barData = {
-  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-  datasets: [
-    {
-      label: 'Attendance %',
-      data: [90, 85, 95, 88, 92],
-      backgroundColor: '#FBBF24', // Yellow 400
-    },
-  ],
-};
+  const barData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [
+      {
+        label: 'Attendance %',
+        data: [90, 85, 95, 88, 92],
+        backgroundColor: '#FBBF24',
+      },
+    ],
+  };
 
-const pieData = {
-  labels: ['Present', 'Leave', 'Absent'],
-  datasets: [
-    {
-      data: [75, 15, 10],
-      backgroundColor: ['#FBBF24', '#C0504E', '#9BBB59'], // Yellow for Present
-    },
-  ],
-};
+  const pieData = {
+    labels: ['Present', 'Leave', 'Absent'],
+    datasets: [
+      {
+        data: [75, 15, 10],
+        backgroundColor: ['#FBBF24', '#C0504E', '#9BBB59'],
+      },
+    ],
+  };
 
-const lineData = {
-  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-  datasets: [
-    {
-      label: 'Punch-in Avg Time',
-      data: [9.1, 9.2, 9.0, 9.3],
-      fill: false,
-      borderColor: '#FBBF24', // Yellow 400
-      tension: 0.1,
-    },
-  ],
-};
+  const lineData = {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    datasets: [
+      {
+        label: 'Punch-in Avg Time',
+        data: [9.1, 9.2, 9.0, 9.3],
+        fill: false,
+        borderColor: '#FBBF24',
+        tension: 0.1,
+      },
+    ],
+  };
 
-const doughnutData = {
-  labels: ['Before 6 PM', 'After 6 PM'],
-  datasets: [
-    {
-      data: [80, 20],
-      backgroundColor: ['#FBBF24', '#C0504E'], // Yellow for Before 6PM
-    },
-  ],
-};
+  const doughnutData = {
+    labels: ['Before 6 PM', 'After 6 PM'],
+    datasets: [
+      {
+        data: [80, 20],
+        backgroundColor: ['#FBBF24', '#C0504E'],
+      },
+    ],
+  };
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
     },
-  },
-};
+  };
 
-const HRDashboard = () => {
   return (
     <div className="flex">
       <HRSidebar />
@@ -129,11 +144,12 @@ const HRDashboard = () => {
           {overviewCards.map((item, index) => (
             <div
               key={index}
-              className="bg-white p-4 rounded shadow flex flex-col items-center text-center"
+              onClick={() => item.route && navigate(item.route)}
+              className="bg-white p-4 rounded shadow flex flex-col items-center text-center cursor-pointer hover:shadow-md transition"
             >
               <div className="text-3xl text-yellow-500 mb-2">{item.icon}</div>
               <div className="text-lg font-medium text-yellow-700">{item.label}</div>
-              <div className="text-2xl text-yellow-600 font-bold mt-1">5</div>
+              <div className="text-2xl text-yellow-600 font-bold mt-1">{item.count ?? '0'}</div>
             </div>
           ))}
         </div>
@@ -141,9 +157,7 @@ const HRDashboard = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div className="bg-white p-6 rounded shadow h-72">
-            <div className="text-xl font-semibold mb-4 text-yellow-700">
-              Weekly Attendance Overview
-            </div>
+            <div className="text-xl font-semibold mb-4 text-yellow-700">Weekly Attendance Overview</div>
             <div className="h-48">
               <Bar data={barData} options={chartOptions} />
             </div>
@@ -157,18 +171,14 @@ const HRDashboard = () => {
           </div>
 
           <div className="bg-white p-6 rounded shadow h-72">
-            <div className="text-xl font-semibold mb-4 text-yellow-700">
-              Punch-in Time Analysis
-            </div>
+            <div className="text-xl font-semibold mb-4 text-yellow-700">Punch-in Time Analysis</div>
             <div className="h-48">
               <Line data={lineData} options={chartOptions} />
             </div>
           </div>
 
           <div className="bg-white p-6 rounded shadow h-72">
-            <div className="text-xl font-semibold mb-4 text-yellow-700">
-              Punch-out Time Analysis
-            </div>
+            <div className="text-xl font-semibold mb-4 text-yellow-700">Punch-out Time Analysis</div>
             <div className="h-48">
               <Doughnut data={doughnutData} options={chartOptions} />
             </div>
