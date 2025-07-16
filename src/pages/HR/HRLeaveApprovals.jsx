@@ -146,7 +146,8 @@
 //             if (response.data.status === "success") {
 //                 alert(response.data.data.message || "Leave updated successfully.");
 //                 setLeaveDetails(null);
-//                 setPendingLeaves((prev) => prev.filter((id) => id !== leaveDetails.id));
+//                 setPendingLeaves((prev) => prev.filter((leave) => leave.id !== leaveDetails.id));
+
 //                 setPaymentStatuses([]);
 //             } else {
 //                 setError(response.data.message || "Action failed.");
@@ -381,7 +382,7 @@
 //                         <table className="w-full table-auto border border-gray-300">
 //                             <thead>
 //                                 <tr className="bg-yellow-200">
-//                                     <th className="p-2 border">Leave ID</th>
+//                                     <th className="p-2 border">Employee Name</th>
 //                                     <th className="p-2 border">Employee ID</th>
 //                                     <th className="p-2 border">From</th>
 //                                     <th className="p-2 border">To</th>
@@ -392,7 +393,7 @@
 //                             <tbody>
 //                                 {searchResults.map((leave) => (
 //                                     <tr key={leave.id} className="text-center bg-yellow-50 hover:bg-yellow-100">
-//                                         <td className="p-2 border">{leave.id}</td>
+//                                         <td className="p-2 border">{leave.employeeName || "N/A"}</td>
 //                                         <td className="p-2 border">{leave.employeeId}</td>
 //                                         <td className="p-2 border">{dayjs(leave.fromDate).format("YYYY-MM-DD")}</td>
 //                                         <td className="p-2 border">{dayjs(leave.toDate).format("YYYY-MM-DD")}</td>
@@ -410,6 +411,9 @@
 // };
 
 // export default HRLeaveApprovals;
+
+
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -434,6 +438,8 @@ const HRLeaveApprovals = () => {
     const [validationError, setValidationError] = useState("");
     const [loading, setLoading] = useState(false);
     const [leaveLoading, setLeaveLoading] = useState(false);
+    const [searching, setSearching] = useState(false);
+    const [processedLeaveIds, setProcessedLeaveIds] = useState([]);
 
     const [searchParams, setSearchParams] = useState({
         employeeId: "",
@@ -444,45 +450,54 @@ const HRLeaveApprovals = () => {
     });
     const [searchResults, setSearchResults] = useState([]);
 
-    useEffect(() => {
-  const fetchPendingLeaves = async () => {
+    // Outside useEffect
+const fetchPendingLeaves = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://192.168.0.100:9000/hr/leaves/pending", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-        },
-      });
-      if (response.data.status === "success") {
-        const leaveIds = response.data.data.leaveIds || [];
-
-        if (leaveIds.length > 0) {
-          const detailsRes = await axios.post(
-            "http://192.168.0.100:9000/hr/leave/view",
-            { leaveIds },
-            {
-              headers: {
+        const response = await axios.get("http://192.168.0.100:9000/hr/leaves/pending", {
+            headers: {
                 Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-              },
-            }
-          );
-          setPendingLeaves(detailsRes.data.data || []);
-        } else {
-          setPendingLeaves([]);
-        }
-      } else {
-        setError("Failed to fetch pending leaves.");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to fetch pending leaves.");
-    } finally {
-      setLoading(false);
-    }
-  };
+            },
+        });
 
-  fetchPendingLeaves();
+        if (response.data.status === "success") {
+            const leaveIds = response?.data?.data?.leaveIds || [];
+
+            if (leaveIds.length > 0) {
+                const detailsRes = await axios.post(
+                    "http://192.168.0.100:9000/hr/leave/view",
+                    { leaveIds },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+                        },
+                    }
+                );
+
+                // ✅ Filter only pending status leaves
+                const allLeaves = detailsRes?.data?.data || [];
+                const pendingOnly = allLeaves.filter((leave) => leave.status === "pending");
+                setPendingLeaves(pendingOnly);
+            } else {
+                setPendingLeaves([]);
+            }
+        } else {
+            setError("Failed to fetch pending leaves.");
+        }
+    } catch (err) {
+        console.error(err);
+        setError("Failed to fetch pending leaves.");
+    } finally {
+        setLoading(false);
+    
+    }
+};
+useEffect(() => {
+    fetchPendingLeaves(); // initial call
+    const intervalId = setInterval(fetchPendingLeaves, 10000);
+    return () => clearInterval(intervalId);
 }, []);
+
 
 
 
@@ -540,54 +555,65 @@ const HRLeaveApprovals = () => {
 
 
 
-    const handleApproveOrReject = async () => {
-        if (validationError) {
-            alert("Please resolve the payment status conflict before submitting.");
-            return;
-        }
+const handleApproveOrReject = async () => {
+    if (validationError) {
+        alert("Please resolve the payment status conflict before submitting.");
+        return;
+    }
 
-        const selectedAction = leaveDetails?.status?.toLowerCase();
+    const selectedAction = leaveDetails?.status?.toLowerCase();
 
-        if (!["approved", "rejected"].includes(selectedAction)) {
-            alert("Please select a valid status (approved/rejected).");
-            return;
-        }
+    if (!["approved", "rejected"].includes(selectedAction)) {
+        alert("Please select a valid status (approved/rejected).");
+        return;
+    }
 
-        if (selectedAction === "approved" && paymentStatuses.length === 0) {
-            alert("At least one payment status must be selected when approving.");
-            return;
-        }
+    if (selectedAction === "approved" && paymentStatuses.length === 0) {
+        alert("At least one payment status must be selected when approving.");
+        return;
+    }
 
-        setLeaveLoading(true);
-        try {
-            const response = await axios.patch(
-                "http://192.168.0.100:9000/hr/leave/act",
-                {
-                    leaveId: leaveDetails.id,
-                    action: selectedAction,
-                    paymentStatuses,
+    setLeaveLoading(true);
+    try {
+        const response = await axios.patch(
+            "http://192.168.0.100:9000/hr/leave/act",
+            {
+                leaveId: leaveDetails.id,
+                action: selectedAction,
+                paymentStatuses,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-                    },
-                }
+            }
+        );
+
+        if (response.data.status === "success") {
+            alert(response.data.data.message || "Leave updated successfully.");
+
+            // ✅ Remove this leave from the pendingLeaves immediately
+            setPendingLeaves((prev) =>
+                prev.filter((leave) => leave.id !== leaveDetails.id)
             );
 
-            if (response.data.status === "success") {
-                alert(response.data.data.message || "Leave updated successfully.");
-                setLeaveDetails(null);
-                setPendingLeaves((prev) => prev.filter((id) => id !== leaveDetails.id));
-                setPaymentStatuses([]);
-            } else {
-                setError(response.data.message || "Action failed.");
-            }
-        } catch {
-            setError("Failed to update leave.");
-        } finally {
-            setLeaveLoading(false);
+            setProcessedLeaveIds((prev) => [...prev, leaveDetails.id]);
+            setLeaveDetails(null);
+            setPaymentStatuses([]);
+
+            // Optional: refresh from server to sync
+            await fetchPendingLeaves();
+        } else {
+            setError(response.data.message || "Action failed.");
         }
-    };
+    } catch {
+        setError("Failed to update leave.");
+    } finally {
+        setLeaveLoading(false);
+    }
+
+};
+
 
 
     const handleSearchChange = (e) => {
@@ -597,6 +623,7 @@ const HRLeaveApprovals = () => {
 
     const handleSearchSubmit = async (e) => {
         e.preventDefault();
+        setSearching(true); // Start searching
         try {
             const response = await axios.post(
                 "http://192.168.0.100:9000/hr/leave/view",
@@ -612,6 +639,9 @@ const HRLeaveApprovals = () => {
             setSearchResults(response.data.data || []);
         } catch {
             alert("Failed to fetch search results.");
+        }
+        finally {
+            setSearching(false); // End searching
         }
     };
 
@@ -631,22 +661,22 @@ const HRLeaveApprovals = () => {
                         <p className="text-gray-500">No pending leaves.</p>
                     ) : (
                         <ul className="space-y-4">
-                           {pendingLeaves.map((leave) => (
-  <li
-    key={leave.id}
-    className="bg-yellow-100 border border-yellow-300 p-4 rounded flex justify-between items-center"
-  >
-    <span className="font-medium text-gray-800">
-      {leave.employeeName || "Unknown"} ({leave.employeeId})
-    </span>
-    <button
-      onClick={() => fetchLeaveDetails(leave.id)}
-      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition"
-    >
-      View Details
-    </button>
-  </li>
-))}
+                            {pendingLeaves.map((leave) => (
+                                <li
+                                    key={leave.id}
+                                    className="bg-yellow-100 border border-yellow-300 p-4 rounded flex justify-between items-center"
+                                >
+                                    <span className="font-medium text-gray-800">
+                                        {leave.employeeName || "Unknown"} ({leave.employeeId})
+                                    </span>
+                                    <button
+                                        onClick={() => fetchLeaveDetails(leave.id)}
+                                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded transition"
+                                    >
+                                        View Details
+                                    </button>
+                                </li>
+                            ))}
 
                         </ul>
                     )}
@@ -804,39 +834,53 @@ const HRLeaveApprovals = () => {
                         </select>
                         <button
                             type="submit"
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+                            disabled={searching}
+                            className={`${searching ? "bg-yellow-400 cursor-not-allowed" : "bg-yellow-500 hover:bg-yellow-600"
+                                } text-white font-bold py-2 px-4 rounded`}
                         >
-                            Search
+                            {searching ? (
+                                <>
+                                    <span className="animate-spin mr-2">⏳</span> Searching...
+                                </>
+                            ) : (
+                                "Search"
+                            )}
+
                         </button>
+
                     </form>
 
 
                     {searchResults.length > 0 && (
-                        <table className="w-full table-auto border border-gray-300">
-                            <thead>
-                                <tr className="bg-yellow-200">
-                                    <th className="p-2 border">Leave ID</th>
-                                    <th className="p-2 border">Employee ID</th>
-                                    <th className="p-2 border">From</th>
-                                    <th className="p-2 border">To</th>
-                                    <th className="p-2 border">Type</th>
-                                    <th className="p-2 border">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {searchResults.map((leave) => (
-                                    <tr key={leave.id} className="text-center bg-yellow-50 hover:bg-yellow-100">
-                                        <td className="p-2 border">{leave.id}</td>
-                                        <td className="p-2 border">{leave.employeeId}</td>
-                                        <td className="p-2 border">{dayjs(leave.fromDate).format("YYYY-MM-DD")}</td>
-                                        <td className="p-2 border">{dayjs(leave.toDate).format("YYYY-MM-DD")}</td>
-                                        <td className="p-2 border">{leave.leaveType}</td>
-                                        <td className="p-2 border">{leave.status}</td>
+                        <div className="mt-6 overflow-x-auto">
+                            <table className="w-full table-auto border border-gray-300">
+                                <thead>
+                                    <tr className="bg-yellow-200">
+                                        <th className="p-2 border">Employee Name</th>
+                                        <th className="p-2 border">Employee ID</th>
+                                        <th className="p-2 border">From</th>
+                                        <th className="p-2 border">To</th>
+                                        <th className="p-2 border">Type</th>
+                                        <th className="p-2 border">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {searchResults.map((leave) => (
+                                        <tr key={leave.id} className="text-center bg-yellow-50 hover:bg-yellow-100">
+                                            <td className="p-2 border">{leave.employeeName || "N/A"}</td>
+                                            <td className="p-2 border">{leave.employeeId}</td>
+                                            <td className="p-2 border">{dayjs(leave.fromDate).format("YYYY-MM-DD")}</td>
+                                            <td className="p-2 border">{dayjs(leave.toDate).format("YYYY-MM-DD")}</td>
+                                            <td className="p-2 border">{[leave.leaveType, ...(leave.paymentStatuses || [])].join(", ")} </td>
+
+                                            <td className="p-2 border">{leave.status}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
+
                 </div>
             </div>
         </div>

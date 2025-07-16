@@ -34,6 +34,7 @@ const LeaveFormAndView = () => {
   const [appliedLeaves, setAppliedLeaves] = useState([]);
   const [editLeaveId, setEditLeaveId] = useState(null);
   const [editNotes, setEditNotes] = useState("");
+  const [applying, setApplying] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -172,65 +173,72 @@ const LeaveFormAndView = () => {
   };
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    setError("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setMessage("");
+  setError("");
+  setApplying(true); // ✅ Start loader
 
-    const { fromDate, toDate, leaveType, applicationNotes, otherTypeDescription } = form;
+  const { fromDate, toDate, leaveType, applicationNotes, otherTypeDescription } = form;
 
-    if (!fromDate || !toDate || !leaveType) {
-      setError("Please fill all required fields.");
-      return;
-    }
+  if (!fromDate || !toDate || !leaveType) {
+    setError("Please fill all required fields.");
+    setApplying(false); // ✅ Stop loader on error
+    return;
+  }
 
-    if (leaveType === "OTHER" && !otherTypeDescription.trim()) {
-      setError("Description is required when leave type is OTHER.");
-      return;
-    }
+  if (leaveType === "OTHER" && !otherTypeDescription.trim()) {
+    setError("Description is required when leave type is OTHER.");
+    setApplying(false); // ✅ Stop loader on error
+    return;
+  }
 
-    const payload = {
-      fromDate,
-      toDate,
-      leaveType: [leaveType],
-      applicationNotes: leaveType === "OTHER" ? null : applicationNotes,
-      otherTypeDescription: leaveType === "OTHER" ? otherTypeDescription : null,
-    };
-
-    const employee_token = localStorage.getItem("employee_token");
-    if (!employee_token) {
-      setError("Authentication token missing. Please login.");
-      return;
-    }
-
-    try {
-      const res = await fetch("http://192.168.0.100:9000/employee/leave/apply", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${employee_token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.status === "success") {
-        setMessage("✅ " + (data.message || "Leave applied successfully."));
-        setForm({
-          fromDate: "",
-          toDate: "",
-          leaveType: "",
-          applicationNotes: "",
-          otherTypeDescription: "",
-        });
-        fetchAppliedLeaves();
-      } else {
-        setError(data.message || "Something went wrong.");
-      }
-    } catch {
-      setError("❌ Failed to apply. Please try again.");
-    }
+  const payload = {
+    fromDate,
+    toDate,
+    leaveType: [leaveType],
+    applicationNotes: leaveType === "OTHER" ? null : applicationNotes,
+    otherTypeDescription: leaveType === "OTHER" ? otherTypeDescription : null,
   };
+
+  const employee_token = localStorage.getItem("employee_token");
+  if (!employee_token) {
+    setError("Authentication token missing. Please login.");
+    setApplying(false); // ✅ Stop loader on error
+    return;
+  }
+
+  try {
+    const res = await fetch("http://192.168.0.100:9000/employee/leave/apply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${employee_token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      setMessage("✅ " + (data.message || "Leave applied successfully."));
+      setForm({
+        fromDate: "",
+        toDate: "",
+        leaveType: "",
+        applicationNotes: "",
+        otherTypeDescription: "",
+      });
+      fetchAppliedLeaves();
+    } else {
+      setError(data.message || "Something went wrong.");
+    }
+  } catch {
+    setError("❌ Failed to apply. Please try again.");
+  } finally {
+    setApplying(false); // ✅ Stop loader after success/failure
+  }
+};
+
 
   // 🔁 Refetch applied leaves when filters change
   useEffect(() => {
@@ -333,15 +341,18 @@ const LeaveFormAndView = () => {
 
             {/* Submit Button */}
             <div>
-              <button
-                type="submit"
-                className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold py-3 px-6 rounded-md shadow transition-all"
-              >
-                Apply
-              </button>
-            </div>
+  <button
+    type="submit"
+    disabled={applying}
+    className={`w-full ${applying ? "bg-yellow-300" : "bg-yellow-400 hover:bg-yellow-500"} text-yellow-900 font-bold py-3 px-6 rounded-md shadow transition-all`}
+  >
+    {applying ? "Applying..." : "Apply"}
+  </button>
+</div>
+
           </form>
         </div>
+          
 
         {/* View Applied Leaves */}
         <div className="bg-white shadow-xl border border-yellow-300 rounded-2xl p-10">
@@ -445,10 +456,10 @@ const LeaveFormAndView = () => {
                     <td className="py-3 px-4 border border-yellow-300">
                       <span
                         className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${leave.status === "cancelled"
-                            ? "bg-red-200 text-red-800"
-                            : leave.status === "approved"
-                              ? "bg-green-200 text-green-800"
-                              : "bg-yellow-200 text-yellow-800"
+                          ? "bg-red-200 text-red-800"
+                          : leave.status === "approved"
+                            ? "bg-green-200 text-green-800"
+                            : "bg-yellow-200 text-yellow-800"
                           }`}
                       >
                         {leave.status || "-"}

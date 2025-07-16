@@ -21,8 +21,9 @@ const AdminSidebar = () => {
 
  const menuItems = [
   { name: 'Employee Management' },
+  { name: 'Profile', path: '/AdminProfile' },
   { name: 'Make HR', path: '/PromoteEmployeeToHR' },
-  { name: 'HR Profile', path: '/HRDetailsPage' },
+  { name: 'All HR', path: '/HRDetailsPage' },
   { name: 'Shift Management', path: '/Adminshiftmanagement' },
   { name: 'Assign Shift to Employee', path: '/AdminAllShift' },
   { name: 'Holiday', path: '/AdminHolidayList' },
