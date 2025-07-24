@@ -19,7 +19,7 @@ const ForgotPasswordEmployee = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://192.168.0.100:9000/employee/request-password-reset",
+        "https://backend.hrms.transev.site/employee/request-password-reset",
         { assignedEmail: email }
       );
       if (response.data?.status === "success") {
@@ -43,7 +43,7 @@ const ForgotPasswordEmployee = () => {
     setLoading(true);
     try {
       const response = await axios.patch(
-        "http://192.168.0.100:9000/employee/reset-password",
+        "https://backend.hrms.transev.site/employee/reset-password",
         {
           assignedEmail: email,
           otp,

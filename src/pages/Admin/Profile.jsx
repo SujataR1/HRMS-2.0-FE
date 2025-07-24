@@ -16,7 +16,7 @@ const AdminProfile = () => {
   useEffect(() => {
     (async () => {
       if (!token) return setLoading(false), setStatusMsg({ text: "Not authorized", type: "error" });
-      const r = await fetch("http://192.168.0.100:9000/admin/profile", {
+      const r = await fetch("https://backend.hrms.transev.site/admin/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await r.json();
@@ -29,7 +29,7 @@ const AdminProfile = () => {
 
   const handleUpdate = async () => {
     setStatusMsg({ text: "", type: "" });
-    const r = await fetch("http://192.168.0.100:9000/admin/update-profile", {
+    const r = await fetch("https://backend.hrms.transev.site/admin/update-profile", {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -161,58 +161,56 @@ const AdminProfile = () => {
 
             {statusMsg.text && (
               <div
-                className={`mt-4 text-sm text-center ${
-                  statusMsg.type === "success" ? "text-green-600" : "text-red-600"
-                }`}
+                className={`mt-4 text-sm text-center ${statusMsg.type === "success" ? "text-green-600" : "text-red-600"
+                  }`}
               >
                 {statusMsg.text}
               </div>
             )}
 
             {showOTP && (
-  <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
-    <div className="bg-white w-full max-w-sm rounded-xl p-6 shadow-xl relative">
-      <h2 className="text-lg font-semibold text-gray-800 mb-2 text-center">📨 Email Verification</h2>
-      <p className="text-sm text-gray-600 text-center mb-4">
-        We've sent a 6-digit OTP to <strong>{form.email}</strong>. Please enter it below to verify your email address.
-      </p>
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
+                <div className="bg-white w-full max-w-sm rounded-xl p-6 shadow-xl relative">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-2 text-center">📨 Email Verification</h2>
+                  <p className="text-sm text-gray-600 text-center mb-4">
+                    We've sent a 6-digit OTP to <strong>{form.email}</strong>. Please enter it below to verify your email address.
+                  </p>
 
-      <input
-        type="text"
-        value={otp}
-        onChange={(e) => setOtp(e.target.value)}
-        maxLength={6}
-        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none text-center tracking-widest text-lg mb-4"
-        placeholder="Enter OTP"
-      />
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    maxLength={6}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none text-center tracking-widest text-lg mb-4"
+                    placeholder="Enter OTP"
+                  />
 
-      {statusMsg.text && (
-        <div
-          className={`text-sm mb-3 text-center ${
-            statusMsg.type === "success" ? "text-green-600" : "text-red-500"
-          }`}
-        >
-          {statusMsg.text}
-        </div>
-      )}
+                  {statusMsg.text && (
+                    <div
+                      className={`text-sm mb-3 text-center ${statusMsg.type === "success" ? "text-green-600" : "text-red-500"
+                        }`}
+                    >
+                      {statusMsg.text}
+                    </div>
+                  )}
 
-      <div className="flex justify-center gap-4 mt-2">
-        <button
-          onClick={handleOtpSubmit}
-          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm transition"
-        >
-          ✅ Verify OTP
-        </button>
-        <button
-          onClick={() => setShowOTP(false)}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition"
-        >
-          ❌ Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                  <div className="flex justify-center gap-4 mt-2">
+                    <button
+                      onClick={handleOtpSubmit}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                    >
+                      ✅ Verify OTP
+                    </button>
+                    <button
+                      onClick={() => setShowOTP(false)}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-sm transition"
+                    >
+                      ❌ Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
 
             {/* QR Code */}

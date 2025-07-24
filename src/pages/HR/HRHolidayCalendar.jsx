@@ -24,7 +24,7 @@ const HRHolidayCalendar = () => {
   const fetchHolidays = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://192.168.0.100:9000/hr/holidays/view", {
+      const res = await fetch("https://backend.hrms.transev.site/hr/holidays/view", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,7 +72,7 @@ const HRHolidayCalendar = () => {
   const handleCreateHoliday = async () => {
     if (!newHoliday.date || !newHoliday.name) return;
     try {
-      const res = await fetch("http://192.168.0.100:9000/hr/holiday/create", {
+      const res = await fetch("https://backend.hrms.transev.site/hr/holiday/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const HRHolidayCalendar = () => {
 
   const handleEditHoliday = async () => {
     try {
-      const res = await fetch("http://192.168.0.100:9000/hr/holidays/edit", {
+      const res = await fetch("https://backend.hrms.transev.site/hr/holidays/edit", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

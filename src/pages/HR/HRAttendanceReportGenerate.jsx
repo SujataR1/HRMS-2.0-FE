@@ -135,7 +135,7 @@ const HRAttendanceReportGenerate = () => {
 
   // Fetch employees
   useEffect(() => {
-    fetch("http://192.168.0.100:9000/admin/employee-profiles", {
+    fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
@@ -151,7 +151,7 @@ const HRAttendanceReportGenerate = () => {
   useEffect(() => {
     const fetchShifts = async () => {
       try {
-        const res = await fetch("http://192.168.0.100:9000/hr/shifts", {
+        const res = await fetch("https://backend.hrms.transev.site/hr/shifts", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
@@ -222,7 +222,7 @@ const HRAttendanceReportGenerate = () => {
 
     try {
       const res = await fetch(
-        "http://192.168.0.100:9000/hr/attendance/send-monthly-reports",
+        "https://backend.hrms.transev.site/hr/attendance/send-monthly-reports",
         {
           method: "POST",
           headers: {

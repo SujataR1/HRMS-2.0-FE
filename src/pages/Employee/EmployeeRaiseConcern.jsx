@@ -43,7 +43,7 @@ const EmployeeRaiseConcern = () => {
 
     try {
       const token = localStorage.getItem("employeeToken");
-      const res = await fetch("http://192.168.0.100:9000/employee/raise-concern", {
+      const res = await fetch("https://backend.hrms.transev.site/employee/raise-concern", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

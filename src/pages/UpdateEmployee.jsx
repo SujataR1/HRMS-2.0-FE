@@ -14,7 +14,7 @@ const UpdateEmployee = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const res = await fetch(`http://192.168.0.100:9000/admin/employee-details/${employeeId}`, {
+        const res = await fetch(`https://backend.hrms.transev.site/admin/employee-details/${employeeId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
@@ -52,7 +52,7 @@ const UpdateEmployee = () => {
     setSubmitting(true);
     setMessage(null);
     try {
-      const res = await fetch('http://192.168.0.100:9000/admin/update-employee-details', {
+      const res = await fetch('https://backend.hrms.transev.site/admin/update-employee-details', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

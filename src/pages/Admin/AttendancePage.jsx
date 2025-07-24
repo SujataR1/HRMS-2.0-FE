@@ -14,7 +14,7 @@ const AdminAttendancePage = () => {
   });
   const [filters, setFilters] = useState({
     employeeId: "",
-    startDate: "",
+    date: "",
     endDate: "",
     month: "",
   });
@@ -30,7 +30,7 @@ const AdminAttendancePage = () => {
     if (!timeStr) return "-";
     const match = timeStr.match(/(\d{1,2}:\d{2}):\d{2} (\w{2})/i);
     if (match) {
-      return `${match[1]} ${match[2].toUpperCase()}`; // e.g., "03:30 AM"
+      return `${match[1]} ${match[2].toUpperCase()}`;
     }
     return timeStr;
   };
@@ -51,39 +51,34 @@ const AdminAttendancePage = () => {
         return;
       }
 
-      const { employeeId, startDate, endDate, month } = filters;
-
-      if (!employeeId) {
-        alert("Please fill Employee ID.");
-        setLoading(false);
-        return;
-      }
+      const { employeeId, startDate, month } = filters;
 
       let payload = { employeeId };
 
-      if (filterType === "month") {
+      if (filterType === "date") {
+        if (!startDate) {
+          alert("Please select a date.");
+          setLoading(false);
+          return;
+        }
+        payload.date = startDate;
+
+
+      } else if (filterType === "month") {
         if (!month) {
           alert("Please select a month.");
           setLoading(false);
           return;
         }
-        const [year, mon] = month.split("-");
-        const firstDay = `${year}-${mon}-01`;
-        const lastDayDate = new Date(year, parseInt(mon), 0);
-        const lastDay = lastDayDate.toISOString().split("T")[0];
-        payload.startDate = firstDay;
-        payload.endDate = lastDay;
-      } else {
-        if (!startDate || !endDate) {
-          alert("Please fill start and end date.");
-          setLoading(false);
-          return;
-        }
-        payload.startDate = startDate;
-        payload.endDate = endDate;
+
+        const [year, monRaw] = month.split("-");
+        const mon = monRaw.padStart(2, "0");
+        payload.monthYear = `${mon}-${year}`; // Format as MM-YYYY
       }
 
-      const response = await fetch("http://192.168.0.100:9000/admin/attendance/view", {
+
+
+      const response = await fetch("https://backend.hrms.transev.site/admin/attendance/view", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +142,7 @@ const AdminAttendancePage = () => {
     };
 
     try {
-      const response = await fetch("http://192.168.0.100:9000/admin/create-attendance-entry", {
+      const response = await fetch("https://backend.hrms.transev.site/admin/create-attendance-entry", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -244,7 +239,7 @@ const AdminAttendancePage = () => {
     };
 
     try {
-      const response = await fetch("http://192.168.0.100:9000/admin/edit-attendance-entry", {
+      const response = await fetch("https://backend.hrms.transev.site/admin/edit-attendance-entry", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -301,7 +296,7 @@ const AdminAttendancePage = () => {
     setSendingReport(true);
 
     try {
-      const response = await fetch("http://192.168.0.100:9000/admin/attendance/send-monthly-reports", {
+      const response = await fetch("https://backend.hrms.transev.site/admin/attendance/send-monthly-reports", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -341,7 +336,7 @@ const AdminAttendancePage = () => {
     setGenerating(true);
 
     try {
-      const response = await fetch("http://192.168.0.100:9000/admin/attendance/generate", {
+      const response = await fetch("https://backend.hrms.transev.site/admin/attendance/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -382,49 +377,45 @@ const AdminAttendancePage = () => {
             </h2>
 
             {/* Generate Attendance Section - aligned in a single row */}
-<section className="mb-10">
-  <h3 className="text-xl font-bold text-yellow-700 mb-4 text-center">
-    Generate Attendance (For a Specific Employee & Month)
-  </h3>
+            <section className="mb-10">
+              <h3 className="text-xl font-bold text-yellow-700 mb-4 text-center">
+                Generate Attendance (For a Specific Employee & Month)
+              </h3>
 
-  <div className="flex flex-wrap justify-center gap-4 items-center">
-    <input
-      type="text"
-      placeholder="Employee ID"
-      value={filters.employeeId}
-      onChange={(e) => setFilters({ ...filters, employeeId: e.target.value })}
-      className="px-3 py-2 w-40 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900"
-    />
+              <div className="flex flex-wrap justify-center gap-4 items-center">
+                <input
+                  type="text"
+                  placeholder="Employee ID"
+                  value={filters.employeeId}
+                  onChange={(e) => setFilters({ ...filters, employeeId: e.target.value })}
+                  className="px-3 py-2 w-40 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900"
+                />
 
-    <input
-      type="month"
-      value={filters.month}
-      onChange={(e) => setFilters({ ...filters, month: e.target.value })}
-      className="px-3 py-2 w-44 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900"
-    />
+                <input
+                  type="month"
+                  value={filters.month}
+                  onChange={(e) => setFilters({ ...filters, month: e.target.value })}
+                  className="px-3 py-2 w-44 border border-yellow-500 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900"
+                />
 
-    <button
-      onClick={handleGenerateAttendance}
-      className={`px-5 py-2 font-bold rounded-md shadow-md transition text-white ${generating
-        ? "bg-yellow-400 cursor-not-allowed"
-        : "bg-yellow-700 hover:bg-yellow-600"
-        }`}
-      disabled={generating}
-    >
-      {generating ? "Generating..." : "Generate"}
-    </button>
-  </div>
-</section>
-
-
-
-
+                <button
+                  onClick={handleGenerateAttendance}
+                  className={`px-5 py-2 font-bold rounded-md shadow-md transition text-white ${generating
+                    ? "bg-yellow-400 cursor-not-allowed"
+                    : "bg-yellow-700 hover:bg-yellow-600"
+                    }`}
+                  disabled={generating}
+                >
+                  {generating ? "Generating..." : "Generate"}
+                </button>
+              </div>
+            </section>
 
             {/* Filter Section */}
-<section className="mb-10">
-  <h3 className="text-xl font-bold text-yellow-700 mb-4 text-center">
-    Search / Generate by Employee ID & Date
-  </h3>
+            <section className="mb-10">
+              <h3 className="text-xl font-bold text-yellow-700 mb-4 text-center">
+                Search / Generate by Employee ID & Date
+              </h3>
 
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <label className="font-medium text-yellow-800 flex items-center gap-2">
@@ -472,12 +463,6 @@ const AdminAttendancePage = () => {
                       onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
                       className="px-3 py-2 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900"
                     />
-                    <input
-                      type="date"
-                      value={filters.endDate}
-                      onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-                      className="px-3 py-2 border border-yellow-500 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900"
-                    />
                   </>
                 )}
 
@@ -492,8 +477,8 @@ const AdminAttendancePage = () => {
 
                 <button
                   className={`px-5 py-2 rounded-md font-semibold text-white shadow-md transition ${loading
-                      ? "bg-yellow-400 cursor-not-allowed"
-                      : "bg-yellow-600 hover:bg-yellow-500"
+                    ? "bg-yellow-400 cursor-not-allowed"
+                    : "bg-yellow-600 hover:bg-yellow-500"
                     }`}
                   onClick={fetchAttendance}
                   disabled={loading}
@@ -561,7 +546,7 @@ const AdminAttendancePage = () => {
                     <table className="w-full border-collapse text-sm text-yellow-900 bg-yellow-100 rounded">
                       <thead className="bg-yellow-700 text-white">
                         <tr>
-                          {["Employee ID", "Date", "Punch In", "Punch Out", "Status", "Comments", "Actions"].map((label) => (
+                          {["S.No", "Employee ID", "Date", "Punch In", "Punch Out", "Status", "Comments", "Actions"].map((label) => (
                             <th key={label} className="p-3 border border-yellow-600 text-center font-medium">
                               {label}
                             </th>
@@ -569,9 +554,10 @@ const AdminAttendancePage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {attendanceList.map((item) =>
+                        {attendanceList.map((item, index) =>
                           editingId === item.id ? (
                             <tr key={item.id} className="bg-yellow-50 text-center">
+                              <td className="p-2 border border-yellow-300">{index + 1}</td>
                               {["employeeId", "attendanceDate", "punchIn", "punchOut", "status", "comments"].map((key, i) =>
                                 key === "status" ? (
                                   <td key={i} className="p-2 border border-yellow-300">
@@ -615,6 +601,7 @@ const AdminAttendancePage = () => {
                             </tr>
                           ) : (
                             <tr key={item.id} className="hover:bg-yellow-200 text-center text-sm">
+                              <td className="p-2 border border-yellow-300">{index + 1}</td>
                               <td className="p-2 border border-yellow-300">{item.employeeId}</td>
                               <td className="p-2 border border-yellow-300">{formatDate(item.attendanceDate)}</td>
                               <td className="p-2 border border-yellow-300">{formatTime(item.punchIn)}</td>

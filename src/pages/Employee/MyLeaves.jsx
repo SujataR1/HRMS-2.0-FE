@@ -73,7 +73,7 @@ const LeaveFormAndView = () => {
     console.log("📦 Sending filter body:", body);
 
     try {
-      const res = await fetch("http://192.168.0.100:9000/employee/leave/view", {
+      const res = await fetch("https://backend.hrms.transev.site/employee/leave/view", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ const LeaveFormAndView = () => {
     }
 
     try {
-      const response = await fetch("http://192.168.0.100:9000/employee/leave/edit-notes", {
+      const response = await fetch("https://backend.hrms.transev.site/employee/leave/edit-notes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -150,7 +150,7 @@ const LeaveFormAndView = () => {
     if (!confirmCancel) return;
 
     try {
-      const res = await fetch("http://192.168.0.100:9000/employee/leave/cancel", {
+      const res = await fetch("https://backend.hrms.transev.site/employee/leave/cancel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,7 +209,7 @@ const handleSubmit = async (e) => {
   }
 
   try {
-    const res = await fetch("http://192.168.0.100:9000/employee/leave/apply", {
+    const res = await fetch("https://backend.hrms.transev.site/employee/leave/apply", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

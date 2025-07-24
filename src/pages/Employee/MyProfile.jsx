@@ -19,7 +19,7 @@ const MyProfile = () => {
       }
 
       try {
-        const response = await fetch("http://192.168.0.100:9000/employee/profile", {
+        const response = await fetch("https://backend.hrms.transev.site/employee/profile", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

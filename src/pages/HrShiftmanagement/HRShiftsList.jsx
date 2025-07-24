@@ -23,7 +23,7 @@ const HRShiftsList = () => {
   useEffect(() => {
     const fetchShifts = async () => {
       try {
-        const res = await fetch("http://192.168.0.100:9000/hr/shifts", {
+        const res = await fetch("https://backend.hrms.transev.site/hr/shifts", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
@@ -44,7 +44,7 @@ const HRShiftsList = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await fetch("http://192.168.0.100:9000/admin/employee-profiles", {
+        const res = await fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
           headers: {
             "Content-Type": "application/json",
                         Authorization: `Bearer ${localStorage.getItem("hr_token")}`,

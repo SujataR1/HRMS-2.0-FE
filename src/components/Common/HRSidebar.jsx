@@ -52,7 +52,7 @@ const HRSidebar = () => {
       localStorage.removeItem('hr_token');
 
       if (token) {
-        await fetch('http://192.168.0.100:9000/hr/logout', {
+        await fetch('https://backend.hrms.transev.site/hr/logout', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,

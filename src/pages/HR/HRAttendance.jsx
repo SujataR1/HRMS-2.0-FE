@@ -19,59 +19,58 @@ const HRAttendance = () => {
 
 
 
-const formatTime = (time) => {
-  if (!time) return "-";
+  const formatTime = (time) => {
+    if (!time) return "-";
 
-  // If already in am/pm format, return as is
-  if (time.toLowerCase().includes("am") || time.toLowerCase().includes("pm")) {
-    return time;
-  }
+    // If already in am/pm format, return as is
+    if (time.toLowerCase().includes("am") || time.toLowerCase().includes("pm")) {
+      return time;
+    }
 
-  // Otherwise, parse 24-hour format and convert
-  const [hourStr, minuteStr] = time.split(":");
-  let hour = parseInt(hourStr, 10);
-  const ampm = hour >= 12 ? "pm" : "am";
-  hour = hour % 12 || 12;
-  return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
-};
-
-
+    // Otherwise, parse 24-hour format and convert
+    const [hourStr, minuteStr] = time.split(":");
+    let hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? "pm" : "am";
+    hour = hour % 12 || 12;
+    return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
+  };
 
   // Update date range based on selected filter
-useEffect(() => {
-  const now = new Date();
-  let start, end;
+  useEffect(() => {
+    const now = new Date();
+    let start, end;
 
-  if (filterType === "today") {
-    const d = now.toISOString().slice(0, 10);
-    start = end = d;
-  } else if (filterType === "month") {
-    const year = filterYear;
-    const month = filterMonth - 1; // JS Date months are 0-indexed (0 = Jan)
+    if (filterType === "today") {
+      const d = now.toISOString().slice(0, 10);
+      start = end = d;
+    } else if (filterType === "month") {
+      const year = filterYear;
+      const month = filterMonth; // 1-12
 
-    const startDateObj = new Date(year, month, 1); // e.g., July 1
-    const today = new Date();
-    const isCurrentMonth =
-      today.getFullYear() === year && today.getMonth() === month;
+      const startDateObj = new Date(year, month - 1, 1); // ✅ Corrected
+      const today = new Date();
+      const isCurrentMonth =
+        today.getFullYear() === year && today.getMonth() === month - 1;
 
-    const endDateObj = isCurrentMonth
-      ? today // cap to today if it's the current month
-      : new Date(year, month + 1, 0); // otherwise, last day of the selected month
+      const endDateObj = isCurrentMonth
+        ? today
+        : new Date(year, month, 0); // ✅ Last day of selected month
 
-    start = startDateObj.toISOString().slice(0, 10);
-    end = endDateObj.toISOString().slice(0, 10);
-  } else {
-    start = `${filterYear}-01-01`;
-    end = `${filterYear}-12-31`;
-  }
+      start = startDateObj.toISOString().slice(0, 10);
+      end = endDateObj.toISOString().slice(0, 10);
+    } else {
+      start = `${filterYear}-01-01`;
+      end = `${filterYear}-12-31`;
+    }
 
-  setStartDate(start);
-  setEndDate(end);
-}, [filterType, filterMonth, filterYear]);
+    setStartDate(start);
+    setEndDate(end);
+  }, [filterType, filterMonth, filterYear]);
+
 
   // Fetch employees
   useEffect(() => {
-    fetch("http://192.168.0.100:9000/admin/employee-profiles", {
+    fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
@@ -83,129 +82,129 @@ useEffect(() => {
       .finally(() => setLoadingEmployees(false));
   }, []);
 
-const fetchAttendance = async () => {
-  if (!selectedEmpId) {
-    alert("⚠️ Employee is required");
-    return;
-  }
-
-  if (filterType === "month") {
-    if (!filterMonth) {
-      alert("⚠️ Month is required");
+  const fetchAttendance = async () => {
+    if (!selectedEmpId) {
+      alert("⚠️ Employee is required");
       return;
     }
-    if (!filterYear) {
+
+    if (filterType === "month") {
+      if (!filterMonth) {
+        alert("⚠️ Month is required");
+        return;
+      }
+      if (!filterYear) {
+        alert("⚠️ Year is required");
+        return;
+      }
+    }
+
+    if (filterType === "year" && !filterYear) {
       alert("⚠️ Year is required");
       return;
     }
-  }
 
-  if (filterType === "year" && !filterYear) {
-    alert("⚠️ Year is required");
-    return;
-  }
+    setError("");
+    setLoadingAttendance(true);
+    setAttendanceData([]);
 
-  setError("");
-  setLoadingAttendance(true);
-  setAttendanceData([]);
-
-  try {
-    const res = await fetch("http://192.168.0.100:9000/hr/attendance/view", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-      },
-      body: JSON.stringify({
-        employeeId: selectedEmpId,
-        startDate,
-        endDate,
-      }),
-    });
-
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.message || "Failed to fetch attendance");
-
-    // Create a map for quick access
-    const dataMap = {};
-    (json.data || []).forEach((entry) => {
-      dataMap[entry.date] = entry;
-    });
-
-    // Create full date range and fill missing days
-    const fullData = [];
-    let current = new Date(startDate);
-    const last = new Date(endDate);
-    const todayStr = new Date().toISOString().slice(0, 10);
-
-    while (current <= last) {
-      const dateStr = current.toISOString().slice(0, 10);
-
-      // Prevent showing future dates
-      if (dateStr > todayStr) break;
-
-      const entry = dataMap[dateStr];
-      fullData.push({
-        id: entry?.id || dateStr,
-        date: dateStr,
-        punchIn: entry?.punchIn || null,
-        punchOut: entry?.punchOut || null,
-        status: entry?.status || "Holiday",
-        comments: entry?.comments || "",
+    try {
+      const res = await fetch("https://backend.hrms.transev.site/hr/attendance/view", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+        },
+        body: JSON.stringify({
+          employeeId: selectedEmpId,
+          startDate,
+          endDate,
+        }),
       });
 
-      current.setDate(current.getDate() + 1);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to fetch attendance");
+
+      // Create a map for quick access
+      const dataMap = {};
+      (json.data || []).forEach((entry) => {
+        dataMap[entry.date] = entry;
+      });
+
+      // Create full date range and fill missing days
+      const fullData = [];
+      let current = new Date(startDate);
+      const last = new Date(endDate);
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      while (current <= last) {
+        const dateStr = current.toISOString().slice(0, 10);
+
+        // Prevent showing future dates
+        if (dateStr > todayStr) break;
+
+        const entry = dataMap[dateStr];
+        fullData.push({
+          id: entry?.id || dateStr,
+          date: dateStr,
+          punchIn: entry?.punchIn || null,
+          punchOut: entry?.punchOut || null,
+          status: entry?.status || "Holiday",
+          comments: entry?.comments || "",
+        });
+
+        current.setDate(current.getDate() + 1);
+      }
+
+      setAttendanceData(fullData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingAttendance(false);
     }
-
-    setAttendanceData(fullData);
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoadingAttendance(false);
-  }
-};
+  };
 
 
 
 
-const saveAttendance = async () => {
-  if (!editEntry) return;
-  setLoadingSave(true);
-  setError("");
+  const saveAttendance = async () => {
+    if (!editEntry) return;
+    setLoadingSave(true);
+    setError("");
 
-  try {
-    const attendanceDate = `${editEntry.date}T00:00:00.000Z`;
+    try {
+      const attendanceDate = `${editEntry.date}T00:00:00.000Z`;
 
-    const res = await fetch("http://192.168.0.100:9000/hr/edit-attendance-entry", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-      },
-      body: JSON.stringify({
-        employeeId: selectedEmpId,
-        attendanceDate,
-        punchIn: new Date(`${editEntry.date}T${editEntry.punchIn}`).toISOString(),
-        punchOut: new Date(`${editEntry.date}T${editEntry.punchOut}`).toISOString(),
-        status: editEntry.status,
-        flags: ["manualEntry", "edited"],
-        comments: editEntry.comments,
-      }),
-    });
+      const res = await fetch("https://backend.hrms.transev.site/hr/edit-attendance-entry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+        },
+        body: JSON.stringify({
+          employeeId: selectedEmpId,
+          attendanceDate,
+          punchIn: new Date(`${editEntry.date}T${editEntry.punchIn}`).toISOString(),
+          punchOut: new Date(`${editEntry.date}T${editEntry.punchOut}`).toISOString(),
+          status: editEntry.status,
+          flags: ["manualEntry", "edited"],
+          comments: editEntry.comments,
+        }),
+      });
 
-    const json = await res.json();
-    if (!res.ok || json.status !== "success") throw new Error(json.message || "Save failed");
+      const json = await res.json();
+      if (!res.ok || json.status !== "success") throw new Error(json.message || "Save failed");
 
-    setAttendanceData((prev) =>
-      prev.map((it) => (it.id === editEntry.id ? { ...editEntry } : it))
-    );
-    setEditEntry(null);
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoadingSave(false);
-  }
-};
+      setAttendanceData((prev) =>
+        prev.map((it) => (it.id === editEntry.id ? { ...editEntry } : it))
+      );
+      setEditEntry(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoadingSave(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-yellow-50">
@@ -307,6 +306,7 @@ const saveAttendance = async () => {
                 <table className="w-full border divide-y divide-yellow-200 mt-6">
                   <thead className="bg-yellow-100">
                     <tr>
+                      <th className="px-4 py-2 text-left text-yellow-800 font-semibold">SL</th> {/* Added SL header */}
                       {["Date", "Punch In", "Punch Out", "Status", "Comments", "Action"].map((h) => (
                         <th key={h} className="px-4 py-2 text-left text-yellow-800 font-semibold">
                           {h}
@@ -315,12 +315,13 @@ const saveAttendance = async () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-yellow-100">
-                    {attendanceData.map((row) => (
+                    {attendanceData.map((row, index) => (
                       <tr key={row.id} className="hover:bg-yellow-50">
-                        <td className="px-4 py-2">{row.date}</td>
-                       <td className="px-4 py-2">{formatTime(row.punchIn)}</td>
-                        <td className="px-4 py-2">{formatTime(row.punchOut)}</td>
+                        <td className="px-4 py-2">{new Date(row.date).getDate()}</td>
 
+                        <td className="px-4 py-2">{row.date}</td>
+                        <td className="px-4 py-2">{formatTime(row.punchIn)}</td>
+                        <td className="px-4 py-2">{formatTime(row.punchOut)}</td>
                         <td className="px-4 py-2">{row.status}</td>
                         <td className="px-4 py-2">{row.comments || "-"}</td>
                         <td className="px-4 py-2">
@@ -412,3 +413,285 @@ const saveAttendance = async () => {
 };
 
 export default HRAttendance;
+
+// import React, { useEffect, useState } from "react";
+// import HRSidebar from "../../components/Common/HRSidebar";
+
+// const HRAttendance = () => {
+//   const [employees, setEmployees] = useState([]);
+//   const [selectedEmpId, setSelectedEmpId] = useState("");
+//   const [attendanceData, setAttendanceData] = useState([]);
+//   const [editEntry, setEditEntry] = useState(null);
+//   const [loadingEmployees, setLoadingEmployees] = useState(true);
+//   const [loadingAttendance, setLoadingAttendance] = useState(false);
+//   const [loadingSave, setLoadingSave] = useState(false);
+//   const [error, setError] = useState("");
+//   const [filterType, setFilterType] = useState("today");
+//   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
+//   const currentYear = new Date().getFullYear();
+//   const [filterYear, setFilterYear] = useState(currentYear);
+//   const [startDate, setStartDate] = useState("");
+//   const [endDate, setEndDate] = useState("");
+
+//   const [filters, setFilters] = useState({ employeeId: "", month: "" });
+//   const [generating, setGenerating] = useState(false);
+//   const [attendanceReady, setAttendanceReady] = useState(false);
+
+//   const formatTime = (time) => {
+//     if (!time) return "-";
+//     if (time.toLowerCase().includes("am") || time.toLowerCase().includes("pm")) return time;
+//     const [hourStr, minuteStr] = time.split(":");
+//     let hour = parseInt(hourStr, 10);
+//     const ampm = hour >= 12 ? "pm" : "am";
+//     hour = hour % 12 || 12;
+//     return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
+//   };
+
+//   useEffect(() => {
+//     const now = new Date();
+//     let start, end;
+
+//     if (filterType === "today") {
+//       const d = now.toISOString().slice(0, 10);
+//       start = end = d;
+//     } else if (filterType === "month") {
+//       const year = filterYear;
+//       const month = filterMonth - 1;
+//       const startDateObj = new Date(year, month, 1);
+//       const today = new Date();
+//       const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+//       const endDateObj = isCurrentMonth ? today : new Date(year, month + 1, 0);
+//       start = startDateObj.toISOString().slice(0, 10);
+//       end = endDateObj.toISOString().slice(0, 10);
+//     } else {
+//       start = `${filterYear}-01-01`;
+//       end = `${filterYear}-12-31`;
+//     }
+
+//     setStartDate(start);
+//     setEndDate(end);
+//   }, [filterType, filterMonth, filterYear]);
+
+//   useEffect(() => {
+//     fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+//       },
+//     })
+//       .then((res) => res.json().then((d) => (res.ok ? d.data : Promise.reject(d.message))))
+//       .then(setEmployees)
+//       .catch((err) => setError(err))
+//       .finally(() => setLoadingEmployees(false));
+//   }, []);
+
+//   const handleGenerateAttendance = async () => {
+//     if (!filters.employeeId || !filters.month) {
+//       alert("Please fill both Employee ID and Month to generate attendance.");
+//       return;
+//     }
+
+//     const token = localStorage.getItem("admin_token");
+//     if (!token) {
+//       alert("Admin authentication token missing. Please log in.");
+//       return;
+//     }
+
+//     setGenerating(true);
+
+//     try {
+//       const response = await fetch("https://backend.hrms.transev.site/admin/attendance/generate", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify({
+//           employeeId: filters.employeeId,
+//           monthYear: filters.month.split("-").reverse().join("-"),
+//         }),
+//       });
+
+//       const result = await response.json();
+
+//       if (response.ok && result.success) {
+//         alert(result.message || "Attendance generated successfully.");
+//         setAttendanceReady(true);
+//         setSelectedEmpId(filters.employeeId);
+//         setFilterType("month");
+
+//         const date = new Date(filters.month);
+//         setFilterMonth(date.getMonth() + 1);
+//         setFilterYear(date.getFullYear());
+
+//         setTimeout(() => fetchAttendance(), 1000);
+//       } else {
+//         alert("Failed: " + (result.message || result.error || "Unknown error"));
+//       }
+//     } catch (err) {
+//       console.error("Error generating attendance:", err);
+//       alert("An error occurred while generating attendance.");
+//     } finally {
+//       setGenerating(false);
+//     }
+//   };
+
+//   const fetchAttendance = async () => {
+//     if (!selectedEmpId) {
+//       alert("⚠️ Employee is required");
+//       return;
+//     }
+
+//     setError("");
+//     setLoadingAttendance(true);
+//     setAttendanceData([]);
+
+//     try {
+//       const res = await fetch("https://backend.hrms.transev.site/hr/attendance/view", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+//         },
+//         body: JSON.stringify({ employeeId: selectedEmpId, startDate, endDate }),
+//       });
+
+//       const json = await res.json();
+//       if (!res.ok) throw new Error(json.message || "Failed to fetch attendance");
+
+//       const dataMap = {};
+//       (json.data || []).forEach((entry) => (dataMap[entry.date] = entry));
+
+//       const fullData = [];
+//       let current = new Date(startDate);
+//       const last = new Date(endDate);
+//       const todayStr = new Date().toISOString().slice(0, 10);
+
+//       while (current <= last) {
+//         const dateStr = current.toISOString().slice(0, 10);
+//         if (dateStr > todayStr) break;
+
+//         const entry = dataMap[dateStr];
+//         fullData.push({
+//           id: entry?.id || dateStr,
+//           date: dateStr,
+//           punchIn: entry?.punchIn || null,
+//           punchOut: entry?.punchOut || null,
+//           status: entry?.status || "Holiday",
+//           comments: entry?.comments || "",
+//         });
+
+//         current.setDate(current.getDate() + 1);
+//       }
+
+//       setAttendanceData(fullData);
+//     } catch (err) {
+//       setError(err.message);
+//     } finally {
+//       setLoadingAttendance(false);
+//     }
+//   };
+
+//   const saveAttendance = async () => {
+//     if (!editEntry) return;
+//     setLoadingSave(true);
+//     setError("");
+
+//     try {
+//       const attendanceDate = `${editEntry.date}T00:00:00.000Z`;
+
+//       const res = await fetch("https://backend.hrms.transev.site/hr/edit-attendance-entry", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+//         },
+//         body: JSON.stringify({
+//           employeeId: selectedEmpId,
+//           attendanceDate,
+//           punchIn: new Date(`${editEntry.date}T${editEntry.punchIn}`).toISOString(),
+//           punchOut: new Date(`${editEntry.date}T${editEntry.punchOut}`).toISOString(),
+//           status: editEntry.status,
+//           flags: ["manualEntry", "edited"],
+//           comments: editEntry.comments,
+//         }),
+//       });
+
+//       const json = await res.json();
+//       if (!res.ok || json.status !== "success") throw new Error(json.message || "Save failed");
+
+//       setAttendanceData((prev) =>
+//         prev.map((it) => (it.id === editEntry.id ? { ...editEntry } : it))
+//       );
+//       setEditEntry(null);
+//     } catch (err) {
+//       setError(err.message);
+//     } finally {
+//       setLoadingSave(false);
+//     }
+//   };
+
+//   return (
+//     <div className="flex min-h-screen bg-yellow-50">
+//       <HRSidebar />
+//       <main className="ml-64 flex-1 p-8">
+//         <div className="bg-white shadow-lg rounded-2xl border border-yellow-200 p-8 space-y-6 max-w-5xl mx-auto">
+//           <h1 className="text-3xl font-bold text-yellow-800 text-center">Attendance Check</h1>
+
+//           {/* Generate Attendance Section */}
+//           <section className="mb-6">
+//             <h3 className="text-xl font-bold text-yellow-700 mb-4 text-center">
+//               Generate Attendance
+//             </h3>
+//             <div className="flex flex-wrap justify-center gap-4 items-center">
+//               <select
+//                 className="px-3 py-2 w-52 border border-yellow-500 rounded-md text-yellow-900"
+//                 value={filters.employeeId}
+//                 onChange={(e) => setFilters({ ...filters, employeeId: e.target.value })}
+//               >
+//                 <option value="">Select Employee</option>
+//                 {employees.map((e) => (
+//                   <option key={e.employeeId} value={e.employeeId}>
+//                     {e.name} ({e.employeeId})
+//                   </option>
+//                 ))}
+//               </select>
+
+//               <input
+//                 type="month"
+//                 value={filters.month}
+//                 onChange={(e) => setFilters({ ...filters, month: e.target.value })}
+//                 className="px-3 py-2 w-44 border border-yellow-500 rounded-md text-yellow-900"
+//               />
+
+//               <button
+//                 onClick={handleGenerateAttendance}
+//                 className={`px-5 py-2 font-bold rounded-md text-white ${
+//                   generating ? "bg-yellow-400 cursor-not-allowed" : "bg-yellow-700 hover:bg-yellow-600"
+//                 }`}
+//                 disabled={generating}
+//               >
+//                 {generating ? "Generating..." : "Generate"}
+//               </button>
+//             </div>
+//           </section>
+
+//           {/* Attendance UI */}
+//           {attendanceReady ? (
+//             <>
+//               {/* Your full attendance UI already written below — employee, filter, table, edit modal */}
+//               {/* You can paste that entire block of UI back in here if needed */}
+//               <p>✅ Attendance generated. You can now view and edit records.</p>
+//             </>
+//           ) : (
+//             <p className="text-yellow-600 text-center italic">
+//               Please generate attendance to continue.
+//             </p>
+//           )}
+//         </div>
+//       </main>
+//     </div>
+//   );
+// };
+
+// export default HRAttendance;

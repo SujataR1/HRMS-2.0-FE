@@ -16,7 +16,7 @@
 //   const fetchEmployee = async () => {
 //     setLoading(true);
 //     try {
-//       const res = await fetch(`http://192.168.0.100:9000/admin/employee-details/${employeeId}`, {
+//       const res = await fetch(`https://backend.hrms.transev.site/admin/employee-details/${employeeId}`, {
 //         headers: {
 //           'Content-Type': 'application/json',
 //           Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
@@ -169,7 +169,7 @@ const ViewEmployeeDetails = () => {
   const fetchEmployee = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://192.168.0.100:9000/admin/employee-details/${employeeId}`, {
+      const res = await fetch(`https://backend.hrms.transev.site/admin/employee-details/${employeeId}`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
@@ -192,7 +192,7 @@ const ViewEmployeeDetails = () => {
   const fetchShifts = async () => {
     setLoadingShifts(true);
     try {
-      const res = await fetch('http://192.168.0.100:9000/hr/shifts', {
+      const res = await fetch('https://backend.hrms.transev.site/hr/shifts', {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('hr_token')}`,
@@ -229,7 +229,7 @@ const ViewEmployeeDetails = () => {
   const handleAssignShift = async () => {
     if (!selectedShiftId) return;
     try {
-      const res = await fetch('http://192.168.0.100:9000/admin/assign-shift', {
+      const res = await fetch('https://backend.hrms.transev.site/admin/assign-shift', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

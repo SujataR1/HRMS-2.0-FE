@@ -38,7 +38,7 @@ const HRLeave = () => {
         const token = localStorage.getItem("hr_token");
         if (!token) throw new Error("No hr token found");
         const res = await fetch(
-          "http://192.168.0.100:9000/admin/employee-profiles",
+          "https://backend.hrms.transev.site/admin/employee-profiles",
           {
             headers: {
               "Content-Type": "application/json",
@@ -68,7 +68,7 @@ const HRLeave = () => {
         for (const emp of employees) {
           try {
             const res = await fetch(
-              `http://192.168.0.100:9000/hr/get-leave-register?employeeId=${emp.employeeId}`,
+              `https://backend.hrms.transev.site/hr/get-leave-register?employeeId=${emp.employeeId}`,
               {
                 headers: { Authorization: `Bearer ${token}` },
               }
@@ -146,7 +146,7 @@ const HRLeave = () => {
       };
 
       const res = await fetch(
-        "http://192.168.0.100:9000/hr/create-leave-register",
+        "https://backend.hrms.transev.site/hr/create-leave-register",
         {
           method: "POST",
           headers: {
@@ -215,7 +215,7 @@ const HRLeave = () => {
           : [employeeId];
 
       const res = await fetch(
-        "http://192.168.0.100:9000/hr/get-leave-register",
+        "https://backend.hrms.transev.site/hr/get-leave-register",
         {
           method: "POST",
           headers: {
@@ -270,7 +270,7 @@ const HRLeave = () => {
 
     try {
       const token = localStorage.getItem("hr_token");
-      const res = await fetch("http://192.168.0.100:9000/hr/edit-leave-register", {
+      const res = await fetch("https://backend.hrms.transev.site/hr/edit-leave-register", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -315,7 +315,7 @@ const HRLeave = () => {
   const handleFinalConfirm = async () => {
     try {
       const token = localStorage.getItem("hr_token");
-      const res = await fetch("http://192.168.0.100:9000/hr/reset-leave-register", {
+      const res = await fetch("https://backend.hrms.transev.site/hr/reset-leave-register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

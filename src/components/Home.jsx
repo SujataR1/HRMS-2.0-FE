@@ -48,7 +48,7 @@ const Home = () => {
     try {
       if (selectedRole === "admin") {
         const { data } = await axios.post(
-          "http://192.168.0.100:9000/admin/login",
+          "https://backend.hrms.transev.site/admin/login",
           { email, password },
           { withCredentials: true }
         );
@@ -60,7 +60,7 @@ const Home = () => {
 
       } else if (selectedRole === "Employee") {
         const { data } = await axios.post(
-          "http://192.168.0.100:9000/employee/login",
+          "https://backend.hrms.transev.site/employee/login",
           { assignedEmail: email, password }
         );
         if (data?.status === "success") {
@@ -77,7 +77,7 @@ const Home = () => {
 
       } else if (selectedRole === "hr") {
         const { data } = await axios.post(
-          "http://192.168.0.100:9000/hr/login",
+          "https://backend.hrms.transev.site/hr/login",
           { email, password },
           { withCredentials: true }
         );
@@ -102,7 +102,6 @@ const Home = () => {
       alert("Login failed. Please try again.");
     }
   };
-
   // OTP verification logic
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
@@ -112,7 +111,7 @@ const Home = () => {
     }
     try {
       const { data } = await axios.post(
-        "http://192.168.0.100:9000/hr/login/2fa",
+        "https://backend.hrms.transev.site/hr/login/2fa",
         { email, password, otp },
         { withCredentials: true }
       );
@@ -137,7 +136,7 @@ const Home = () => {
   // OTP resend logic
   const handleResendOtp = async () => {
     try {
-      const { data } = await axios.post("http://192.168.0.100:9000/hr/resend-otp", { email });
+      const { data } = await axios.post("https://backend.hrms.transev.site/hr/resend-otp", { email });
       if (data?.status === "success") {
         alert("OTP resent to your email.");
         setResendVisible(false);

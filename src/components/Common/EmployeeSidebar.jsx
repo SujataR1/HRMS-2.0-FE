@@ -44,7 +44,7 @@ const EmployeeSidebar = () => {
       localStorage.removeItem('employeeToken');
 
       if (token) {
-        await fetch('http://192.168.0.100:9000/employee/logout', {
+        await fetch('https://backend.hrms.transev.site/employee/logout', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,

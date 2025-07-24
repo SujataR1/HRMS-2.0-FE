@@ -34,7 +34,7 @@ const MyAttendance = () => {
     }
 
     try {
-      const res = await fetch("http://192.168.0.100:9000/employee/attendance/view", {
+      const res = await fetch("https://backend.hrms.transev.site/employee/attendance/view", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

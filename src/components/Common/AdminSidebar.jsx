@@ -102,7 +102,7 @@ const AdminSidebar = () => {
       localStorage.removeItem('adminToken');
 
       if (token) {
-        await fetch('http://192.168.0.100:9000/admin/logout', {
+        await fetch('https://backend.hrms.transev.site/admin/logout', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,

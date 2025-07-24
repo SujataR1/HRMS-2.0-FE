@@ -19,7 +19,7 @@ const ForgotPasswordAdmin = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://192.168.0.100:9000/admin/request-password-reset",
+        "https://backend.hrms.transev.site/admin/request-password-reset",
         { email }
       );
       if (response.data?.status === "success") {
@@ -43,7 +43,7 @@ const ForgotPasswordAdmin = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://192.168.0.100:9000/admin/reset-password",
+        "https://backend.hrms.transev.site/admin/reset-password",
         {
           email,
           otp,

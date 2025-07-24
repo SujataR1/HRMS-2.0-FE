@@ -42,7 +42,7 @@ const HRDashboard = () => {
   useEffect(() => {
     const fetchPending = async () => {
       try {
-        const res = await axios.get("http://192.168.0.100:9000/hr/leaves/pending", {
+        const res = await axios.get("https://backend.hrms.transev.site/hr/leaves/pending", {
           headers: { Authorization: `Bearer ${localStorage.getItem("hr_token")}` }
         });
         setPendingCount(res.data.data.leaveIds?.length || 0);

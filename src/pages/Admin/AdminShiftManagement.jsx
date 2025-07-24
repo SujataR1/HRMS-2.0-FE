@@ -84,7 +84,7 @@ const AdminShiftmanagement = () => {
         ),
       };
 
-      const res = await fetch("http://192.168.0.100:9000/hr/create-shift", {
+      const res = await fetch("https://backend.hrms.transev.site/hr/create-shift", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

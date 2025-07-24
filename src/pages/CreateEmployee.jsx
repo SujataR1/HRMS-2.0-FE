@@ -28,7 +28,7 @@ const handleSubmit = async (e) => {
   try {
     const token = localStorage.getItem('token'); // or wherever you store your token
 
-    const res = await fetch('http://192.168.0.100:9000/admin/create-employee', {
+    const res = await fetch('https://backend.hrms.transev.site/admin/create-employee', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

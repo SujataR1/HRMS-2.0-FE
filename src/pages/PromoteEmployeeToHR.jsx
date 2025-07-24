@@ -14,7 +14,7 @@ const PromoteEmployeeToHR = () => {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                const res = await fetch("http://192.168.0.100:9000/admin/employee-profiles", {
+                const res = await fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
@@ -54,7 +54,7 @@ const handlePromote = async (e) => {
     if (!token) throw new Error("Not authenticated. Please log in.");
 
     const res = await fetch(
-      "http://192.168.0.100:9000/admin/promote-employee-to-hr",
+      "https://backend.hrms.transev.site/admin/promote-employee-to-hr",
       {
         method: "POST",
         headers: {
