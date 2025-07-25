@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import EmployeeSidebar from '../components/Common/EmployeeSidebar';
 import {
   MdCheckCircle,
@@ -59,7 +60,7 @@ const pieData = {
   ],
 };
 
-const chartOptions = {
+const lightChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -90,26 +91,123 @@ const chartOptions = {
   },
 };
 
+const darkChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top',
+      labels: {
+        color: '#DDD',
+      },
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: '#DDD',
+      },
+      grid: {
+        color: '#444',
+      },
+    },
+    y: {
+      ticks: {
+        color: '#DDD',
+      },
+      grid: {
+        color: '#444',
+      },
+    },
+  },
+};
+
 const EmployeeDashboard = () => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("employee_token");
+      if (!token) {
+        setError("No token found. Please login.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch("https://backend.hrms.transev.site/employee/profile", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Failed to fetch profile");
+        }
+
+        setProfile(result.data);
+        setError("");
+      } catch (err) {
+        console.error("❌ Fetch error:", err);
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   return (
     <div className="flex">
       <EmployeeSidebar />
-      <div className="flex-1 ml-64 min-h-screen bg-yellow-50 p-6">
+      <div
+        className={`flex-1 ml-64 min-h-screen p-6 transition-colors duration-300 ${
+          darkMode ? "bg-gray-900 text-gray-200" : "bg-yellow-50 text-yellow-900"
+        }`}
+      >
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <div className="text-2xl font-semibold text-yellow-700">Employee Dashboard</div>
+          <div className="text-2xl font-semibold">
+            Employee Dashboard
+          </div>
           <div className="flex items-center gap-4">
-            <FaSun className="text-yellow-500 cursor-pointer" />
-            <FaMoon className="text-yellow-700 cursor-pointer" />
+            {darkMode ? (
+              <FaSun
+                className="text-yellow-500 cursor-pointer"
+                onClick={() => setDarkMode(false)}
+                title="Switch to Light Mode"
+              />
+            ) : (
+              <FaMoon
+                className="text-yellow-700 cursor-pointer"
+                onClick={() => setDarkMode(true)}
+                title="Switch to Dark Mode"
+              />
+            )}
+            {/* Profile section */}
             <div className="flex items-center gap-2">
               <img
                 src="https://via.placeholder.com/"
                 alt="profile"
                 className="w-8 h-8 rounded-full"
               />
-              <div className="text-sm">
-                <div className="font-semibold text-yellow-800">Welcome, SUJATA ROUTH</div>
-                <div className="text-yellow-600 text-xs">Employee</div>
+              <div
+                className="text-sm cursor-pointer"
+                onClick={() => navigate("/MyProfile")}
+              >
+                <div className={`font-semibold ${darkMode ? "text-gray-200" : "text-yellow-800"}`}>
+                  Welcome, {loading ? "Loading..." : error ? "Employee" : profile?.name || "Employee"}
+                </div>
+                <div className={darkMode ? "text-gray-400 text-xs" : "text-yellow-600 text-xs"}>
+                  Employee
+                </div>
               </div>
             </div>
           </div>
@@ -120,34 +218,56 @@ const EmployeeDashboard = () => {
           {overviewCards.map((item, index) => (
             <div
               key={index}
-              className="bg-white p-4 rounded shadow flex flex-col items-center text-center"
+              className={`p-4 rounded flex flex-col items-center text-center shadow transition-colors duration-300 ${
+                darkMode
+                  ? "bg-gray-800 text-gray-200 shadow-gray-700"
+                  : "bg-white text-yellow-700 shadow"
+              }`}
             >
-              <div className="text-3xl text-yellow-500 mb-2">{item.icon}</div>
-              <div className="text-lg font-medium text-yellow-700">{item.label}</div>
-              <div className="text-2xl text-yellow-600 font-bold mt-1">5</div>
+              <div className={`text-3xl mb-2 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`}>
+                {item.icon}
+              </div>
+              <div className="text-lg font-medium">{item.label}</div>
+              <div className={`text-2xl font-bold mt-1 ${darkMode ? "text-yellow-300" : "text-yellow-600"}`}>
+                5
+              </div>
             </div>
           ))}
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded shadow h-72">
-            <div className="text-xl font-semibold mb-4 text-yellow-700">Work Hour Trend</div>
+          <div
+            className={`p-6 rounded shadow h-72 transition-colors duration-300 ${
+              darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow"
+            }`}
+          >
+            <div className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
+              Work Hour Trend
+            </div>
             <div className="h-48">
-              <Line data={lineData} options={chartOptions} />
+              <Line data={lineData} options={darkMode ? darkChartOptions : lightChartOptions} />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded shadow h-72">
-            <div className="text-xl font-semibold mb-4 text-yellow-700">Attendance Summary</div>
+          <div
+            className={`p-6 rounded shadow h-72 transition-colors duration-300 ${
+              darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow"
+            }`}
+          >
+            <div className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
+              Attendance Summary
+            </div>
             <div className="h-48">
-              <Pie data={pieData} options={chartOptions} />
+              <Pie data={pieData} options={darkMode ? darkChartOptions : lightChartOptions} />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-right text-xs text-yellow-400 mt-6">Powered by Transmogrify</div>
+        <div className={`text-right text-xs mt-6 ${darkMode ? "text-gray-500" : "text-yellow-400"}`}>
+          Powered by Transmogrify
+        </div>
       </div>
     </div>
   );

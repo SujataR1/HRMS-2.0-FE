@@ -37,8 +37,50 @@ ChartJS.register(
 const HRDashboard = () => {
   const navigate = useNavigate();
 
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [pendingCount, setPendingCount] = useState(0);
 
+  // Fetch HR Profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("hr_token");
+      if (!token) {
+        setError("No token found. Please login.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("https://backend.hrms.transev.site/hr/profile", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || "Failed to fetch profile");
+        }
+
+        setProfile(result.data);
+        setError("");
+      } catch (err) {
+        console.error("❌ Fetch error:", err);
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  // Fetch pending leaves count
   useEffect(() => {
     const fetchPending = async () => {
       try {
@@ -58,8 +100,8 @@ const HRDashboard = () => {
     { label: 'Present Today', icon: <MdPersonOutline />, count: '—' },
     { label: 'On Leave', icon: <MdPersonOff />, count: '—' },
     { label: 'Pending Leave Requests', icon: <MdCalendarToday />, count: pendingCount, route: '/HRLeaveApproval' },
-    { label: 'Attendance Records', icon: <MdAccessTime />, count: 'check', route: '/HRAttendance' }, // ✅ Added route
-];
+    { label: 'Attendance Records', icon: <MdAccessTime />, count: 'check', route: '/HRAttendance' },
+  ];
 
   const barData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
@@ -125,15 +167,17 @@ const HRDashboard = () => {
           <div className="flex items-center gap-4">
             <FaSun className="text-yellow-500 cursor-pointer" />
             <FaMoon className="text-yellow-700 cursor-pointer" />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/HrProfile")}>
               <img
                 src="https://via.placeholder.com/32"
                 alt="profile"
                 className="w-8 h-8 rounded-full border border-yellow-400"
               />
               <div className="text-sm text-yellow-700">
-                <div className="font-semibold">HR Executive</div>
-                <div className="text-yellow-600 text-xs">Sujata</div>
+                <div className="font-semibold">
+                  {loading ? "Loading..." : error ? "HR Executive" : profile?.name || "HR Executive"}
+                </div>
+                <div className="text-yellow-600 text-xs">HR</div>
               </div>
             </div>
           </div>

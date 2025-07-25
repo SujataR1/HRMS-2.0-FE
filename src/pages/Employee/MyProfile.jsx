@@ -2,6 +2,20 @@ import React, { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import logo from "../../assets/TransmogriffyLogo.png";
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
+import {
+  BriefcaseIcon,
+  CalendarIcon,
+  CheckBadgeIcon,
+  BuildingOfficeIcon,
+  ClockIcon,
+  ArrowRightCircleIcon,
+  XCircleIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
+
+
+
 
 const MyProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -99,14 +113,161 @@ const MyProfile = () => {
             </ProfileSection>
 
             <ProfileSection title="Employment Details">
-              <InfoRow label="Employment Type" value={profile.employmentType} />
-              <InfoRow label="Employment Status" value={profile.employmentStatus} />
-              <InfoRow label="Date of Joining" value={formatDate(profile.dateOfJoining)} />
-              <InfoRow label="Confirmation Date" value={formatDate(profile.confirmationDate)} />
-              <InfoRow label="Designation" value={profile.designation} />
-              <InfoRow label="Department" value={profile.department} />
-              <InfoRow label="Assigned Shift ID" value={profile.assignedShiftId} />
+              <div className="space-y-4 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+                <InfoRow
+                  label={
+                    <span className="flex items-center gap-2">
+                      <BriefcaseIcon className="w-5 h-5 text-gray-500" />
+                      Employment Type
+                    </span>
+                  }
+                  value={profile.employmentType}
+                />
+                <InfoRow
+                  label={
+                    <span className="flex items-center gap-2">
+                      <CheckBadgeIcon className="w-5 h-5 text-green-600" />
+                      Employment Status
+                    </span>
+                  }
+                  value={
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-sm font-medium ${profile.employmentStatus === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-700"
+                        }`}
+                    >
+                      {profile.employmentStatus}
+                    </span>
+                  }
+                />
+                <InfoRow
+                  label={
+                    <span className="flex items-center gap-2">
+                      <CalendarIcon className="w-5 h-5 text-blue-500" />
+                      Date of Joining
+                    </span>
+                  }
+                  value={formatDate(profile.dateOfJoining)}
+                />
+                <InfoRow
+                  label={
+                    <span className="flex items-center gap-2">
+                      <CheckCircleIcon className="w-5 h-5 text-blue-600" />
+                      Confirmation Date
+                    </span>
+                  }
+                  value={formatDate(profile.confirmationDate)}
+                />
+                <InfoRow
+                  label={
+                    <span className="flex items-center gap-2">
+                      <BuildingOfficeIcon className="w-5 h-5 text-gray-500" />
+                      Designation
+                    </span>
+                  }
+                  value={profile.designation}
+                />
+                <InfoRow
+                  label={
+                    <span className="flex items-center gap-2">
+                      <BuildingOfficeIcon className="w-5 h-5 text-gray-500" />
+                      Department
+                    </span>
+                  }
+                  value={profile.department}
+                />
+              </div>
             </ProfileSection>
+
+            <ProfileSection title="Assigned Shift Details" fullWidth>
+              {profile.assignedShift ? (
+                <div className="space-y-6 p-6 bg-yellow-50 border border-yellow-200 rounded-xl shadow-sm">
+                  {/* Shift Name */}
+                  <div className="flex items-center gap-2 border-b pb-2 border-yellow-300">
+                    <ClockIcon className="w-6 h-6 text-yellow-700" />
+                    <h4 className="text-2xl font-bold text-yellow-800">
+                      {profile.assignedShift.shiftName}
+                    </h4>
+                  </div>
+
+                  {/* Shift Timings */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-800 text-sm">
+                    <div className="flex items-start gap-2">
+                      <ArrowRightCircleIcon className="w-5 h-5 text-gray-500 mt-1" />
+                      <span>
+                        <span className="font-semibold">Shift Start:</span>{" "}
+                        {profile.assignedShift.fullShiftStartingTime || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <ArrowRightCircleIcon className="w-5 h-5 text-gray-500 mt-1" />
+                      <span>
+                        <span className="font-semibold">Shift End:</span>{" "}
+                        {profile.assignedShift.fullShiftEndingTime || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <ClockIcon className="w-5 h-5 text-gray-500 mt-1" />
+                      <span>
+                        <span className="font-semibold">Duration:</span>{" "}
+                        {profile.assignedShift.fullShiftDuration || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Weekly Days Off */}
+                  <div className="text-gray-700 text-sm flex items-start gap-2">
+                    <XCircleIcon className="w-5 h-5 text-red-500 mt-0.5" />
+                    <span>
+                      <span className="font-semibold">Weekly Days Off:</span>{" "}
+                      {profile.assignedShift.weeklyDaysOff.length > 0
+                        ? profile.assignedShift.weeklyDaysOff.join(", ")
+                        : "None"}
+                    </span>
+                  </div>
+
+                  {/* Punch In / Out Times */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700 text-sm">
+                    <div>
+                      <h5 className="text-lg font-semibold text-yellow-700 mb-2 flex items-center gap-2">
+                        <ArrowRightCircleIcon className="w-5 h-5 text-yellow-600" />
+                        Punch In Rules
+                      </h5>
+                      <ul className="space-y-1 list-disc list-inside text-gray-700">
+                        <li><strong>Earliest:</strong> {profile.assignedShift.computed.punchInEarliest || "-"}</li>
+                        <li><strong>Grace Until:</strong> {profile.assignedShift.computed.punchInGraceUntil || "-"}</li>
+                        <li><strong>Absent After:</strong> {profile.assignedShift.computed.punchInAbsentAfter || "-"}</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h5 className="text-lg font-semibold text-yellow-700 mb-2 flex items-center gap-2">
+                        <ArrowRightCircleIcon className="w-5 h-5 text-yellow-600" />
+                        Punch Out Rules
+                      </h5>
+                      <ul className="space-y-1 list-disc list-inside text-gray-700">
+                        <li><strong>Earliest Without Penalty:</strong> {profile.assignedShift.computed.punchOutEarliestWithoutPenalty || "-"}</li>
+                        <li><strong>Latest With Buffer:</strong> {profile.assignedShift.computed.punchOutMaxLatestWithBuffer || "-"}</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Grace & Overtime */}
+                  <div className="bg-white rounded-md p-4 shadow-inner border border-yellow-100 text-sm space-y-2 text-gray-700">
+                    <p><ExclamationCircleIcon className="w-4 h-4 inline text-yellow-600 mr-1" /> <strong>Grace In:</strong> {profile.assignedShift.fullShiftGraceInTimingInMinutes} minutes</p>
+                    <p><ExclamationCircleIcon className="w-4 h-4 inline text-yellow-600 mr-1" /> <strong>Grace Out:</strong> {profile.assignedShift.fullShiftGraceOutTimingInMinutes} minutes</p>
+                    <p><ExclamationCircleIcon className="w-4 h-4 inline text-yellow-600 mr-1" /> <strong>Max Overtime:</strong> {profile.assignedShift.overtimeMaximumAllowableLimitInMinutes} minutes</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm italic text-gray-500">No assigned shift details available.</p>
+              )}
+            </ProfileSection>
+
+
+
+
+
 
             <ProfileSection title="Contact Information">
               <InfoRow label="Phone Number" value={profile.phoneNumber} />

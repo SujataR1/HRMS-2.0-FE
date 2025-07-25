@@ -24,7 +24,7 @@ const HRSidebar = () => {
     { label: 'Employee Management', icon: <MdPeople size={18} /> },
     { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
     { label: 'Attendance Report Generate ', path: '/HRAttendanceReportGenerate', icon: <MdAssessment size={18} /> },
-    { label: 'Leave Requests', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
+    { label: 'Leave Management', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
     { label: 'Leave Approval', path: '/HRLeaveApproval', icon: <MdCalendarToday size={18} /> },
     { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
     { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
