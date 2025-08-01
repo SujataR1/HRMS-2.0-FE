@@ -24,6 +24,7 @@ const EmployeeSidebar = () => {
     { label: 'My Leaves', path: '/MyLeaves', icon: <MdEventNote size={18} /> },
     { label: 'Shift Details', path: '/EmployeeShiftDetails', icon: <MdEventNote size={18} /> },
     { label: 'My Training', path: '/EmployeeTraining', icon: <MdEventNote size={18} /> },
+    { label: 'Forgot Password', path: '/SideForgotPassword', icon: <MdEventNote size={18} /> },
 
     // 👇 New menu item: Raise a Concern
     { label: 'Raise a Concern', path: '/EmployeeRaiseConcern', icon: <MdReportProblem size={18} /> },

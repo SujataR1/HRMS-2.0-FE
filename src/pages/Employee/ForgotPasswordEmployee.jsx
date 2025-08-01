@@ -57,7 +57,7 @@ const ForgotPasswordEmployee = () => {
         setEmail("");
         setTimeout(() => {
           // ✅ External redirect
-          window.location.href = "http://localhost:5173/";
+          window.location.href = "hrms.transev.site/";
         }, 1500);
       } else {
         setError(response.data?.message || "Reset failed.");

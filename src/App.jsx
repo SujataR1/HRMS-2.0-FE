@@ -55,9 +55,8 @@ import AdminConcernList from './pages/Admin/AdminConcernList';
 import HrProfile from './pages/HR/HrProfile';
 import HRAttendanceReportGenerate from './pages/HR/HRAttendanceReportGenerate';
 import AdminProfile from './pages/Admin/Profile';
-
-// Importing LeaveApproval component
 import HRLeaveApprovals from './pages/HR/HRLeaveApprovals';
+import SideForgotPassword from './pages/Employee/SideForgotPassword';
 
 function App() {
   return (
@@ -123,6 +122,8 @@ function App() {
         <Route path="/HRAttendanceReportGenerate" element={<HRAttendanceReportGenerate />} />
         <Route path="/HRLeaveApproval" element={<HRLeaveApprovals />} />
         <Route path="/AdminProfile" element={<AdminProfile />} />
+        <Route path="/SideForgotPassword" element={<SideForgotPassword />} />
+         
       </Routes>
     </Router>
   );

@@ -268,7 +268,7 @@
 //   useEffect(() => {
 //     fetchAppliedLeaves();
 //   }, [filter]);
-  
+
 
 //   return (
 //     <div className="flex min-h-screen bg-yellow-50">
@@ -604,7 +604,7 @@ const LeaveFormAndView = () => {
   const [editNotes, setEditNotes] = useState("");
   const [applying, setApplying] = useState(false);
   const [leaveBalance, setLeaveBalance] = useState(null);
-const [showAllLeaves, setShowAllLeaves] = useState(false);
+  const [showAllLeaves, setShowAllLeaves] = useState(false);
 
 
   const handleChange = (e) => {
@@ -836,29 +836,29 @@ const [showAllLeaves, setShowAllLeaves] = useState(false);
 
 
   const fetchLeaveBalance = async () => {
-  const employee_token = localStorage.getItem("employee_token");
-  if (!employee_token) {
-    console.error("Token missing for fetching leave balance.");
-    return;
-  }
-
-  try {
-    const res = await fetch("https://backend.hrms.transev.site/employee/leave-register", {
-      headers: {
-        Authorization: `Bearer ${employee_token}`,
-      },
-    });
-
-    const data = await res.json();
-    if (res.ok && data.status === "success") {
-      setLeaveBalance(data.data);
-    } else {
-      console.error("Error fetching leave balance:", data.message);
+    const employee_token = localStorage.getItem("employee_token");
+    if (!employee_token) {
+      console.error("Token missing for fetching leave balance.");
+      return;
     }
-  } catch (err) {
-    console.error("Fetch error:", err);
-  }
-};
+
+    try {
+      const res = await fetch("https://backend.hrms.transev.site/employee/leave-register", {
+        headers: {
+          Authorization: `Bearer ${employee_token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        setLeaveBalance(data.data);
+      } else {
+        console.error("Error fetching leave balance:", data.message);
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
 
   // 🔁 Refetch applied leaves when filters change
   useEffect(() => {
@@ -941,10 +941,15 @@ const [showAllLeaves, setShowAllLeaves] = useState(false);
                 <textarea
                   name="otherTypeDescription"
                   value={form.otherTypeDescription}
-                  onChange={handleChange}
-                  rows={2}
-                  className="w-full border border-yellow-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+                  onChange={(e) => {
+                    handleChange(e);
+                    e.target.style.height = "auto";
+                    e.target.style.height = e.target.scrollHeight + "px";
+                  }}
+                  className="w-full border border-yellow-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-400 overflow-hidden resize-none"
+                  style={{ minHeight: "60px" }}
                 ></textarea>
+
               </div>
             ) : (
               <div>
@@ -954,10 +959,15 @@ const [showAllLeaves, setShowAllLeaves] = useState(false);
                 <textarea
                   name="applicationNotes"
                   value={form.applicationNotes}
-                  onChange={handleChange}
-                  rows={2}
-                  className="w-full border border-yellow-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+                  onChange={(e) => {
+                    handleChange(e);
+                    e.target.style.height = "auto"; // Reset height
+                    e.target.style.height = e.target.scrollHeight + "px"; // Set new height
+                  }}
+                  className="w-full border border-yellow-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-400 overflow-hidden resize-none"
+                  style={{ minHeight: "60px" }}
                 ></textarea>
+
               </div>
             )}
 
@@ -1156,52 +1166,52 @@ const [showAllLeaves, setShowAllLeaves] = useState(false);
           )}
         </div>
 
-{/* Available Leaves Section */}
-{leaveBalance && (
-  <div className="bg-white shadow-xl border border-yellow-300 rounded-2xl p-10 mt-10">
-    <div className="flex justify-between items-center mb-6">
-      <h2 className="text-2xl font-bold text-yellow-900">Available Leaves</h2>
-      <button
-        onClick={() => setShowAllLeaves(!showAllLeaves)}
-        className="text-sm font-semibold text-yellow-800 border border-yellow-400 px-4 py-1.5 rounded hover:bg-yellow-100 transition"
-      >
-        {showAllLeaves ? "🔽 Show Only Active" : "📋 Show All Types"}
-      </button>
-    </div>
+        {/* Available Leaves Section */}
+        {leaveBalance && (
+          <div className="bg-white shadow-xl border border-yellow-300 rounded-2xl p-10 mt-10">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-yellow-900">Available Leaves</h2>
+              <button
+                onClick={() => setShowAllLeaves(!showAllLeaves)}
+                className="text-sm font-semibold text-yellow-800 border border-yellow-400 px-4 py-1.5 rounded hover:bg-yellow-100 transition"
+              >
+                {showAllLeaves ? "🔽 Show Only Active" : "📋 Show All Types"}
+              </button>
+            </div>
 
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm text-yellow-800 font-semibold">
-      {Object.entries(leaveBalance).map(([key, value]) => {
-        if (["grandTotal", "lastResetYear", "updatedAt"].includes(key)) return null;
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm text-yellow-800 font-semibold">
+              {Object.entries(leaveBalance).map(([key, value]) => {
+                if (["grandTotal", "lastResetYear", "updatedAt"].includes(key)) return null;
 
-        const total = value.current + value.carried;
-        if (!showAllLeaves && total === 0) return null;
+                const total = value.current + value.carried;
+                if (!showAllLeaves && total === 0) return null;
 
-        return (
-          <div key={key} className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 shadow-sm">
-            <p className="text-yellow-700 uppercase tracking-wide mb-1">
-              {key.replace(/([A-Z])/g, ' $1').toUpperCase()}
-            </p>
-            <p>Current: {value.current}</p>
-            <p>Carried: {value.carried}</p>
-            <p>Total: {total}</p>
+                return (
+                  <div key={key} className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 shadow-sm">
+                    <p className="text-yellow-700 uppercase tracking-wide mb-1">
+                      {key.replace(/([A-Z])/g, ' $1').toUpperCase()}
+                    </p>
+                    <p>Current: {value.current}</p>
+                    <p>Carried: {value.carried}</p>
+                    <p>Total: {total}</p>
+                  </div>
+                );
+              })}
+
+              <div className="bg-yellow-100 p-4 rounded-lg col-span-2 md:col-span-4 mt-4">
+                <p className="text-yellow-900 font-bold">
+                  Grand Total: {leaveBalance.grandTotal}
+                </p>
+                <p className="text-sm text-yellow-700">
+                  Last Reset Year: {leaveBalance.lastResetYear}
+                </p>
+                <p className="text-xs text-yellow-500">
+                  Last Updated: {new Date(leaveBalance.updatedAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
           </div>
-        );
-      })}
-
-      <div className="bg-yellow-100 p-4 rounded-lg col-span-2 md:col-span-4 mt-4">
-        <p className="text-yellow-900 font-bold">
-          Grand Total: {leaveBalance.grandTotal}
-        </p>
-        <p className="text-sm text-yellow-700">
-          Last Reset Year: {leaveBalance.lastResetYear}
-        </p>
-        <p className="text-xs text-yellow-500">
-          Last Updated: {new Date(leaveBalance.updatedAt).toLocaleDateString()}
-        </p>
-      </div>
-    </div>
-  </div>
-)}
+        )}
 
 
       </main>
