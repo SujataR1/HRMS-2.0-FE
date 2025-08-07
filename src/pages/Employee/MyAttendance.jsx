@@ -460,11 +460,15 @@ const MyAttendance = () => {
   })();
 
   return (
-    <div className="flex min-h-screen bg-yellow-50">
-      <EmployeeSidebar />
+<div className="flex min-h-screen bg-yellow-50">
+  {/* Sidebar */}
+  <div className="w-64">
+    <EmployeeSidebar />
+  </div>
 
-      <main className="flex-1 ml-64 flex items-center justify-center p-8">
-        <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-10">
+
+      <main className="flex-1 flex items-center justify-center p-6">
+    <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-10">
           <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 border-b border-yellow-300 pb-4 text-center">
             My Attendance
           </h1>

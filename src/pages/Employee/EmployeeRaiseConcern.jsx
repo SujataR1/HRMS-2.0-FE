@@ -75,8 +75,10 @@ const EmployeeRaiseConcern = () => {
   };
 
   return (
-    <div className="flex">
-      <EmployeeSidebar />
+    <div className="flex min-h-screen bg-yellow-50">
+  <div className="w-64">
+    <EmployeeSidebar />
+  </div>
       <div className="p-6 w-full max-w-4xl mx-auto mt-10 bg-white shadow-md rounded-lg">
         <h2 className="text-3xl font-bold text-yellow-700 mb-6 text-center">
           Raise a Workplace Concern
