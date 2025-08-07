@@ -128,41 +128,63 @@ const EmployeeDashboard = () => {
   const [error, setError] = useState("");
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
+  const [profilePicture, setProfilePicture] = useState(null);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem("employee_token");
-      if (!token) {
-        setError("No token found. Please login.");
-        setLoading(false);
-        return;
+
+useEffect(() => {
+  const fetchProfile = async () => {
+    const token = localStorage.getItem("employee_token");
+    if (!token) {
+      setError("No token found. Please login.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Fetch profile data
+      const profileRes = await fetch("https://backend.hrms.transev.site/employee/profile", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const profileResult = await profileRes.json();
+
+      if (!profileRes.ok) {
+        throw new Error(profileResult.message || "Failed to fetch profile");
       }
-      try {
-        const response = await fetch("https://backend.hrms.transev.site/employee/profile", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
 
-        const result = await response.json();
+      setProfile(profileResult.data);
 
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to fetch profile");
-        }
+      // Fetch profile picture
+      const pictureRes = await fetch("https://backend.hrms.transev.site/employee/profile-picture", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        setProfile(result.data);
-        setError("");
-      } catch (err) {
-        console.error("❌ Fetch error:", err);
-        setError(err.message || "Something went wrong");
-      } finally {
-        setLoading(false);
+      const pictureResult = await pictureRes.json();
+
+      if (pictureResult.status === "success" && pictureResult.data) {
+        setProfilePicture(pictureResult.data); // It's already base64 image
+      } else {
+        console.warn("Profile picture not found.");
       }
-    };
 
-    fetchProfile();
-  }, []);
+      setError("");
+    } catch (err) {
+      console.error("❌ Fetch error:", err);
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProfile();
+}, []);
+
 
   return (
     <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-gray-200" : "bg-yellow-50 text-yellow-900"}`}>
@@ -196,10 +218,11 @@ const EmployeeDashboard = () => {
             {/* Profile section */}
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/MyProfile")}>
               <img
-                src="https://via.placeholder.com/40"
-                alt="profile"
-                className="w-8 h-8 rounded-full object-cover"
-              />
+  src={profilePicture || "https://via.placeholder.com/40"}
+  alt="profile"
+  className="w-8 h-8 rounded-full object-cover"
+/>
+
               <div>
                 <div className={`font-semibold ${darkMode ? "text-gray-200" : "text-yellow-800"}`}>
                   {loading ? "Loading..." : error ? "Employee" : profile?.name || "Employee"}
