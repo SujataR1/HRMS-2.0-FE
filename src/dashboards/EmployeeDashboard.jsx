@@ -165,45 +165,44 @@ const EmployeeDashboard = () => {
   }, []);
 
   return (
-    <div className="flex">
-      <EmployeeSidebar />
-      <div
-        className={`flex-1 ml-64 min-h-screen p-6 transition-colors duration-300 ${
-          darkMode ? "bg-gray-900 text-gray-200" : "bg-yellow-50 text-yellow-900"
-        }`}
-      >
+    <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-gray-200" : "bg-yellow-50 text-yellow-900"}`}>
+      
+      {/* Sidebar */}
+      <aside className="w-64 h-screen fixed top-0 left-0 bg-white dark:bg-gray-800 shadow-lg z-20">
+        <EmployeeSidebar />
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 ml-64 p-6 transition-colors duration-300 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <div className="text-2xl font-semibold">
-            Employee Dashboard
-          </div>
+          <h1 className="text-2xl font-semibold">Employee Dashboard</h1>
           <div className="flex items-center gap-4">
             {darkMode ? (
               <FaSun
                 className="text-yellow-500 cursor-pointer"
                 onClick={() => setDarkMode(false)}
                 title="Switch to Light Mode"
+                size={20}
               />
             ) : (
               <FaMoon
                 className="text-yellow-700 cursor-pointer"
                 onClick={() => setDarkMode(true)}
                 title="Switch to Dark Mode"
+                size={20}
               />
             )}
             {/* Profile section */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/MyProfile")}>
               <img
-                src="https://via.placeholder.com/"
+                src="https://via.placeholder.com/40"
                 alt="profile"
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full object-cover"
               />
-              <div
-                className="text-sm cursor-pointer"
-                onClick={() => navigate("/MyProfile")}
-              >
+              <div>
                 <div className={`font-semibold ${darkMode ? "text-gray-200" : "text-yellow-800"}`}>
-                  Welcome, {loading ? "Loading..." : error ? "Employee" : profile?.name || "Employee"}
+                  {loading ? "Loading..." : error ? "Employee" : profile?.name || "Employee"}
                 </div>
                 <div className={darkMode ? "text-gray-400 text-xs" : "text-yellow-600 text-xs"}>
                   Employee
@@ -214,21 +213,21 @@ const EmployeeDashboard = () => {
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           {overviewCards.map((item, index) => (
             <div
               key={index}
-              className={`p-4 rounded flex flex-col items-center text-center shadow transition-colors duration-300 ${
+              className={`p-5 rounded-lg flex flex-col items-center text-center shadow-md transition-colors duration-300 ${
                 darkMode
-                  ? "bg-gray-800 text-gray-200 shadow-gray-700"
-                  : "bg-white text-yellow-700 shadow"
+                  ? "bg-gray-800 text-gray-200 shadow-gray-700 hover:bg-yellow-600 hover:text-gray-900"
+                  : "bg-white text-yellow-700 shadow hover:bg-yellow-100"
               }`}
             >
-              <div className={`text-3xl mb-2 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`}>
+              <div className={`text-4xl mb-2 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`}>
                 {item.icon}
               </div>
               <div className="text-lg font-medium">{item.label}</div>
-              <div className={`text-2xl font-bold mt-1 ${darkMode ? "text-yellow-300" : "text-yellow-600"}`}>
+              <div className={`text-3xl font-bold mt-1 ${darkMode ? "text-yellow-300" : "text-yellow-600"}`}>
                 5
               </div>
             </div>
@@ -236,39 +235,39 @@ const EmployeeDashboard = () => {
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div
-            className={`p-6 rounded shadow h-72 transition-colors duration-300 ${
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <section
+            className={`p-6 rounded-lg shadow-md h-72 transition-colors duration-300 ${
               darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow"
             }`}
           >
-            <div className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
+            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
               Work Hour Trend
-            </div>
+            </h2>
             <div className="h-48">
               <Line data={lineData} options={darkMode ? darkChartOptions : lightChartOptions} />
             </div>
-          </div>
+          </section>
 
-          <div
-            className={`p-6 rounded shadow h-72 transition-colors duration-300 ${
+          <section
+            className={`p-6 rounded-lg shadow-md h-72 transition-colors duration-300 ${
               darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow"
             }`}
           >
-            <div className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
+            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
               Attendance Summary
-            </div>
+            </h2>
             <div className="h-48">
               <Pie data={pieData} options={darkMode ? darkChartOptions : lightChartOptions} />
             </div>
-          </div>
+          </section>
         </div>
 
         {/* Footer */}
-        <div className={`text-right text-xs mt-6 ${darkMode ? "text-gray-500" : "text-yellow-400"}`}>
+        <footer className={`text-right text-xs mt-10 mb-4 ${darkMode ? "text-gray-500" : "text-yellow-400"}`}>
           Powered by Transmogrify
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 };

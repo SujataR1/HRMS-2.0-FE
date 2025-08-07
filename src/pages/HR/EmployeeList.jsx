@@ -62,14 +62,14 @@ const EmployeeList = () => {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-yellow-100 to-yellow-50">
       <HRSidebar />
-      <main className="flex-1 p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-xl border border-yellow-300 p-8">
+      <main className="flex-1 p-4 md:p-8 md:ml-64 overflow-auto transition-all duration-300">
+        <div className="w-full max-w-7xl mx-auto bg-white rounded-3xl shadow-xl border border-yellow-300 px-4 py-6 sm:px-6 md:px-8">
           <h2 className="text-4xl font-extrabold text-yellow-700 mb-8 text-center drop-shadow-sm">
             Employee Directory
           </h2>
 
           {/* Sticky search bar */}
-          <div className="mb-15 mx-auto sticky top-8 bg-yellow-50 z-10 rounded-full shadow-lg p-4 border border-yellow-300 max-w-sm sm:max-w-md">
+          <div className="mb-10 mx-auto sticky top-4 bg-yellow-50 z-10 rounded-full shadow-md p-3 sm:p-4 border border-yellow-300 w-full max-w-md">
             <input
               type="search"
               placeholder="Search by name, ID, designation, or department..."
@@ -131,12 +131,13 @@ const EmployeeList = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {filteredEmployees.map((emp) => (
                 <article
                   key={emp.id}
                   tabIndex={0}
-                  className="relative bg-yellow-50 border border-yellow-300 rounded-3xl p-6 shadow-lg
+                  className="relative bg-yellow-50 border border-yellow-300 rounded-3xl p-4 sm:p-6 shadow-lg
+
                     hover:shadow-yellow-400 transition-shadow cursor-pointer
                     transform hover:-translate-y-1 hover:scale-[1.03]
                     duration-300

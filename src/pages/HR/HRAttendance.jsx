@@ -225,7 +225,7 @@ const HRAttendance = () => {
       halfDay: "Half Day",
       weeklyOff: "Weekly Off",
       holiday: "Holiday",
-      absent: "Absent", // Keep this if you support "absent"
+      absent: "Absent",
     };
     return labels[status] || status;
   };

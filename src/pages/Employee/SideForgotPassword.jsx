@@ -82,7 +82,9 @@ const SideForgotPassword = () => {
   return (
     <div className="flex min-h-screen bg-[#f1f5f9]">
       {/* Sidebar */}
-      <EmployeeSidebar />
+  <div className="w-64">
+    <EmployeeSidebar />
+  </div>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4">
