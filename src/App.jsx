@@ -57,6 +57,7 @@ import HRAttendanceReportGenerate from './pages/HR/HRAttendanceReportGenerate';
 import AdminProfile from './pages/Admin/Profile';
 import HRLeaveApprovals from './pages/HR/HRLeaveApprovals';
 import SideForgotPassword from './pages/Employee/SideForgotPassword';
+import MyHoliday from './pages/Employee/MyHoliday';
 
 function App() {
   return (
@@ -123,6 +124,9 @@ function App() {
         <Route path="/HRLeaveApproval" element={<HRLeaveApprovals />} />
         <Route path="/AdminProfile" element={<AdminProfile />} />
         <Route path="/SideForgotPassword" element={<SideForgotPassword />} />
+        <Route path="/MyHoliday" element={<MyHoliday />} />
+
+        
          
       </Routes>
     </Router>

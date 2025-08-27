@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt, FaBars } from 'react-icons/fa';
 import {
-  MdDashboard,
-  MdPerson,
-  MdCalendarToday,
-  MdEventNote,
-  MdReportProblem,
+  MdHome,
+  MdAccountCircle,
+  MdAccessTime,
+  MdNote,
+  MdBeachAccess,
+  MdSettings,
+  MdSchool,
+  MdLock,
+  MdFeedback,
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from "../../assets/TransmogriffyLogo.png";
@@ -17,15 +21,17 @@ const EmployeeSidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { label: 'Dashboard', path: '/EmployeeDashboard', icon: <MdDashboard size={18} /> },
-    { label: 'My Profile', path: '/MyProfile', icon: <MdPerson size={18} /> },
-    { label: 'My Attendance', path: '/MyAttendance', icon: <MdCalendarToday size={18} /> },
-    { label: 'My Leaves', path: '/MyLeaves', icon: <MdEventNote size={18} /> },
-    { label: 'Shift Details', path: '/EmployeeShiftDetails', icon: <MdEventNote size={18} /> },
-    { label: 'My Training', path: '/EmployeeTraining', icon: <MdEventNote size={18} /> },
-    { label: 'Change Password', path: '/SideForgotPassword', icon: <MdEventNote size={18} /> },
-    { label: 'Raise a Concern', path: '/EmployeeRaiseConcern', icon: <MdReportProblem size={18} /> },
-  ];
+    { label: 'Dashboard', path: '/EmployeeDashboard', icon: <MdHome size={18} /> },
+    { label: 'My Profile', path: '/MyProfile', icon: <MdAccountCircle size={18} /> },
+    { label: 'My Attendance', path: '/MyAttendance', icon: <MdAccessTime size={18} /> },
+    { label: 'My Leaves', path: '/MyLeaves', icon: <MdNote size={18} /> },
+    { label: 'My Holidays', path: '/MyHoliday', icon: <MdBeachAccess size={18} /> },
+    { label: 'Shift Details', path: '/EmployeeShiftDetails', icon: <MdSettings size={18} /> },
+    { label: 'My Training', path: '/EmployeeTraining', icon: <MdSchool size={18} /> },
+    { label: 'Change Password', path: '/SideForgotPassword', icon: <MdLock size={18} /> },
+    { label: 'Raise a Concern', path: '/EmployeeRaiseConcern', icon: <MdFeedback size={18} /> },
+];
+
 
   useEffect(() => {
     const current = menuItems.find(item => location.pathname.startsWith(item.path));
