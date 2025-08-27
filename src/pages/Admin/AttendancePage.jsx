@@ -554,7 +554,9 @@ const AdminAttendancePage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {attendanceList.map((item, index) =>
+                        {attendanceList.filter(item => new Date(item.attendanceDate) <= new Date()) // ✅ filter future dates
+  .map((item, index) =>
+
                           editingId === item.id ? (
                             <tr key={item.id} className="bg-yellow-50 text-center">
                               <td className="p-2 border border-yellow-300">{index + 1}</td>

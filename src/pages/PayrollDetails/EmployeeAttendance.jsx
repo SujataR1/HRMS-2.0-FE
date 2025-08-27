@@ -223,6 +223,13 @@ const EmployeeAttendance = () => {
                 <thead className="bg-yellow-200">
                   <tr>
                     <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-yellow-900 uppercase tracking-wide"
+                    >
+                      Sl. No.
+                      </th>
+
+                    <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-yellow-900 uppercase tracking-wide"
                     >
@@ -243,11 +250,16 @@ const EmployeeAttendance = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-yellow-200">
-                  {attendance.map((record, idx) => (
+                  {attendance.filter(record => new Date(record.date) <= new Date())
+                  .map((record, idx) => (
                     <tr
                       key={record.id || idx}
                       className={idx % 2 === 0 ? "bg-yellow-50" : "bg-yellow-100"}
                     >
+                      <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
+  {idx + 1}
+</td>
+
                       <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
                         {record.date}
                       </td>

@@ -185,10 +185,9 @@ const Home = () => {
                 setRequires2FA(false);
               }}
               className={`px-5 py-2 rounded-full font-semibold shadow-md transform hover:scale-105 active:scale-95 transition
-                ${
-                  selectedRole === key
-                    ? `${bg} text-gray-900 shadow-lg`
-                    : `text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-${color.replace("text-", "")}-400`
+                ${selectedRole === key
+                  ? `${bg} text-gray-900 shadow-lg`
+                  : `text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-${color.replace("text-", "")}-400`
                 }`}
             >
               {label}
@@ -254,15 +253,18 @@ const Home = () => {
                     if (nextInput) nextInput.focus();
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === "Backspace" && !otp[idx]) {
-                      // Move focus to previous input
-                      const prevInput = document.getElementById(`otp-${idx - 1}`);
-                      if (prevInput) {
-                        prevInput.focus();
-                        e.preventDefault();
-                        const otpArr = otp.split("");
-                        otpArr[idx - 1] = "";
+                    if (e.key === "Backspace") {
+                      e.preventDefault();
+                      const otpArr = otp.split("");
+
+                      if (otp[idx]) {
+                        otpArr[idx] = ""; // Clear current box
                         setOtp(otpArr.join("").slice(0, 6));
+                      } else if (idx > 0) {
+                        otpArr[idx - 1] = ""; // Clear previous box
+                        setOtp(otpArr.join("").slice(0, 6));
+                        const prevInput = document.getElementById(`otp-${idx - 1}`);
+                        if (prevInput) prevInput.focus();
                       }
                     }
                   }}
@@ -292,9 +294,8 @@ const Home = () => {
             <button
               type="submit"
               disabled={otp.length < 6}
-              className={`w-full py-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-extrabold shadow-lg hover:brightness-110 active:brightness-90 transition ${
-                otp.length < 6 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`w-full py-4 rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-extrabold shadow-lg hover:brightness-110 active:brightness-90 transition ${otp.length < 6 ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
               Verify OTP
             </button>

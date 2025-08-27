@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import EmployeeSidebar from '../components/Common/EmployeeSidebar';
+import { Tooltip as ReactTooltip } from "react-tooltip";
+import "react-tooltip/dist/react-tooltip.css";
+
 import {
   MdCheckCircle,
   MdCancel,
   MdWatchLater,
   MdCalendarToday,
-} from 'react-icons/md';
-import { FaMoon, FaSun } from 'react-icons/fa';
-import { Line, Pie } from 'react-chartjs-2';
+} from "react-icons/md";
+import { FaMoon, FaSun, FaBars } from "react-icons/fa";
+import { Line, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -18,7 +20,8 @@ import {
   Legend,
   Tooltip,
   PointElement,
-} from 'chart.js';
+} from "chart.js";
+import EmployeeSidebar from "../components/Common/EmployeeSidebar";
 
 ChartJS.register(
   ArcElement,
@@ -31,268 +34,354 @@ ChartJS.register(
 );
 
 const overviewCards = [
-  { label: 'Present Days', icon: <MdCheckCircle /> },
-  { label: 'Absent Days', icon: <MdCancel /> },
-  { label: 'Late Entries', icon: <MdWatchLater /> },
-  { label: 'Leave Balance', icon: <MdCalendarToday /> },
+  { label: "Present Days", icon: <MdCheckCircle /> },
+  // { label: "Absent Days", icon: <MdCancel /> },
+  { label: "Late Entries", icon: <MdWatchLater /> },
+  { label: "Weekly Offs", icon: <MdCalendarToday /> },
+  { label: "Holidays", icon: <MdCalendarToday /> },
+  { label: "Approved Leaves", icon: <MdCalendarToday /> },
 ];
 
 const lineData = {
-  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+  labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
   datasets: [
     {
-      label: 'Work Hours',
+      label: "Work Hours",
       data: [40, 42, 38, 41],
-      borderColor: '#FBBF24', // yellow-400
+      borderColor: "#FBBF24",
       fill: false,
       tension: 0.3,
     },
   ],
 };
 
-const pieData = {
-  labels: ['Present', 'Leave', 'Absent'],
-  datasets: [
-    {
-      data: [20, 3, 2],
-      backgroundColor: ['#FBBF24', '#F59E0B', '#D97706'], // yellow shades
-    },
-  ],
-};
-
-const lightChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: {
-        color: '#92400E', // darker yellow-brown for legend text
-      },
-    },
-  },
-  scales: {
-    x: {
-      ticks: {
-        color: '#92400E',
-      },
-      grid: {
-        color: '#FDE68A',
-      },
-    },
-    y: {
-      ticks: {
-        color: '#92400E',
-      },
-      grid: {
-        color: '#FDE68A',
-      },
-    },
-  },
-};
-
-const darkChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: {
-        color: '#DDD',
-      },
-    },
-  },
-  scales: {
-    x: {
-      ticks: {
-        color: '#DDD',
-      },
-      grid: {
-        color: '#444',
-      },
-    },
-    y: {
-      ticks: {
-        color: '#DDD',
-      },
-      grid: {
-        color: '#444',
-      },
-    },
-  },
-};
-
 const EmployeeDashboard = () => {
+  const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [profilePicture, setProfilePicture] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [darkMode, setDarkMode] = useState(false);
-  const navigate = useNavigate();
-  const [profilePicture, setProfilePicture] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Attendance counts
+  const [presentDays, setPresentDays] = useState(0);
+  const [absentDays, setAbsentDays] = useState(0);
+  const [lateEntries, setLateEntries] = useState(0);
+  const [weeklyOffCount, setWeeklyOffCount] = useState(0);
+  const [approvedLeavesCount, setApprovedLeavesCount] = useState(0);
+  const [holidaysCount, setHolidaysCount] = useState(0);
 
-useEffect(() => {
+  // Filters
+  const [filterType, setFilterType] = useState("monthYear");
+  const [filterMonthYear, setFilterMonthYear] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
+  const [filterYear, setFilterYear] = useState(
+    new Date().getFullYear().toString()
+  );
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    fetchAttendance();
+  }, [filterType, filterMonthYear, filterYear]);
+
   const fetchProfile = async () => {
     const token = localStorage.getItem("employee_token");
-    if (!token) {
-      setError("No token found. Please login.");
-      setLoading(false);
-      return;
-    }
+    if (!token) return setError("No token");
 
     try {
-      // Fetch profile data
-      const profileRes = await fetch("https://backend.hrms.transev.site/employee/profile", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        "https://backend.hrms.transev.site/employee/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed");
+      setProfile(result.data);
 
-      const profileResult = await profileRes.json();
-
-      if (!profileRes.ok) {
-        throw new Error(profileResult.message || "Failed to fetch profile");
-      }
-
-      setProfile(profileResult.data);
-
-      // Fetch profile picture
-      const pictureRes = await fetch("https://backend.hrms.transev.site/employee/profile-picture", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const pictureResult = await pictureRes.json();
-
-      if (pictureResult.status === "success" && pictureResult.data) {
-        setProfilePicture(pictureResult.data); // It's already base64 image
-      } else {
-        console.warn("Profile picture not found.");
-      }
-
-      setError("");
+      const picRes = await fetch(
+        "https://backend.hrms.transev.site/employee/profile-picture",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const picResult = await picRes.json();
+      if (picResult.status === "success") setProfilePicture(picResult.data);
     } catch (err) {
-      console.error("❌ Fetch error:", err);
-      setError(err.message || "Something went wrong");
+      setError(err.message || "Error");
     } finally {
       setLoading(false);
     }
   };
 
-  fetchProfile();
-}, []);
+  const fetchAttendance = async () => {
+    setLoading(true);
+    setError("");
+    const token = localStorage.getItem("employee_token");
+    if (!token) {
+      setLoading(false);
+      return setError("No token");
+    }
 
+    let bodyPayload;
+    if (filterType === "monthYear") {
+      const [year, month] = filterMonthYear.split("-");
+      bodyPayload = { monthYear: `${month}-${year}` };
+    } else {
+      bodyPayload = { year: filterYear };
+    }
+
+    try {
+      const res = await fetch(
+        "https://backend.hrms.transev.site/employee/attendance/view",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bodyPayload),
+        }
+      );
+      const result = await res.json();
+      if (result.status !== "success") throw new Error(result.message);
+
+      const today = new Date();
+      let present = 0,
+        absent = 0,
+        late = 0,
+        weeklyOffs = 0,
+        approvedLeaves = 0,
+        holidays = 0;
+
+      result.data.forEach((day) => {
+        const dayDate = new Date(day.date);
+        if (dayDate > today) return;
+
+        switch (day.status) {
+          case "fullDay":
+          case "halfDay":
+            present++;
+            if (day.flags?.includes("late")) late++;
+            break;
+          case "absent":
+            absent++;
+            break;
+          case "weeklyOff":
+            weeklyOffs++;
+            break;
+          case "approvedLeave":
+            approvedLeaves++;
+            break;
+          case "holiday":
+            // Add more holiday statuses here if any
+            holidays++;
+            break;
+          default:
+            break;
+        }
+      });
+
+      setPresentDays(present);
+      setAbsentDays(absent);
+      setLateEntries(late);
+      setWeeklyOffCount(weeklyOffs);
+      setApprovedLeavesCount(approvedLeaves);
+      setHolidaysCount(holidays);
+    } catch (err) {
+      setError(err.message || "Error fetching attendance");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-gray-200" : "bg-yellow-50 text-yellow-900"}`}>
-      
+    <div
+      className={`${darkMode ? "bg-gray-900 text-white" : "bg-yellow-50 text-gray-900"
+        } min-h-screen flex`}
+    >
+      {/* Sidebar Toggle (Mobile) */}
+      <button
+        className="fixed top-4 left-4 z-50 p-2 bg-yellow-500 text-white rounded-md md:hidden"
+        onClick={() => setSidebarOpen(true)}
+      >
+        <FaBars size={20} />
+      </button>
+
+      {/* Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 h-screen fixed top-0 left-0 bg-white dark:bg-gray-800 shadow-lg z-20">
-        <EmployeeSidebar />
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 z-50 shadow-lg transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 md:static`}
+      >
+        <EmployeeSidebar onClose={() => setSidebarOpen(false)} />
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-6 transition-colors duration-300 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Employee Dashboard</h1>
+      <main className="flex-1 p-4 md:p-2 md:ml-28 transition-all duration-300 w-full">
+        <header className="flex justify-between items-center flex-wrap gap-4 mb-8">
+          <h1 className="text-2xl font-bold">👋 Welcome Back</h1>
           <div className="flex items-center gap-4">
             {darkMode ? (
               <FaSun
-                className="text-yellow-500 cursor-pointer"
+                className="cursor-pointer text-yellow-400"
+                size={22}
                 onClick={() => setDarkMode(false)}
-                title="Switch to Light Mode"
-                size={20}
               />
             ) : (
               <FaMoon
-                className="text-yellow-700 cursor-pointer"
+                className="cursor-pointer text-gray-700"
+                size={22}
                 onClick={() => setDarkMode(true)}
-                title="Switch to Dark Mode"
-                size={20}
               />
             )}
-            {/* Profile section */}
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/MyProfile")}>
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => navigate("/MyProfile")}
+            >
               <img
-  src={profilePicture || "https://via.placeholder.com/40"}
-  alt="profile"
-  className="w-8 h-8 rounded-full object-cover"
-/>
-
+                src={profilePicture || "https://via.placeholder.com/40"}
+                alt="Profile"
+                className="w-10 h-10 rounded-full border-2 border-yellow-400"
+              />
               <div>
-                <div className={`font-semibold ${darkMode ? "text-gray-200" : "text-yellow-800"}`}>
-                  {loading ? "Loading..." : error ? "Employee" : profile?.name || "Employee"}
+                <div className="font-medium">
+                  {loading ? "Loading..." : profile?.name || "Employee"}
                 </div>
-                <div className={darkMode ? "text-gray-400 text-xs" : "text-yellow-600 text-xs"}>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
                   Employee
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </header>
+
+        {/* Filter */}
+        <section
+          className={`mb-6 p-4 rounded-lg shadow ${darkMode ? "bg-gray-800" : "bg-white"
+            }`}
+        >
+          <h2 className="font-semibold mb-3">📅 Filter Attendance</h2>
+          <div className="flex flex-wrap gap-4">
+            <select
+              className="border rounded px-4 py-2"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="monthYear">By Month-Year</option>
+              <option value="year">By Year</option>
+            </select>
+            {filterType === "monthYear" ? (
+              <input
+                type="month"
+                className="border rounded px-4 py-2"
+                value={filterMonthYear}
+                onChange={(e) => setFilterMonthYear(e.target.value)}
+              />
+            ) : (
+              <input
+                type="number"
+                min="2000"
+                max="2100"
+                className="border rounded px-4 py-2"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+              />
+            )}
+          </div>
+        </section>
+
+        {error && <p className="text-red-500 mb-4">{error}</p>}
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          {overviewCards.map((item, index) => (
-            <div
-              key={index}
-              className={`p-5 rounded-lg flex flex-col items-center text-center shadow-md transition-colors duration-300 ${
-                darkMode
-                  ? "bg-gray-800 text-gray-200 shadow-gray-700 hover:bg-yellow-600 hover:text-gray-900"
-                  : "bg-white text-yellow-700 shadow hover:bg-yellow-100"
-              }`}
-            >
-              <div className={`text-4xl mb-2 ${darkMode ? "text-yellow-400" : "text-yellow-500"}`}>
-                {item.icon}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {overviewCards.map((item) => {
+            const values = {
+              "Present Days": presentDays,
+              "Absent Days": absentDays,
+              "Late Entries": lateEntries,
+              "Weekly Offs": weeklyOffCount,
+              Holidays: holidaysCount,
+              "Approved Leaves": approvedLeavesCount,
+            };
+            return (
+              <div
+                key={item.label}
+                className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-800" : "bg-white"
+                  }`}
+              >
+                <div className="text-3xl text-yellow-500 mb-2">{item.icon}</div>
+                <div className="text-sm">{item.label}</div>
+                <div className="text-xl font-bold">
+                  {loading ? "..." : values[item.label]}
+                </div>
               </div>
-              <div className="text-lg font-medium">{item.label}</div>
-              <div className={`text-3xl font-bold mt-1 ${darkMode ? "text-yellow-300" : "text-yellow-600"}`}>
-                5
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <section
-            className={`p-6 rounded-lg shadow-md h-72 transition-colors duration-300 ${
-              darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow"
-            }`}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-800" : "bg-white"
+              }`}
           >
-            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
-              Work Hour Trend
-            </h2>
-            <div className="h-48">
-              <Line data={lineData} options={darkMode ? darkChartOptions : lightChartOptions} />
+            <h2 className="font-semibold mb-2">📈 Working Hours Trend</h2>
+            <div className="w-full h-[300px]">
+              <Line
+                data={lineData}
+                options={{ maintainAspectRatio: false, responsive: true }}
+              />
             </div>
-          </section>
-
-          <section
-            className={`p-6 rounded-lg shadow-md h-72 transition-colors duration-300 ${
-              darkMode ? "bg-gray-800 shadow-gray-700" : "bg-white shadow"
-            }`}
+          </div>
+          <div
+            className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-800" : "bg-white"
+              }`}
           >
-            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
-              Attendance Summary
-            </h2>
-            <div className="h-48">
-              <Pie data={pieData} options={darkMode ? darkChartOptions : lightChartOptions} />
+            <h2 className="font-semibold mb-2">📊 Attendance Summary</h2>
+            <div className="w-full h-[300px]">
+              <Pie
+                data={{
+                  labels: ["Present", "Leave", "Holiday", "Weekly Off"],
+                  datasets: [
+                    {
+                      data: [
+                        presentDays,
+                        approvedLeavesCount,
+                        holidaysCount,
+                        weeklyOffCount,
+                      ],
+                      backgroundColor: [
+                        "#e6a00aff",
+                        "#4737d1ff",
+                        "#6ed310f3 ",
+                        "#dd350aff",
+                        "#b6c909ff",
+                      ],
+                    },
+                  ],
+                }}
+                options={{ maintainAspectRatio: false, responsive: true }}
+              />
             </div>
-          </section>
+          </div>
         </div>
-
-        {/* Footer */}
-        <footer className={`text-right text-xs mt-10 mb-4 ${darkMode ? "text-gray-500" : "text-yellow-400"}`}>
-          Powered by Transmogrify
-        </footer>
       </main>
     </div>
   );
 };
 
 export default EmployeeDashboard;
+
