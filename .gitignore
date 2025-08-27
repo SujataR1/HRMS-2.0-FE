@@ -1,5 +1,5 @@
 ﻿# dependencies
-node_modules/
+node_modules
 
 # production
 dist/
@@ -18,3 +18,5 @@ yarn-error.log*
 # OS generated
 .DS_Store
 Thumbs.db
+
+package-lock.json
