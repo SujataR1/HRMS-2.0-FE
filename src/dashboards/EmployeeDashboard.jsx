@@ -35,7 +35,7 @@ ChartJS.register(
 
 const overviewCards = [
   { label: "Present Days", icon: <MdCheckCircle /> },
-  // { label: "Absent Days", icon: <MdCancel /> },
+  { label: "Absent Days", icon: <MdCancel /> },
   { label: "Late Entries", icon: <MdWatchLater /> },
   { label: "Weekly Offs", icon: <MdCalendarToday /> },
   { label: "Holidays", icon: <MdCalendarToday /> },
@@ -88,6 +88,39 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     fetchAttendance();
   }, [filterType, filterMonthYear, filterYear]);
+  const sendMonthlyReport = async () => {
+    const token = localStorage.getItem("employee_token");
+    if (!token) {
+      setError("Unauthorized: Token not found. Please log in again.");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        "https://backend.hrms.transev.site/employee/attendance/send-monthly-reports",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            monthYear: `${filterMonthYear.split("-")[1]}-${filterMonthYear.split("-")[0]}`
+          }),
+        }
+      );
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json?.error || "Failed to send monthly report");
+      }
+
+      alert(json.message || "Monthly report sent successfully.");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const fetchProfile = async () => {
     const token = localStorage.getItem("employee_token");
@@ -299,6 +332,18 @@ const EmployeeDashboard = () => {
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
               />
+            )}
+
+            {/* ADD THIS HERE */}
+            {filterType === "monthYear" && (
+              <button
+                onClick={sendMonthlyReport}
+                className="relative text-sm font-semibold text-red-600 hover:text-red-700 border border-red-300 hover:border-red-500 rounded-full px-6 py-2.5 transition-all whitespace-nowrap
+             before:absolute before:inset-0 before:rounded-full before:border-2 before:border-red-400 before:animate-glow before:z-[-1]"
+              >
+                Send Monthly Report
+              </button>
+
             )}
           </div>
         </section>
