@@ -17,6 +17,10 @@
 //   const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
 //   const [regenLoading, setRegenLoading] = useState(false);
 //   const [regenError, setRegenError] = useState("");
+//   const [reportLoading, setReportLoading] = useState(false);
+//   const [reportMessage, setReportMessage] = useState("");
+//   const [showReportSuccessPopup, setShowReportSuccessPopup] = useState(false);
+
 
 //   const fetchAttendance = async () => {
 //     const token = localStorage.getItem("employee_token");
@@ -63,6 +67,24 @@
 //       setLoading(false);
 //     }
 //   };
+//   const formatStatus = (status) => {
+//     if (!status) return "-";
+//     return status
+//       .replace(/([A-Z])/g, " $1") // adds space before capital letters
+//       .replace(/^./, (str) => str.toUpperCase()) // capitalize first letter
+//       .trim();
+//   };
+//   const formatFlags = (flags) => {
+//     if (!flags || flags.length === 0) return "-";
+//     return flags
+//       .map(flag =>
+//         flag
+//           .replace(/([A-Z])/g, " $1") // space before capital letters
+//           .replace(/^./, str => str.toUpperCase()) // capitalize first letter
+//       )
+//       .join(", ");
+//   };
+
 
 //   const regenerateAttendance = async () => {
 //     setRegenLoading(true);
@@ -112,12 +134,86 @@
 //     }
 //   };
 
+//   const sendMonthlyReport = async () => {
+//     setReportLoading(true);
+//     setError("");
+//     setReportMessage("");
+
+//     const token = localStorage.getItem("employee_token");
+//     if (!token) {
+//       setError("Unauthorized: Token not found. Please log in again.");
+//       setReportLoading(false);
+//       return;
+//     }
+
+//     try {
+//       const res = await fetch(
+//         "https://backend.hrms.transev.site/employee/attendance/send-monthly-reports",
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//           body: JSON.stringify({ monthYear }),
+//         }
+//       );
+
+//       const json = await res.json();
+
+//       if (!res.ok) {
+//         throw new Error(json?.error || "Failed to send monthly report");
+//       }
+
+//       // Show popup on success
+//       setReportMessage(json.message || "Report sent successfully");
+//       setShowReportSuccessPopup(true);
+
+//     } catch (err) {
+//       setError(err.message);
+//     } finally {
+//       setReportLoading(false);
+//     }
+//   };
+
+
+
+//   // Filter attendanceData to show only up to today if filterType is monthYear and selected month-year is current month-year
+//   const filteredAttendanceData = (() => {
+//     if (filterType === "monthYear") {
+//       const [month, year] = monthYear.split("-");
+//       const today = new Date();
+//       const selectedMonth = parseInt(month, 10);
+//       const selectedYear = parseInt(year, 10);
+
+//       if (
+//         selectedMonth === today.getMonth() + 1 &&
+//         selectedYear === today.getFullYear()
+//       ) {
+//         // Filter dates to <= today
+//         return attendanceData.filter(({ date }) => {
+//           const attDate = new Date(date);
+//           // Compare only date part (ignore time)
+//           return attDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0);
+//         });
+//       }
+//     }
+
+//     // Otherwise, return all data
+//     return attendanceData;
+
+//   })();
+
 //   return (
 //     <div className="flex min-h-screen bg-yellow-50">
-//       <EmployeeSidebar />
+//       {/* Sidebar */}
+//       <div className="w-64 hidden md:block">
+//         <EmployeeSidebar />
+//       </div>
 
-//       <main className="flex-1 ml-64 flex items-center justify-center p-8">
-//         <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-10">
+
+//       <main className="flex-1 flex items-center justify-center p-4 md:p-6">
+//         <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-6 md:p-10">
 //           <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 border-b border-yellow-300 pb-4 text-center">
 //             My Attendance
 //           </h1>
@@ -158,29 +254,31 @@
 
 //           {/* User Note */}
 //           <div className="mb-4 text-center text-red-600 italic font-semibold">
-//             Note: The "Regenerate Attendance" will refresh data based on the selected filter.
+//             Note: The "Regenerate Attendance" will refresh data based on the
+//             selected filter.
 //           </div>
 
 //           {/* Input based on selection + buttons */}
-//           <div className="mb-8 flex flex-wrap gap-6 items-center justify-center">
+//           <div className="mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-center">
+//             {/* inputs */}
 //             {filterType === "date" && (
 //               <input
 //                 type="date"
 //                 value={date}
 //                 onChange={(e) => setDate(e.target.value)}
-//                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+//                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
 //               />
 //             )}
 
 //             {filterType === "monthYear" && (
 //               <input
 //                 type="month"
-//                 value={`${monthYear.split("-").reverse().join("-")}`}
+//                 value={`${monthYear.split("-").reverse().join("-")}`} // YYYY-MM format
 //                 onChange={(e) => {
 //                   const [y, m] = e.target.value.split("-");
 //                   setMonthYear(`${m}-${y}`);
 //                 }}
-//                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+//                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
 //               />
 //             )}
 
@@ -191,70 +289,85 @@
 //                 onChange={(e) => setYear(e.target.value)}
 //                 min="2000"
 //                 max="2100"
-//                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-32"
+//                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
 //               />
 //             )}
 
+//             {/* Buttons */}
 //             <button
 //               onClick={fetchAttendance}
-//               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition"
+//               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
 //             >
 //               Fetch Attendance
 //             </button>
 
 //             <button
 //               onClick={() => setShowRegenerateDialog(true)}
-//               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition"
+//               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
 //             >
 //               Regenerate Attendance
 //             </button>
 
+//             <button
+//               onClick={sendMonthlyReport}
+//               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+//               disabled={reportLoading}
+//             >
+//               {reportLoading ? "Sending Report..." : "Send Monthly Report"}
+//             </button>
 //           </div>
+
 
 //           {error && (
 //             <div className="text-red-600 text-center font-medium mb-4">{error}</div>
 //           )}
 
+
 //           {loading ? (
 //             <div className="text-center text-yellow-800">Loading attendance...</div>
 //           ) : (
-//             <table className="w-full rounded-lg border border-yellow-200 shadow-sm overflow-hidden">
-//               <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
-//                 <tr>
-//                   <th className="p-4 border-b border-yellow-300">Date</th>
-//                   <th className="p-4 border-b border-yellow-300">Status</th>
-//                   <th className="p-4 border-b border-yellow-300">Check-In</th>
-//                   <th className="p-4 border-b border-yellow-300">Check-Out</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {attendanceData.length === 0 ? (
+//             <div className="overflow-x-auto">
+//               <table className="w-full rounded-lg border border-yellow-200 shadow-sm overflow-hidden">
+//                 <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
 //                   <tr>
-//                     <td
-//                       colSpan={4}
-//                       className="text-center py-8 text-yellow-700 italic"
-//                     >
-//                       No attendance records found.
-//                     </td>
+//                     <th className="p-4 border-b border-yellow-300">S.No.</th>
+//                     <th className="p-4 border-b border-yellow-300">Date</th>
+//                     <th className="p-4 border-b border-yellow-300">Day</th> {/* Add this line */}
+//                     <th className="p-4 border-b border-yellow-300">Status</th>
+//                     <th className="p-4 border-b border-yellow-300">Check-In</th>
+//                     <th className="p-4 border-b border-yellow-300">Check-Out</th>
+//                     <th className="p-4 border-b border-yellow-300">Remarks</th>
 //                   </tr>
-//                 ) : (
-//                   attendanceData.map(({ id, date, status, punchIn, punchOut }) => (
-//                     <tr
-//                       key={id}
-//                       className={`border-b border-yellow-100 ${status === "absent"
-//                         ? "bg-red-50 text-red-700"
-//                         : "text-yellow-900"
-//                         } hover:bg-yellow-50 transition-colors duration-200`}
-//                     >
-//                       <td className="p-4">{new Date(date).toLocaleDateString()}</td>
-//                       <td className="p-4 font-semibold">{status}</td>
-//                       <td className="p-4">{punchIn || "-"}</td>
-//                       <td className="p-4">{punchOut || "-"}</td>
+//                 </thead>
+
+//                 <tbody>
+//                   {filteredAttendanceData.length === 0 ? (
+//                     <tr>
+//                       <td colSpan={6} className="text-center py-8 text-yellow-700 italic">
+//                         No attendance records found.
+//                       </td>
 //                     </tr>
-//                   ))
-//                 )}
-//               </tbody>
-//             </table>
+//                   ) : (
+//                     filteredAttendanceData.map(
+//                       ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
+//                         <tr
+//                           key={id}
+//                           className={`border-b border-yellow-100 ${status === "absent" ? "bg-red-50 text-red-700" : "text-yellow-900"
+//                             } hover:bg-yellow-50 transition-colors duration-200`}
+//                         >
+//                           <td className="p-4">{index + 1}</td>
+//                           <td className="p-4">{new Date(date).toLocaleDateString()}</td>
+//                           <td className="p-4">{day}</td>
+//                           <td className="p-4 font-semibold">{formatStatus(status)}</td>
+//                           <td className="p-4">{punchIn || "-"}</td>
+//                           <td className="p-4">{punchOut || "-"}</td>
+//                           <td className="p-4">{formatFlags(flags)}</td> {/* ✅ New column */}
+//                         </tr>
+//                       ))
+//                   )}
+//                 </tbody>
+//               </table>
+//             </div>
 //           )}
 
 //           {/* Regenerate Confirmation Dialog */}
@@ -266,8 +379,8 @@
 //                 </h2>
 
 //                 <p className="mb-4 text-sm text-red-600">
-//                   Are you sure you want to regenerate attendance based on the selected
-//                   filter?
+//                   Are you sure you want to regenerate attendance based on the
+//                   selected filter?
 //                 </p>
 
 //                 {regenError && (
@@ -294,6 +407,22 @@
 //             </div>
 //           )}
 //         </div>
+//         {/* Monthly Report Success Popup */}
+//         {showReportSuccessPopup && (
+//           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+//             <div className="bg-white p-6 rounded-lg w-96 shadow-xl border border-yellow-300 text-center">
+//               <h2 className="text-xl font-semibold text-yellow-900 mb-4">Success</h2>
+//               <p className="mb-6 text-yellow-800">{reportMessage}</p>
+//               <button
+//                 onClick={() => setShowReportSuccessPopup(false)}
+//                 className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition"
+//               >
+//                 Close
+//               </button>
+//             </div>
+//           </div>
+//         )}
+
 //       </main>
 //     </div>
 //   );
@@ -320,6 +449,9 @@ const MyAttendance = () => {
   const [showRegenerateDialog, setShowRegenerateDialog] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
   const [regenError, setRegenError] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportMessage, setReportMessage] = useState("");
+  const [showReportSuccessPopup, setShowReportSuccessPopup] = useState(false);
 
   const fetchAttendance = async () => {
     const token = localStorage.getItem("employee_token");
@@ -369,21 +501,20 @@ const MyAttendance = () => {
   const formatStatus = (status) => {
     if (!status) return "-";
     return status
-      .replace(/([A-Z])/g, " $1") // adds space before capital letters
-      .replace(/^./, (str) => str.toUpperCase()) // capitalize first letter
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase())
       .trim();
   };
   const formatFlags = (flags) => {
     if (!flags || flags.length === 0) return "-";
     return flags
-      .map(flag =>
+      .map((flag) =>
         flag
-          .replace(/([A-Z])/g, " $1") // space before capital letters
-          .replace(/^./, str => str.toUpperCase()) // capitalize first letter
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase())
       )
       .join(", ");
   };
-
 
   const regenerateAttendance = async () => {
     setRegenLoading(true);
@@ -423,7 +554,6 @@ const MyAttendance = () => {
         throw new Error(json?.error || "Failed to regenerate attendance");
       }
 
-      // Close dialog and refresh attendance data
       setShowRegenerateDialog(false);
       await fetchAttendance();
     } catch (err) {
@@ -433,7 +563,46 @@ const MyAttendance = () => {
     }
   };
 
-  // Filter attendanceData to show only up to today if filterType is monthYear and selected month-year is current month-year
+  const sendMonthlyReport = async () => {
+    setReportLoading(true);
+    setError("");
+    setReportMessage("");
+
+    const token = localStorage.getItem("employee_token");
+    if (!token) {
+      setError("Unauthorized: Token not found. Please log in again.");
+      setReportLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        "https://backend.hrms.transev.site/employee/attendance/send-monthly-reports",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ monthYear }),
+        }
+      );
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json?.error || "Failed to send monthly report");
+      }
+
+      setReportMessage(json.message || "Report sent successfully");
+      setShowReportSuccessPopup(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   const filteredAttendanceData = (() => {
     if (filterType === "monthYear") {
       const [month, year] = monthYear.split("-");
@@ -445,30 +614,24 @@ const MyAttendance = () => {
         selectedMonth === today.getMonth() + 1 &&
         selectedYear === today.getFullYear()
       ) {
-        // Filter dates to <= today
         return attendanceData.filter(({ date }) => {
           const attDate = new Date(date);
-          // Compare only date part (ignore time)
           return attDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0);
         });
       }
     }
-
-    // Otherwise, return all data
     return attendanceData;
-
   })();
 
   return (
-<div className="flex min-h-screen bg-yellow-50">
-  {/* Sidebar */}
-  <div className="w-64">
-    <EmployeeSidebar />
-  </div>
+    <div className="flex min-h-screen bg-yellow-50">
+      {/* Sidebar */}
+      <div className="w-64 hidden md:block">
+        <EmployeeSidebar />
+      </div>
 
-
-      <main className="flex-1 flex items-center justify-center p-6">
-    <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-10">
+      <main className="flex-1 flex items-center justify-center p-4 md:p-6">
+        <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-6 md:p-10">
           <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 border-b border-yellow-300 pb-4 text-center">
             My Attendance
           </h1>
@@ -514,13 +677,14 @@ const MyAttendance = () => {
           </div>
 
           {/* Input based on selection + buttons */}
-          <div className="mb-8 flex flex-wrap gap-6 items-center justify-center">
+          <div className="mb-8 flex flex-col md:flex-row flex-wrap gap-4 items-center justify-center">
+            {/* inputs */}
             {filterType === "date" && (
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
               />
             )}
 
@@ -532,7 +696,7 @@ const MyAttendance = () => {
                   const [y, m] = e.target.value.split("-");
                   setMonthYear(`${m}-${y}`);
                 }}
-                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
               />
             )}
 
@@ -543,22 +707,31 @@ const MyAttendance = () => {
                 onChange={(e) => setYear(e.target.value)}
                 min="2000"
                 max="2100"
-                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-32"
+                className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
               />
             )}
 
+            {/* Buttons */}
             <button
               onClick={fetchAttendance}
-              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition"
+              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
             >
               Fetch Attendance
             </button>
 
             <button
               onClick={() => setShowRegenerateDialog(true)}
-              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition"
+              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
             >
               Regenerate Attendance
+            </button>
+
+            <button
+              onClick={sendMonthlyReport}
+              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+              disabled={reportLoading}
+            >
+              {reportLoading ? "Sending Report..." : "Send Monthly Report"}
             </button>
           </div>
 
@@ -568,82 +741,140 @@ const MyAttendance = () => {
 
           {loading ? (
             <div className="text-center text-yellow-800">Loading attendance...</div>
+          ) : filteredAttendanceData.length === 0 ? (
+            <div className="text-center py-8 text-yellow-700 italic">
+              No attendance records found.
+            </div>
           ) : (
-            <table className="w-full rounded-lg border border-yellow-200 shadow-sm overflow-hidden">
-              <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
-                <tr>
-                  <th className="p-4 border-b border-yellow-300">S.No.</th>
-                  <th className="p-4 border-b border-yellow-300">Date</th>
-                  <th className="p-4 border-b border-yellow-300">Day</th> {/* Add this line */}
-                  <th className="p-4 border-b border-yellow-300">Status</th>
-                  <th className="p-4 border-b border-yellow-300">Check-In</th>
-                  <th className="p-4 border-b border-yellow-300">Check-Out</th>
-                  <th className="p-4 border-b border-yellow-300">Remarks</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredAttendanceData.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-yellow-700 italic">
-                      No attendance records found.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredAttendanceData.map(
-                    ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
-                      <tr
-                        key={id}
-                        className={`border-b border-yellow-100 ${status === "absent" ? "bg-red-50 text-red-700" : "text-yellow-900"
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full rounded-lg border border-yellow-200 shadow-sm overflow-hidden">
+                  <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
+                    <tr>
+                      <th className="p-4 border-b border-yellow-300">S.No.</th>
+                      <th className="p-4 border-b border-yellow-300">Date</th>
+                      <th className="p-4 border-b border-yellow-300">Day</th>
+                      <th className="p-4 border-b border-yellow-300">Status</th>
+                      <th className="p-4 border-b border-yellow-300">Check-In</th>
+                      <th className="p-4 border-b border-yellow-300">Check-Out</th>
+                      <th className="p-4 border-b border-yellow-300">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAttendanceData.map(
+                      ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
+                        <tr
+                          key={id}
+                          className={`border-b border-yellow-100 ${
+                            status === "absent"
+                              ? "bg-red-50 text-red-700"
+                              : "text-yellow-900"
                           } hover:bg-yellow-50 transition-colors duration-200`}
-                      >
-                        <td className="p-4">{index + 1}</td>
-                        <td className="p-4">{new Date(date).toLocaleDateString()}</td>
-                        <td className="p-4">{day}</td>
-                        <td className="p-4 font-semibold">{formatStatus(status)}</td>
-                        <td className="p-4">{punchIn || "-"}</td>
-                        <td className="p-4">{punchOut || "-"}</td>
-                        <td className="p-4">{formatFlags(flags)}</td> {/* ✅ New column */}
-                      </tr>
-                    ))
+                        >
+                          <td className="p-4">{index + 1}</td>
+                          <td className="p-4">{new Date(date).toLocaleDateString()}</td>
+                          <td className="p-4">{day}</td>
+                          <td className="p-4 font-semibold">{formatStatus(status)}</td>
+                          <td className="p-4">{punchIn || "-"}</td>
+                          <td className="p-4">{punchOut || "-"}</td>
+                          <td className="p-4">{formatFlags(flags)}</td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-4">
+                {filteredAttendanceData.map(
+                  ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
+                    <div
+                      key={id}
+                      className={`border rounded-lg p-4 shadow-sm ${
+                        status === "absent"
+                          ? "bg-red-50 text-red-700 border-red-200"
+                          : "bg-yellow-50 text-yellow-900 border-yellow-200"
+                      }`}
+                    >
+                      <div className="flex justify-between mb-2 font-semibold text-lg">
+                        <span>Day {index + 1}</span>
+                        <span>{new Date(date).toLocaleDateString()}</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="font-semibold">Day:</span> {day}
+                        </div>
+                        <div>
+                          <span className="font-semibold">Status:</span>{" "}
+                          {formatStatus(status)}
+                        </div>
+                        <div>
+                          <span className="font-semibold">Check-In:</span> {punchIn || "-"}
+                        </div>
+                        <div>
+                          <span className="font-semibold">Check-Out:</span>{" "}
+                          {punchOut || "-"}
+                        </div>
+                        <div className="col-span-2">
+                          <span className="font-semibold">Remarks:</span>{" "}
+                          {formatFlags(flags)}
+                        </div>
+                      </div>
+                    </div>
+                  )
                 )}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
 
           {/* Regenerate Confirmation Dialog */}
           {showRegenerateDialog && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
               <div className="bg-white p-6 rounded-lg w-96 shadow-xl border border-gray-300">
-                <h2 className="text-xl font-bold mb-4 text-gray-800">
-                  Regenerate Attendance?
+                <h2 className="text-xl font-bold mb-4 text-yellow-900">
+                  Confirm Regenerate Attendance
                 </h2>
-
-                <p className="mb-4 text-sm text-red-600">
-                  Are you sure you want to regenerate attendance based on the
-                  selected filter?
+                <p className="mb-6 text-yellow-700">
+                  This will overwrite your existing attendance data for the selected
+                  filter. Are you sure you want to continue?
                 </p>
-
                 {regenError && (
-                  <div className="text-red-600 text-sm mb-2">{regenError}</div>
+                  <p className="mb-4 text-red-600 font-semibold">{regenError}</p>
                 )}
-
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-4">
                   <button
                     onClick={() => setShowRegenerateDialog(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
                     disabled={regenLoading}
+                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 transition"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={regenerateAttendance}
-                    className="px-4 py-2 bg-yellow-500 text-white font-semibold rounded hover:bg-yellow-700"
                     disabled={regenLoading}
+                    className="px-4 py-2 rounded bg-yellow-500 text-white font-bold hover:bg-yellow-600 transition"
                   >
-                    {regenLoading ? "Regenerating..." : "Confirm"}
+                    {regenLoading ? "Processing..." : "Yes, Regenerate"}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Report Success Popup */}
+          {showReportSuccessPopup && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+              <div className="bg-white p-6 rounded-lg w-80 shadow-xl border border-gray-300 text-center">
+                <p className="mb-4 text-yellow-900 font-semibold">{reportMessage}</p>
+                <button
+                  onClick={() => setShowReportSuccessPopup(false)}
+                  className="px-4 py-2 rounded bg-yellow-500 text-white font-bold hover:bg-yellow-600 transition"
+                >
+                  OK
+                </button>
               </div>
             </div>
           )}
