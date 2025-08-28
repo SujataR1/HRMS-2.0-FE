@@ -712,30 +712,30 @@ const MyAttendance = () => {
             )}
 
             {/* Buttons */}
-           {/* Buttons */}
-<button
-  onClick={fetchAttendance}
-  className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
->
-  Fetch Attendance
-</button>
+            {/* Buttons */}
+            <button
+              onClick={fetchAttendance}
+              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+            >
+              Fetch Attendance
+            </button>
 
-<button
-  onClick={() => setShowRegenerateDialog(true)}
-  className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
->
-  Regenerate Attendance
-</button>
+            <button
+              onClick={() => setShowRegenerateDialog(true)}
+              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+            >
+              Regenerate Attendance
+            </button>
 
-{filterType === "monthYear" && (
-  <button
-    onClick={sendMonthlyReport}
-    className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
-    disabled={reportLoading}
-  >
-    {reportLoading ? "Sending Report..." : "Send Monthly Report"}
-  </button>
-)}
+            {filterType === "monthYear" && (
+              <button
+                onClick={sendMonthlyReport}
+                className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+                disabled={reportLoading}
+              >
+                {reportLoading ? "Sending Report..." : "Send Monthly Report"}
+              </button>
+            )}
 
           </div>
 
@@ -770,11 +770,10 @@ const MyAttendance = () => {
                       ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
                         <tr
                           key={id}
-                          className={`border-b border-yellow-100 ${
-                            status === "absent"
+                          className={`border-b border-yellow-100 ${status === "absent"
                               ? "bg-red-50 text-red-700"
                               : "text-yellow-900"
-                          } hover:bg-yellow-50 transition-colors duration-200`}
+                            } hover:bg-yellow-50 transition-colors duration-200`}
                         >
                           <td className="p-4">{index + 1}</td>
                           <td className="p-4">{new Date(date).toLocaleDateString()}</td>
@@ -796,11 +795,10 @@ const MyAttendance = () => {
                   ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
                     <div
                       key={id}
-                      className={`border rounded-lg p-4 shadow-sm ${
-                        status === "absent"
+                      className={`border rounded-lg p-4 shadow-sm ${status === "absent"
                           ? "bg-red-50 text-red-700 border-red-200"
                           : "bg-yellow-50 text-yellow-900 border-yellow-200"
-                      }`}
+                        }`}
                     >
                       <div className="flex justify-between mb-2 font-semibold text-lg">
                         <span>Day {index + 1}</span>
