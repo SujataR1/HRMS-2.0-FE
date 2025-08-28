@@ -399,21 +399,22 @@ const EmployeeDashboard = () => {
             <div className="w-full h-[300px]">
               <Pie
                 data={{
-                  labels: ["Present", "Leave", "Holiday", "Weekly Off"],
+                  labels: ["Present", "Absent", "Leave", "Holiday", "Weekly Off"],
                   datasets: [
                     {
                       data: [
                         presentDays,
+                        absentDays,
                         approvedLeavesCount,
                         holidaysCount,
                         weeklyOffCount,
                       ],
                       backgroundColor: [
-                        "#e6a00aff",
-                        "#4737d1ff",
                         "#6ed310f3 ",
                         "#dd350aff",
-                        "#b6c909ff",
+                        "#df7717ff",
+                        "#0ed3daf3 ",
+                        "#0c08ecff",
                       ],
                     },
                   ],
