@@ -30,8 +30,7 @@ const EmployeeSidebar = () => {
     { label: 'My Training', path: '/EmployeeTraining', icon: <MdSchool size={18} /> },
     { label: 'Change Password', path: '/SideForgotPassword', icon: <MdLock size={18} /> },
     { label: 'Raise a Concern', path: '/EmployeeRaiseConcern', icon: <MdFeedback size={18} /> },
-];
-
+  ];
 
   useEffect(() => {
     const current = menuItems.find(item => location.pathname.startsWith(item.path));
@@ -63,7 +62,7 @@ const EmployeeSidebar = () => {
 
   return (
     <>
-      {/* Hamburger Toggle for Mobile */}
+      {/* Hamburger Toggle Button - mobile only */}
       <button
         className="fixed top-4 left-4 z-50 p-2 bg-yellow-500 text-white rounded-md md:hidden shadow-lg"
         onClick={() => setIsSidebarOpen(true)}
@@ -72,28 +71,30 @@ const EmployeeSidebar = () => {
         <FaBars size={20} />
       </button>
 
-      {/* Overlay when sidebar is open on mobile */}
+      {/* Overlay for mobile when sidebar open */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden transition-opacity duration-300 ${
           isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
       ></div>
 
       {/* Sidebar */}
-      <div
+      <nav
         className={`
           fixed top-0 left-0 h-full w-64 bg-yellow-50 z-50 shadow-xl transition-transform duration-300
           transform md:translate-x-0
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
+        aria-label="Employee sidebar navigation"
       >
         {/* Logo */}
         <div className="pt-6 pb-4 flex flex-col items-center border-b border-yellow-300 select-none">
           <img src={logo} alt="Company Logo" className="w-24 h-auto" />
         </div>
 
-        {/* Menu */}
+        {/* Menu Items */}
         <ul className="text-yellow-900 text-sm font-medium px-2 py-4 space-y-1">
           {menuItems.map(({ label, icon, path }) => (
             <li
@@ -107,6 +108,14 @@ const EmployeeSidebar = () => {
                 navigate(path);
                 setIsSidebarOpen(false); // Close sidebar on mobile after click
               }}
+              role="link"
+              tabIndex={0}
+              onKeyPress={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  navigate(path);
+                  setIsSidebarOpen(false);
+                }
+              }}
             >
               {icon}
               {label}
@@ -117,12 +126,19 @@ const EmployeeSidebar = () => {
           <li
             className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300"
             onClick={handleLogout}
+            role="button"
+            tabIndex={0}
+            onKeyPress={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleLogout();
+              }
+            }}
           >
             <FaSignOutAlt size={16} />
             Logout
           </li>
         </ul>
-      </div>
+      </nav>
     </>
   );
 };
