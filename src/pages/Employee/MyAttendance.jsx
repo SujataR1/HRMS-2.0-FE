@@ -712,27 +712,31 @@ const MyAttendance = () => {
             )}
 
             {/* Buttons */}
-            <button
-              onClick={fetchAttendance}
-              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
-            >
-              Fetch Attendance
-            </button>
+           {/* Buttons */}
+<button
+  onClick={fetchAttendance}
+  className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+>
+  Fetch Attendance
+</button>
 
-            <button
-              onClick={() => setShowRegenerateDialog(true)}
-              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
-            >
-              Regenerate Attendance
-            </button>
+<button
+  onClick={() => setShowRegenerateDialog(true)}
+  className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+>
+  Regenerate Attendance
+</button>
 
-            <button
-              onClick={sendMonthlyReport}
-              className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
-              disabled={reportLoading}
-            >
-              {reportLoading ? "Sending Report..." : "Send Monthly Report"}
-            </button>
+{filterType === "monthYear" && (
+  <button
+    onClick={sendMonthlyReport}
+    className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+    disabled={reportLoading}
+  >
+    {reportLoading ? "Sending Report..." : "Send Monthly Report"}
+  </button>
+)}
+
           </div>
 
           {error && (
