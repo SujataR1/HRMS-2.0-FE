@@ -223,11 +223,11 @@ const EmployeeAttendance = () => {
                 <thead className="bg-yellow-200">
                   <tr>
                     <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-yellow-900 uppercase tracking-wide"
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-yellow-900 uppercase tracking-wide"
                     >
                       Sl. No.
-                      </th>
+                    </th>
 
                     <th
                       scope="col"
@@ -250,28 +250,62 @@ const EmployeeAttendance = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-yellow-200">
-                  {attendance.filter(record => new Date(record.date) <= new Date())
-                  .map((record, idx) => (
-                    <tr
-                      key={record.id || idx}
-                      className={idx % 2 === 0 ? "bg-yellow-50" : "bg-yellow-100"}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
-  {idx + 1}
-</td>
+                  {attendance
+                    .filter(record => new Date(record.date) <= new Date())
+                    .map((record, idx) => {
+                      const { status, punchIn, punchOut, day, date } = record;
 
-                      <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
-                        {record.date}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
-                        {record.punchIn || "—"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
-                        {record.punchOut || "—"}
-                      </td>
-                    </tr>
-                  ))}
+                      let punchInDisplay = "—";
+                      let punchOutDisplay = "—";
+                      let badge = "";
+
+                      // For Sundays and Holidays, make date text red
+                      const isSunday = day === "Sunday";
+                      const isHoliday = status === "holiday";
+
+                      // CSS class for date text color
+                      const dateTextClass = isSunday || isHoliday ? "text-red-600 font-semibold" : "text-yellow-900";
+
+                      if (status === "fullDay" || status === "halfDay") {
+                        punchInDisplay = punchIn || "—";
+                        punchOutDisplay = punchOut || "—";
+                      } else if (status === "weeklyOff") {
+                        badge = isSunday ? "🛐 Sunday" : "⛱️ Weekly Off";
+                      } else if (status === "holiday") {
+                        badge = "📅 Holiday";
+                      } else if (status === "approvedLeave") {
+                        badge = "📝 Leave";
+                      } else if (status === "absent") {
+                        badge = "❌ Absent";
+                      }
+
+                      return (
+                        <tr
+                          key={record.id || idx}
+                          className={idx % 2 === 0 ? "bg-yellow-50" : "bg-yellow-100"}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
+                            {idx + 1}
+                          </td>
+
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${dateTextClass}`}>
+                            {date}
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
+                            {badge || punchInDisplay}
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap text-yellow-900 text-sm">
+                            {badge ? "—" : punchOutDisplay}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
+
+
+
               </table>
             </div>
           ) : (
