@@ -217,6 +217,7 @@
 // };
 
 // export default AllEmployees;
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminSidebar from "../components/Common/AdminSidebar";
@@ -284,6 +285,7 @@ const AllEmployees = () => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Search failed");
 
+
         // Merge search result back with employee details from original list
         const matched = data.data.map((match) => {
           const full = employees.find((e) => e.employeeId === match.employeeId);
@@ -294,6 +296,20 @@ const AllEmployees = () => {
             table: match.tableSearched,
           };
         });
+
+        //console.log("Search matched:", matched);
+        //console.log("Search raw", data.data);
+        //console.log("All employees:", employees);
+        //console.log("Search text:", search);
+        //Return only those with full details
+        // setSearchResults(matched.filter((m) => m.id));
+        //Return all matches, even if no full details found
+        // This helps identify employees not yet in the system
+        // but found in search (e.g. from attendance logs)
+        // with a note that details are missing
+        // and a link to add them
+        // This is a design choice and can be adjusted as needed
+        
 
         setSearchResults(matched);
       } catch (err) {

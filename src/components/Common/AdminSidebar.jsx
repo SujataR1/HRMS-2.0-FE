@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
-import {
-  MdDashboard,
-  MdKeyboardArrowDown,
-  MdKeyboardArrowUp
-} from 'react-icons/md';
+import {  MdDashboard,  MdKeyboardArrowDown,  MdKeyboardArrowUp } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MdReportProblem } from 'react-icons/md';
 import logo from "../../assets/TransmogriffyLogo.png"; // Adjust path if needed
-
 
 const AdminSidebar = () => {
   const [active, setActive] = useState('');
   const [payrollOpen, setPayrollOpen] = useState(false);
   const [employeeOpen, setEmployeeOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
-
   const navigate = useNavigate();
   const location = useLocation();
+
 
  const menuItems = [
   { name: 'Employee Management' },
@@ -34,7 +29,6 @@ const AdminSidebar = () => {
   { name: 'Attendance Management', path: '/AttendancePage' },
   { name: 'Employee Concerns', path: '/AdminConcernList', icon: <MdReportProblem size={18} /> }, // ✅ NEW
 ];
-
 
   const employeeSubItems = [
     { name: 'Create New Employee', path: '/CreateEmployee' },

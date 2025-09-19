@@ -842,8 +842,6 @@ const HRLeaveApprovals = () => {
 
     };
 
-
-
     const handleSearchChange = (e) => {
         const { name, value } = e.target;
         setSearchParams((prev) => ({ ...prev, [name]: value }));
@@ -853,8 +851,8 @@ const HRLeaveApprovals = () => {
         setSearchResults([]);         // Clears any previous results
         setShowAllLeaves(false);      // Hide "All Details" if it was showing
     };
-    const handleSearchSubmit = async (e) => {
 
+    const handleSearchSubmit = async (e) => {
         e.preventDefault();
         setSearching(true); // Start searching
         setShowAllLeaves(false); // Hide all leaves view on search
@@ -877,8 +875,8 @@ const HRLeaveApprovals = () => {
         finally {
             setSearching(false); // End searching
         }
-
     };
+
     // NEW: Fetch all leaves (all statuses)
     const fetchAllLeaveDetails = async () => {
         setLoading(true);
@@ -910,7 +908,6 @@ const HRLeaveApprovals = () => {
             setLoading(false);
         }
     };
-
 
     return (
         <div className="flex bg-gray-100 min-h-screen">
@@ -948,6 +945,7 @@ const HRLeaveApprovals = () => {
                         </ul>
                     )}
                 </div>
+
 
                 {/* LEAVE DETAILS */}
                 {leaveDetails && (
