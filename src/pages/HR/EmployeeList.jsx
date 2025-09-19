@@ -80,7 +80,6 @@ const EmployeeList = () => {
             />
           </div>
 
-
           {loading ? (
             <div className="flex justify-center mt-16">
               {/* Spinner */}
@@ -137,7 +136,6 @@ const EmployeeList = () => {
                   key={emp.id}
                   tabIndex={0}
                   className="relative bg-yellow-50 border border-yellow-300 rounded-3xl p-4 sm:p-6 shadow-lg
-
                     hover:shadow-yellow-400 transition-shadow cursor-pointer
                     transform hover:-translate-y-1 hover:scale-[1.03]
                     duration-300

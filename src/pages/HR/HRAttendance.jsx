@@ -149,7 +149,7 @@ const HRAttendance = () => {
           date: dateStr,
           punchIn: entry?.punchIn || null,
           punchOut: entry?.punchOut || null,
-          status: entry?.status || "Holiday",
+          status: entry?.status || "absent",  // or ""
           comments: entry?.comments || "",
         });
 
@@ -404,11 +404,12 @@ const HRAttendance = () => {
                           <input
                             type="time"
                             className="w-full border rounded px-3 py-2"
-                            value={editEntry[field]}
+                            value={editEntry[field] || ""}   // ⬅️ prevent crash if null
                             onChange={(e) =>
                               setEditEntry((prev) => ({ ...prev, [field]: e.target.value }))
                             }
                           />
+
                         )}
                       </div>
                     ))}
