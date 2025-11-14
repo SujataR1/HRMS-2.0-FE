@@ -11,7 +11,7 @@ import {
   MdAssessment
 } from 'react-icons/md';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from "../../assets/TransmogriffyLogo.png"; // Adjust path if needed
+import logo from "../../assets/TransmogriffyLogo.png";
 
 const HRSidebar = () => {
   const [employeeMenuOpen, setEmployeeMenuOpen] = useState(false);
