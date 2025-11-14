@@ -136,6 +136,16 @@ const MyHoliday = () => {
     const monthMatch = filterMonth === "all" || d.getMonth() === Number(filterMonth);
     return yearMatch && monthMatch;
   });
+  // Find upcoming holiday + days left
+  const upcomingHoliday = holidays
+    .filter((h) => new Date(h.date) >= new Date())
+    .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+
+  const daysLeft = upcomingHoliday
+    ? Math.ceil(
+      (new Date(upcomingHoliday.date) - new Date()) / (1000 * 60 * 60 * 24)
+    )
+    : null;
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 to-yellow-200 font-sans">
@@ -153,6 +163,53 @@ const MyHoliday = () => {
               →
             </button>
           </header>
+
+          {/* Ultra-Sleek Premium Upcoming Holiday Banner */}
+          {upcomingHoliday && (
+            <div className="
+    w-full mb-7 px-6 py-5
+    rounded-2xl
+    bg-white/40
+    backdrop-blur-xl
+    border border-slate-200
+    shadow-[0_8px_20px_rgba(0,0,0,0.06)]
+    flex flex-col items-center text-center
+    transition-all duration-300
+  ">
+
+              {/* Title */}
+              <div className="text-xs font-semibold tracking-[0.12em] text-slate-600 uppercase">
+                🎉 Upcoming Holiday
+              </div>
+
+              {/* Holiday Name */}
+              <div className="mt-1 text-xl font-semibold text-slate-900">
+                {upcomingHoliday.name}
+              </div>
+
+              {/* Date */}
+              <div className="mt-1 text-sm text-slate-500">
+                {new Date(upcomingHoliday.date).toLocaleDateString('en-IN', {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </div>
+
+              {/* Days Left Badge */}
+              <div className="
+      mt-3 text-xs font-medium
+      px-4 py-1.5
+      rounded-full
+      bg-gradient-to-r from-slate-900 to-slate-700
+      text-white shadow-md
+      tracking-wide
+    ">
+                {daysLeft} DAYS LEFT
+              </div>
+            </div>
+          )}
 
           {/* No Add Holiday button for employee */}
 
@@ -177,10 +234,10 @@ const MyHoliday = () => {
                     ${isToday
                       ? "bg-yellow-300 ring-2 ring-yellow-500 font-bold"
                       : holiday
-                      ? "bg-yellow-100"
-                      : isWeekend
-                      ? "bg-yellow-50 text-yellow-600"
-                      : "bg-white"
+                        ? "bg-yellow-100"
+                        : isWeekend
+                          ? "bg-yellow-50 text-yellow-600"
+                          : "bg-white"
                     }`}
                   title={holiday ? `${holiday.name} (${dateStr})` : dateStr}
                 >
@@ -264,28 +321,47 @@ const MyHoliday = () => {
                 ][filterMonth] : ""}${filterYear !== "all" ? " " + filterYear : ""}`}
             </h2>
 
-            <ul className="bg-white p-4 rounded-xl shadow border border-yellow-300 max-h-60 overflow-y-auto">
+            <ul className="bg-white/70 backdrop-blur-xl p-4 rounded-2xl shadow-md border border-slate-200 max-h-64 overflow-y-auto divide-y divide-slate-100">
               {filteredHolidays.length > 0 ? (
                 filteredHolidays
                   .sort((a, b) => new Date(a.date) - new Date(b.date))
                   .map((holiday) => (
                     <li
                       key={holiday.id}
-                      className="flex justify-between py-2 border-b border-yellow-100"
+                      className="
+            flex items-center justify-between py-3 
+            transition-all duration-200 
+            hover:bg-slate-50 hover:shadow-sm hover:rounded-xl px-3
+          "
                     >
-                      <span className="font-medium text-yellow-700">{holiday.name}</span>
-                      <span className="text-sm text-gray-600">
+                      {/* Holiday Name */}
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-800 text-sm">
+                          {holiday.name}
+                        </span>
+                        <span className="text-xs text-slate-500 mt-[2px]">
+                          {new Date(holiday.date).toLocaleDateString("en-IN", {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+
+                      {/* Date Badge */}
+                      <div className="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-medium shadow-sm">
                         {new Date(holiday.date).toLocaleDateString("en-IN", {
-                          weekday: "short",
-                          year: "numeric",
-                          month: "short",
                           day: "numeric",
+                          month: "short",
+                          year: "numeric",
                         })}
-                      </span>
+                      </div>
+
                     </li>
                   ))
               ) : (
-                <li className="text-gray-500 italic">No holidays found.</li>
+                <li className="text-gray-500 italic text-center py-4">No holidays found.</li>
               )}
             </ul>
 
