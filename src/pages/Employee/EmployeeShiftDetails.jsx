@@ -109,9 +109,8 @@ const EmployeeShiftDetails = () => {
         {tooltip && <InfoIconWithTooltip message={tooltip} />}
       </dt>
       <dd
-        className={`text-lg font-semibold text-yellow-700 ${
-          noTruncate ? "" : "truncate"
-        }`}
+        className={`text-lg font-semibold text-yellow-700 ${noTruncate ? "" : "truncate"
+          }`}
       >
         {value || "-"}
       </dd>
@@ -138,9 +137,8 @@ const EmployeeShiftDetails = () => {
           />
           <InfoCard
             label="Shift Time"
-            value={`${shift.fullShiftStartingTime || "-"} - ${
-              shift.fullShiftEndingTime || "-"
-            }`}
+            value={`${shift.fullShiftStartingTime || "-"} - ${shift.fullShiftEndingTime || "-"
+              }`}
             tooltip="Your shift start and end time"
           />
           <InfoCard
@@ -161,89 +159,89 @@ const EmployeeShiftDetails = () => {
         </div>
 
         {/* Punch Rules */}
-       {shift.computed && (
-  <>
-    <h2 className="text-3xl font-bold text-yellow-900 mt-14 mb-6 border-b border-yellow-300 pb-2">
-      Punch Rules & Grace Periods
-    </h2>
+        {shift.computed && (
+          <>
+            <h2 className="text-3xl font-bold text-yellow-900 mt-14 mb-6 border-b border-yellow-300 pb-2">
+              Punch Rules & Grace Periods
+            </h2>
 
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Full shift punch-in/out */}
-      <InfoCard
-        label="Punch In Earliest"
-        value={shift.computed.punchInEarliest}
-        tooltip="Earliest time you can punch in"
-      />
-      <InfoCard
-        label="Punch In Grace Until"
-        value={shift.computed.punchInGraceUntil}
-        tooltip="Grace period allowed for punch in without penalty"
-      />
-      <InfoCard
-        label="Punch In Absent After"
-        value={shift.computed.punchInAbsentAfter}
-        tooltip="After this time you will be marked absent"
-      />
-      <InfoCard
-        label="Punch Out Earliest Without Penalty"
-        value={shift.computed.punchOutEarliestWithoutPenalty}
-        tooltip="Earliest punch out time without penalty"
-      />
-      <InfoCard
-        label="Punch Out Latest With Buffer"
-        value={shift.computed.punchOutMaxLatestWithBuffer}
-        tooltip="Latest punch out time including buffer period"
-      />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Full shift punch-in/out */}
+              <InfoCard
+                label="Punch In Earliest"
+                value={shift.computed.punchInEarliest}
+                tooltip="Earliest time you can punch in"
+              />
+              <InfoCard
+                label="Punch In Grace Until"
+                value={shift.computed.punchInGraceUntil}
+                tooltip="Grace period allowed for punch in without penalty"
+              />
+              <InfoCard
+                label="Punch In Absent After"
+                value={shift.computed.punchInAbsentAfter}
+                tooltip="After this time you will be marked absent"
+              />
+              <InfoCard
+                label="Punch Out Earliest Without Penalty"
+                value={shift.computed.punchOutEarliestWithoutPenalty}
+                tooltip="Earliest punch out time without penalty"
+              />
+              <InfoCard
+                label="Punch Out Latest With Buffer"
+                value={shift.computed.punchOutMaxLatestWithBuffer}
+                tooltip="Latest punch out time including buffer period"
+              />
 
-      {/* Grace & Overtime */}
-      <InfoCard
-        label="Grace In (minutes)"
-        value={shift.fullShiftGraceInTimingInMinutes}
-        tooltip="Allowed grace period for clocking in"
-      />
-      <InfoCard
-        label="Grace Out (minutes)"
-        value={shift.fullShiftGraceOutTimingInMinutes}
-        tooltip="Allowed grace period for clocking out"
-      />
-      <InfoCard
-        label="Max Overtime (minutes)"
-        value={shift.overtimeMaximumAllowableLimitInMinutes}
-        tooltip="Maximum allowed overtime per shift"
-      />
+              {/* Grace & Overtime */}
+              <InfoCard
+                label="Grace In (minutes)"
+                value={shift.fullShiftGraceInTimingInMinutes}
+                tooltip="Allowed grace period for clocking in"
+              />
+              <InfoCard
+                label="Grace Out (minutes)"
+                value={shift.fullShiftGraceOutTimingInMinutes}
+                tooltip="Allowed grace period for clocking out"
+              />
+              <InfoCard
+                label="Max Overtime (minutes)"
+                value={shift.overtimeMaximumAllowableLimitInMinutes}
+                tooltip="Maximum allowed overtime per shift"
+              />
 
-      {/* Half-shift values (optional) */}
-      <InfoCard
-        label="Half Shift Start"
-        value={shift.halfShiftStartingTime || "Not applicable"}
-        tooltip="Start time for half shift (if applicable)"
-      />
-      <InfoCard
-        label="Half Shift End"
-        value={shift.halfShiftEndingTime || "Not applicable"}
-        tooltip="End time for half shift (if applicable)"
-      />
-      <InfoCard
-        label="Half Shift Grace In"
-        value={
-          shift.halfShiftGraceInTimingInMinutes != null
-            ? `${shift.halfShiftGraceInTimingInMinutes} mins`
-            : "Not applicable"
-        }
-        tooltip="Grace period for half-shift clock-in"
-      />
-      <InfoCard
-        label="Half Shift Grace Out"
-        value={
-          shift.halfShiftGraceOutTimingInMinutes != null
-            ? `${shift.halfShiftGraceOutTimingInMinutes} mins`
-            : "Not applicable"
-        }
-        tooltip="Grace period for half-shift clock-out"
-      />
-    </div>
-  </>
-)}
+              {/* Half-shift values (optional) */}
+              <InfoCard
+                label="Half Shift Start"
+                value={shift.halfShiftStartingTime || "Not applicable"}
+                tooltip="Start time for half shift (if applicable)"
+              />
+              <InfoCard
+                label="Half Shift End"
+                value={shift.halfShiftEndingTime || "Not applicable"}
+                tooltip="End time for half shift (if applicable)"
+              />
+              <InfoCard
+                label="Half Shift Grace In"
+                value={
+                  shift.halfShiftGraceInTimingInMinutes != null
+                    ? `${shift.halfShiftGraceInTimingInMinutes} mins`
+                    : "Not applicable"
+                }
+                tooltip="Grace period for half-shift clock-in"
+              />
+              <InfoCard
+                label="Half Shift Grace Out"
+                value={
+                  shift.halfShiftGraceOutTimingInMinutes != null
+                    ? `${shift.halfShiftGraceOutTimingInMinutes} mins`
+                    : "Not applicable"
+                }
+                tooltip="Grace period for half-shift clock-out"
+              />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
