@@ -212,7 +212,7 @@ const EmployeeShiftDetails = () => {
         tooltip="Maximum allowed overtime per shift"
       />
 
-      {/* Half-shift values (optional) */}
+      { /* Half-shift values (optional) */ }
       <InfoCard
         label="Half Shift Start"
         value={shift.halfShiftStartingTime || "Not applicable"}
