@@ -210,38 +210,38 @@ const EmployeeShiftDetails = () => {
                 tooltip="Maximum allowed overtime per shift"
               />
 
-              {/* Half-shift values (optional) */}
-              <InfoCard
-                label="Half Shift Start"
-                value={shift.halfShiftStartingTime || "Not applicable"}
-                tooltip="Start time for half shift (if applicable)"
-              />
-              <InfoCard
-                label="Half Shift End"
-                value={shift.halfShiftEndingTime || "Not applicable"}
-                tooltip="End time for half shift (if applicable)"
-              />
-              <InfoCard
-                label="Half Shift Grace In"
-                value={
-                  shift.halfShiftGraceInTimingInMinutes != null
-                    ? `${shift.halfShiftGraceInTimingInMinutes} mins`
-                    : "Not applicable"
-                }
-                tooltip="Grace period for half-shift clock-in"
-              />
-              <InfoCard
-                label="Half Shift Grace Out"
-                value={
-                  shift.halfShiftGraceOutTimingInMinutes != null
-                    ? `${shift.halfShiftGraceOutTimingInMinutes} mins`
-                    : "Not applicable"
-                }
-                tooltip="Grace period for half-shift clock-out"
-              />
-            </div>
-          </>
-        )}
+      { /* Half-shift values (optional) */ }
+      <InfoCard
+        label="Half Shift Start"
+        value={shift.halfShiftStartingTime || "Not applicable"}
+        tooltip="Start time for half shift (if applicable)"
+      />
+      <InfoCard
+        label="Half Shift End"
+        value={shift.halfShiftEndingTime || "Not applicable"}
+        tooltip="End time for half shift (if applicable)"
+      />
+      <InfoCard
+        label="Half Shift Grace In"
+        value={
+          shift.halfShiftGraceInTimingInMinutes != null
+            ? `${shift.halfShiftGraceInTimingInMinutes} mins`
+            : "Not applicable"
+        }
+        tooltip="Grace period for half-shift clock-in"
+      />
+      <InfoCard
+        label="Half Shift Grace Out"
+        value={
+          shift.halfShiftGraceOutTimingInMinutes != null
+            ? `${shift.halfShiftGraceOutTimingInMinutes} mins`
+            : "Not applicable"
+        }
+        tooltip="Grace period for half-shift clock-out"
+      />
+    </div>
+  </>
+)}
       </main>
     </div>
   );
