@@ -33,7 +33,7 @@
 //         body: JSON.stringify({ fromDate: "2025-01-01", toDate: "2025-12-31" }),
 //       });
 //       const data = await res.json();
-//       if (res.ok && data.status === "success") {
+//       if (res.ok && (data.status === "success" || data.success === true)) {
 //         const normalized = data.data.map((h) => ({
 //           ...h,
 //           date: h.date.includes(".")
@@ -107,7 +107,7 @@
 //         }),
 //       });
 //       const data = await res.json();
-//       if (res.ok && data.status === "success") {
+//       if (res.ok && (data.status === "success" || data.success === true)) {
 //         setCreateModalOpen(false);
 //         fetchHolidays();
 //       } else {
@@ -427,6 +427,8 @@
 // };
 
 // export default HRHolidayCalendar;
+
+
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf/dist/jspdf.umd.min.js";
 import { applyPlugin } from "jspdf-autotable";
@@ -459,16 +461,21 @@ const HRHolidayCalendar = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ fromDate: "2025-01-01", toDate: "2025-12-31" }),
+        // body: JSON.stringify({ fromDate: "2025-01-01", toDate: "2025-12-31" }),
+
+body: JSON.stringify({
+  fromDate: `${year - 1}-01-01`,
+  toDate: `${year + 2}-12-31`,
+}),
+
       });
       const data = await res.json();
-      if (res.ok && data.status === "success") {
-        const normalized = data.data.map((h) => ({
-          ...h,
-          date: h.date.includes(".")
-            ? h.date.split(".").reverse().join("-")
-            : h.date,
-        }));
+      if (res.ok && (data.status === "success" || data.success === true)) {
+const normalized = data.data.map((h) => ({
+  ...h,
+  date: new Date(h.date).toLocaleDateString("en-CA"),
+}));
+
         setHolidays(normalized);
       } else {
         setError("Failed to fetch holidays");
@@ -536,7 +543,7 @@ const HRHolidayCalendar = () => {
         }),
       });
       const data = await res.json();
-      if (res.ok && data.status === "success") {
+      if (res.ok && (data.status === "success" || data.success === true)) {
         setCreateModalOpen(false);
         fetchHolidays();
       } else {
