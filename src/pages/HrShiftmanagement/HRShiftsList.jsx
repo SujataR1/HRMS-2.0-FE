@@ -183,181 +183,220 @@
 import React, { useEffect, useState } from "react";
 import HRSidebar from "../../components/Common/HRSidebar";
 
-// ✨ Glassmorphism Select Component
+/* ---------------- Glass Select ---------------- */
 const GlassSelect = ({ label, options, value, onChange, isEmployee }) => (
   <div className="space-y-2">
-    <label className="text-yellow-800 font-semibold text-lg drop-shadow">
+    <label className="text-yellow-800 font-semibold text-lg">
       {label}
     </label>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-white border border-yellow-300 px-4 py-3 rounded-xl text-gray-900 shadow-inner
-                 focus:outline-none focus:ring-4 focus:ring-yellow-300/40 transition-all"
+      className="w-full bg-white border border-yellow-300 px-4 py-3 rounded-xl"
     >
-      <option value="" className="text-gray-900">-- Select {label} --</option>
+      <option value="">-- Select {label} --</option>
       {options.map((o) => (
-        <option key={isEmployee ? o.employeeId : o.id} value={isEmployee ? o.employeeId : o.id} className="text-gray-900">
-          {isEmployee ? `${o.name} (${o.employeeId})` : o.shiftName}
+        <option
+          key={isEmployee ? o.employeeId : o.id}
+          value={isEmployee ? o.employeeId : o.id}
+        >
+          {isEmployee
+            ? `${o.name} (${o.employeeId})`
+            : o.shiftName}
         </option>
       ))}
     </select>
   </div>
 );
 
+/* ---------------- MAIN COMPONENT ---------------- */
 const HRShiftsList = () => {
   const [shifts, setShifts] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [assigned, setAssigned] = useState([]);
 
-  const [loadingShifts, setLoadingShifts] = useState(true);
-  const [loadingEmployees, setLoadingEmployees] = useState(true);
-
-  const [errorShifts, setErrorShifts] = useState(null);
-  const [errorEmployees, setErrorEmployees] = useState(null);
-
   const [selectedShiftId, setSelectedShiftId] = useState("");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
 
+  const handleDelete = (index) => {
+  if (!window.confirm("Are you sure you want to remove this assignment?")) return;
+
+  const updated = assigned.filter((_, i) => i !== index);
+  setAssigned(updated);
+  localStorage.setItem("assignedShifts", JSON.stringify(updated));
+};
+
+
+  /* -------- Load assigned list from localStorage -------- */
   useEffect(() => {
-    const existing = localStorage.getItem("assignedShifts");
-    if (existing) setAssigned(JSON.parse(existing));
+    const stored = localStorage.getItem("assignedShifts");
+    if (stored) {
+      setAssigned(JSON.parse(stored));
+    }
   }, []);
 
+  /* ---------------- Fetch Shifts ---------------- */
   useEffect(() => {
-    const fetchShifts = async () => {
-      try {
-        const res = await fetch("https://backend.hrms.transev.site/hr/shifts", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-          },
-        });
-        if (!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-        setShifts(data.data || []);
-      } catch (err) {
-        setErrorShifts(err.message);
-      } finally {
-        setLoadingShifts(false);
-      }
-    };
-    fetchShifts();
+    fetch("https://backend.hrms.transev.site/hr/shifts", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setShifts(data.data || []))
+      .catch(console.error);
   }, []);
 
+  /* ---------------- Fetch Employees ---------------- */
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const res = await fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
-          },
-        });
-        if (!res.ok) throw new Error(res.statusText);
-        const data = await res.json();
-        setEmployees(data.data || []);
-      } catch (err) {
-        setErrorEmployees(err.message);
-      } finally {
-        setLoadingEmployees(false);
-      }
-    };
-    fetchEmployees();
+    fetch("https://backend.hrms.transev.site/admin/employee-profiles", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setEmployees(data.data || []))
+      .catch(console.error);
   }, []);
 
   const selectedShift = shifts.find((s) => s.id === selectedShiftId);
-  const selectedEmployee = employees.find((e) => e.employeeId === selectedEmployeeId);
+  const selectedEmployee = employees.find(
+    (e) => e.employeeId === selectedEmployeeId
+  );
 
-  const handleSave = () => {
+  /* ---------------- Assign Shift ---------------- */
+  const handleSave = async () => {
     if (!selectedShift || !selectedEmployee) return;
 
-    const newAssign = {
-      employeeId: selectedEmployee.employeeId,
-      employeeName: selectedEmployee.name,
-      shiftId: selectedShift.id,
-      shiftName: selectedShift.shiftName,
-      fullShiftTime: `${selectedShift.fullShiftStartingTime} - ${selectedShift.fullShiftEndingTime}`,
-      halfShiftTime: `${selectedShift.halfShiftStartingTime} - ${selectedShift.halfShiftEndingTime}`,
-    };
+    try {
+      const res = await fetch(
+        "https://backend.hrms.transev.site/hr/assign-shift",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
+          },
+          body: JSON.stringify({
+            employeeId: selectedEmployee.employeeId,
+            shiftId: selectedShift.id,
+          }),
+        }
+      );
 
-    const updated = [...assigned, newAssign];
-    setAssigned(updated);
-    localStorage.setItem("assignedShifts", JSON.stringify(updated));
+      const result = await res.json();
 
-    setSelectedShiftId("");
-    setSelectedEmployeeId("");
+      if (!res.ok) {
+        throw new Error(result.message || "Failed to assign shift");
+      }
+
+      /* ---------- Build row for table ---------- */
+      const newAssign = {
+        employeeId: result.data.employeeId,
+        employeeName: selectedEmployee.name,
+        shiftId: result.data.assignedShiftId,
+        shiftName: selectedShift.shiftName,
+        fullShiftTime: `${selectedShift.fullShiftStartingTime} - ${selectedShift.fullShiftEndingTime}`,
+        halfShiftTime: `${selectedShift.halfShiftStartingTime || "-"} - ${
+          selectedShift.halfShiftEndingTime || "-"
+        }`,
+      };
+
+      /* ---------- Update list ---------- */
+      const updated = [...assigned, newAssign];
+      setAssigned(updated);
+      localStorage.setItem("assignedShifts", JSON.stringify(updated));
+
+      setSelectedShiftId("");
+      setSelectedEmployeeId("");
+
+      alert("Shift assigned successfully ✅");
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
   };
-
-  const loading = loadingShifts || loadingEmployees;
-  const error = errorShifts || errorEmployees;
 
   return (
     <div className="flex min-h-screen bg-[#f3f4f6] px-6 py-8">
       <HRSidebar />
 
       <main className="ml-64 flex-1 p-10 max-w-7xl mx-auto">
-        {loading ? (
-          <p className="text-center text-gray-600 text-xl animate-pulse font-semibold">Loading...</p>
-        ) : error ? (
-          <p className="text-center text-red-300 font-semibold text-lg">{error}</p>
-        ) : (
-          <section className="bg-white border border-yellow-200 rounded-3xl shadow-xl p-12">
-            <h1 className="text-4xl font-extrabold text-yellow-900 mb-10 text-center drop-shadow-lg tracking-wide">
-              Assign Shifts to Employees
-            </h1>
+        <section className="bg-white rounded-3xl shadow-xl p-12">
+          <h1 className="text-4xl font-extrabold text-yellow-900 mb-10 text-center">
+            Assign Shifts to Employees
+          </h1>
 
-            {/* Selects */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-              <GlassSelect label="Shift" options={shifts} value={selectedShiftId} onChange={setSelectedShiftId} />
-              <GlassSelect label="Employee" options={employees} value={selectedEmployeeId} onChange={setSelectedEmployeeId} isEmployee />
+          {/* Selects */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
+            <GlassSelect
+              label="Shift"
+              options={shifts}
+              value={selectedShiftId}
+              onChange={setSelectedShiftId}
+            />
+            <GlassSelect
+              label="Employee"
+              options={employees}
+              value={selectedEmployeeId}
+              onChange={setSelectedEmployeeId}
+              isEmployee
+            />
+          </div>
+
+          {/* Button */}
+          <div className="text-center mb-14">
+            <button
+              onClick={handleSave}
+              disabled={!selectedShiftId || !selectedEmployeeId}
+              className="px-10 py-4 bg-yellow-500 text-yellow-900 font-bold rounded-2xl"
+            >
+              Assign Shift
+            </button>
+          </div>
+
+          {/* -------- Assigned Table -------- */}
+          {assigned.length > 0 && (
+            <div className="overflow-x-auto border rounded-xl">
+              <table className="w-full text-left">
+                <thead className="bg-yellow-100">
+  <tr>
+    <th className="px-6 py-4">Employee Name</th>
+    <th className="px-6 py-4">Employee ID</th>
+    <th className="px-6 py-4">Shift Name</th>
+    <th className="px-6 py-4">Full Shift</th>
+    <th className="px-6 py-4">Half Shift</th>
+    <th className="px-6 py-4 text-center">Action</th>
+  </tr>
+</thead>
+
+                <tbody>
+                  {assigned.map((a, i) => (
+<tr key={i} className="border-t hover:bg-yellow-50 transition">
+  <td className="px-6 py-4 font-semibold">{a.employeeName}</td>
+  <td className="px-6 py-4 font-mono">{a.employeeId}</td>
+  <td className="px-6 py-4">{a.shiftName}</td>
+  <td className="px-6 py-4">{a.fullShiftTime}</td>
+  <td className="px-6 py-4">{a.halfShiftTime}</td>
+
+  {/* ✅ DELETE BUTTON */}
+  <td className="px-6 py-4 text-center">
+    <button
+      onClick={() => handleDelete(i)}
+      className="px-4 py-2 text-sm font-semibold text-red-700 bg-red-100 rounded-xl
+                 hover:bg-red-200 hover:text-red-900 transition"
+    >
+      Delete
+    </button>
+  </td>
+</tr>
+
+                  ))}
+                </tbody>
+              </table>
             </div>
-
-            {/* Button */}
-            <div className="text-center mb-14">
-              <button
-                disabled={!selectedShiftId || !selectedEmployeeId}
-                onClick={handleSave}
-                className="px-10 py-4 bg-yellow-500 text-yellow-900 font-bold rounded-2xl shadow-lg hover:shadow-xl
-                           hover:bg-yellow-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Assign Shift
-              </button>
-            </div>
-
-            {/* Table */}
-            {assigned.length > 0 && (
-              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white  shadow-xl">
-                <table className="w-full text-left text-gray-900 text-base">
-                  <thead className="bg-yellow-100 text-yellow-900 ">
-                    <tr>
-                      {[
-                        "Employee Name",
-                        "Employee ID",
-                        "Shift Name",
-                        "Full Shift Time",
-                        "Half Shift Time",
-                      ].map((h) => (
-                        <th key={h} className="px-6 py-4 font-semibold tracking-wide">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assigned.map((a, idx) => (
-                      <tr key={idx} className="hover:bg-yellow-50 transition-all duration-200">
-                        <td className="px-6 py-4">{a.employeeName}</td>
-                        <td className="px-6 py-4 font-mono">{a.employeeId}</td>
-                        <td className="px-6 py-4">{a.shiftName}</td>
-                        <td className="px-6 py-4">{a.fullShiftTime}</td>
-                        <td className="px-6 py-4">{a.halfShiftTime}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        )}
+          )}
+        </section>
       </main>
     </div>
   );

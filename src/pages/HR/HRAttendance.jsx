@@ -41,8 +41,11 @@ const HRAttendance = () => {
     let start, end;
 
     if (filterType === "today") {
-      const d = now.toISOString().slice(0, 10);
-      start = end = d;
+const d = new Date(
+  now.getTime() - now.getTimezoneOffset() * 60000
+).toISOString().slice(0, 10);
+
+      start = end = d;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     } else if (filterType === "month") {
       const year = filterYear;
       const month = filterMonth; // 1-12
