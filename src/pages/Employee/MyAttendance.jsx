@@ -21,7 +21,6 @@
 //   const [reportMessage, setReportMessage] = useState("");
 //   const [showReportSuccessPopup, setShowReportSuccessPopup] = useState(false);
 
-
 //   const fetchAttendance = async () => {
 //     const token = localStorage.getItem("employee_token");
 //     if (!token) {
@@ -70,21 +69,20 @@
 //   const formatStatus = (status) => {
 //     if (!status) return "-";
 //     return status
-//       .replace(/([A-Z])/g, " $1") // adds space before capital letters
-//       .replace(/^./, (str) => str.toUpperCase()) // capitalize first letter
+//       .replace(/([A-Z])/g, " $1")
+//       .replace(/^./, (str) => str.toUpperCase())
 //       .trim();
 //   };
 //   const formatFlags = (flags) => {
 //     if (!flags || flags.length === 0) return "-";
 //     return flags
-//       .map(flag =>
+//       .map((flag) =>
 //         flag
-//           .replace(/([A-Z])/g, " $1") // space before capital letters
-//           .replace(/^./, str => str.toUpperCase()) // capitalize first letter
+//           .replace(/([A-Z])/g, " $1")
+//           .replace(/^./, (str) => str.toUpperCase())
 //       )
 //       .join(", ");
 //   };
-
 
 //   const regenerateAttendance = async () => {
 //     setRegenLoading(true);
@@ -124,7 +122,6 @@
 //         throw new Error(json?.error || "Failed to regenerate attendance");
 //       }
 
-//       // Close dialog and refresh attendance data
 //       setShowRegenerateDialog(false);
 //       await fetchAttendance();
 //     } catch (err) {
@@ -165,10 +162,8 @@
 //         throw new Error(json?.error || "Failed to send monthly report");
 //       }
 
-//       // Show popup on success
 //       setReportMessage(json.message || "Report sent successfully");
 //       setShowReportSuccessPopup(true);
-
 //     } catch (err) {
 //       setError(err.message);
 //     } finally {
@@ -176,9 +171,6 @@
 //     }
 //   };
 
-
-
-//   // Filter attendanceData to show only up to today if filterType is monthYear and selected month-year is current month-year
 //   const filteredAttendanceData = (() => {
 //     if (filterType === "monthYear") {
 //       const [month, year] = monthYear.split("-");
@@ -190,18 +182,13 @@
 //         selectedMonth === today.getMonth() + 1 &&
 //         selectedYear === today.getFullYear()
 //       ) {
-//         // Filter dates to <= today
 //         return attendanceData.filter(({ date }) => {
 //           const attDate = new Date(date);
-//           // Compare only date part (ignore time)
 //           return attDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0);
 //         });
 //       }
 //     }
-
-//     // Otherwise, return all data
 //     return attendanceData;
-
 //   })();
 
 //   return (
@@ -211,16 +198,15 @@
 //         <EmployeeSidebar />
 //       </div>
 
-
 //       <main className="flex-1 flex items-center justify-center p-4 md:p-6">
-//         <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-6 md:p-10">
-//           <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 border-b border-yellow-300 pb-4 text-center">
+//         <div className="w-full max-w-5xl backdrop-blur-xl bg-white/60 rounded-2xl shadow-2xl border border-white/40 p-6 md:p-10">
+//           <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 pb-4 text-center tracking-wide">
 //             My Attendance
 //           </h1>
 
 //           {/* Filter Type Selection */}
 //           <div className="mb-6 flex flex-wrap gap-4 justify-center">
-//             <label className="text-yellow-900 font-semibold">
+//             <label className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/40 shadow-sm cursor-pointer hover:bg-white/70 transition font-semibold text-yellow-900">
 //               <input
 //                 type="radio"
 //                 value="date"
@@ -230,7 +216,7 @@
 //               />
 //               Single Date
 //             </label>
-//             <label className="text-yellow-900 font-semibold">
+//             <label className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/40 shadow-sm cursor-pointer hover:bg-white/70 transition font-semibold text-yellow-900">
 //               <input
 //                 type="radio"
 //                 value="monthYear"
@@ -240,7 +226,7 @@
 //               />
 //               Month-Year
 //             </label>
-//             <label className="text-yellow-900 font-semibold">
+//             <label className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/40 shadow-sm cursor-pointer hover:bg-white/70 transition font-semibold text-yellow-900">
 //               <input
 //                 type="radio"
 //                 value="year"
@@ -294,6 +280,7 @@
 //             )}
 
 //             {/* Buttons */}
+//             {/* Buttons */}
 //             <button
 //               onClick={fetchAttendance}
 //               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
@@ -308,52 +295,53 @@
 //               Regenerate Attendance
 //             </button>
 
-//             <button
-//               onClick={sendMonthlyReport}
-//               className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
-//               disabled={reportLoading}
-//             >
-//               {reportLoading ? "Sending Report..." : "Send Monthly Report"}
-//             </button>
-//           </div>
+//             {filterType === "monthYear" && (
+//               <button
+//                 onClick={sendMonthlyReport}
+//                 className="bg-yellow-500 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-yellow-600 transition w-full max-w-xs md:w-48"
+//                 disabled={reportLoading}
+//               >
+//                 {reportLoading ? "Sending Report..." : "Send Monthly Report"}
+//               </button>
+//             )}
 
+//           </div>
 
 //           {error && (
 //             <div className="text-red-600 text-center font-medium mb-4">{error}</div>
 //           )}
 
-
 //           {loading ? (
 //             <div className="text-center text-yellow-800">Loading attendance...</div>
+//           ) : filteredAttendanceData.length === 0 ? (
+//             <div className="text-center py-8 text-yellow-700 italic">
+//               No attendance records found.
+//             </div>
 //           ) : (
-//             <div className="overflow-x-auto">
-//               <table className="w-full rounded-lg border border-yellow-200 shadow-sm overflow-hidden">
-//                 <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
-//                   <tr>
-//                     <th className="p-4 border-b border-yellow-300">S.No.</th>
-//                     <th className="p-4 border-b border-yellow-300">Date</th>
-//                     <th className="p-4 border-b border-yellow-300">Day</th> {/* Add this line */}
-//                     <th className="p-4 border-b border-yellow-300">Status</th>
-//                     <th className="p-4 border-b border-yellow-300">Check-In</th>
-//                     <th className="p-4 border-b border-yellow-300">Check-Out</th>
-//                     <th className="p-4 border-b border-yellow-300">Remarks</th>
-//                   </tr>
-//                 </thead>
-
-//                 <tbody>
-//                   {filteredAttendanceData.length === 0 ? (
+//             <>
+//               {/* Desktop Table */}
+//               <div className="hidden md:block overflow-x-auto">
+//                 <table className="w-full rounded-2xl overflow-hidden backdrop-blur-xl bg-white/60 border border-white/40 shadow-xl">
+//                   <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
 //                     <tr>
-//                       <td colSpan={6} className="text-center py-8 text-yellow-700 italic">
-//                         No attendance records found.
-//                       </td>
+//                       <th className="p-4 border-b border-yellow-300">S.No.</th>
+//                       <th className="p-4 border-b border-yellow-300">Date</th>
+//                       <th className="p-4 border-b border-yellow-300">Day</th>
+//                       <th className="p-4 border-b border-yellow-300">Status</th>
+//                       <th className="p-4 border-b border-yellow-300">Check-In</th>
+//                       <th className="p-4 border-b border-yellow-300">Check-Out</th>
+//                       <th className="p-4 border-b border-yellow-300">Remarks</th>
 //                     </tr>
-//                   ) : (
-//                     filteredAttendanceData.map(
+//                   </thead>
+//                   <tbody>
+//                     {filteredAttendanceData.map(
 //                       ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
 //                         <tr
 //                           key={id}
-//                           className={`border-b border-yellow-100 ${status === "absent" ? "bg-red-50 text-red-700" : "text-yellow-900"
-//                             } hover:bg-yellow-50 transition-colors duration-200`}
+//                           className={`border-b border-yellow-100 ${status === "absent"
+//                               ? "bg-red-50 text-red-700"
+//                               : "text-yellow-900"
+//                             } hover:bg-white/60 transition-colors duration-200`}
 //                         >
 //                           <td className="p-4">{index + 1}</td>
 //                           <td className="p-4">{new Date(date).toLocaleDateString()}</td>
@@ -361,75 +349,112 @@
 //                           <td className="p-4 font-semibold">{formatStatus(status)}</td>
 //                           <td className="p-4">{punchIn || "-"}</td>
 //                           <td className="p-4">{punchOut || "-"}</td>
-//                           <td className="p-4">{formatFlags(flags)}</td> {/* ✅ New column */}
+//                           <td className="p-4">{formatFlags(flags)}</td>
 //                         </tr>
-//                       ))
-//                   )}
-//                 </tbody>
-//               </table>
-//             </div>
+//                       )
+//                     )}
+//                   </tbody>
+//                 </table>
+//               </div>
+
+//               {/* Mobile Cards */}
+//               <div className="md:hidden space-y-4">
+//                 {filteredAttendanceData.map(
+//                   ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
+//                     <div
+//                       key={id}
+//                       className={`border rounded-lg p-4 shadow-sm ${status === "absent"
+//                           ? "bg-red-50 text-red-700 border-red-200"
+//                           : "bg-yellow-50 text-yellow-900 border-yellow-200"
+//                         }`}
+//                     >
+//                       <div className="flex justify-between mb-2 font-semibold text-lg">
+//                         <span>Day {index + 1}</span>
+//                         <span>{new Date(date).toLocaleDateString()}</span>
+//                       </div>
+
+//                       <div className="grid grid-cols-2 gap-2 text-sm">
+//                         <div>
+//                           <span className="font-semibold">Day:</span> {day}
+//                         </div>
+//                         <div>
+//                           <span className="font-semibold">Status:</span>{" "}
+//                           {formatStatus(status)}
+//                         </div>
+//                         <div>
+//                           <span className="font-semibold">Check-In:</span> {punchIn || "-"}
+//                         </div>
+//                         <div>
+//                           <span className="font-semibold">Check-Out:</span>{" "}
+//                           {punchOut || "-"}
+//                         </div>
+//                         <div className="col-span-2">
+//                           <span className="font-semibold">Remarks:</span>{" "}
+//                           {formatFlags(flags)}
+//                         </div>
+//                       </div>
+//                     </div>
+//                   )
+//                 )}
+//               </div>
+//             </>
 //           )}
 
 //           {/* Regenerate Confirmation Dialog */}
 //           {showRegenerateDialog && (
 //             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
 //               <div className="bg-white p-6 rounded-lg w-96 shadow-xl border border-gray-300">
-//                 <h2 className="text-xl font-bold mb-4 text-gray-800">
-//                   Regenerate Attendance?
+//                 <h2 className="text-xl font-bold mb-4 text-yellow-900">
+//                   Confirm Regenerate Attendance
 //                 </h2>
-
-//                 <p className="mb-4 text-sm text-red-600">
-//                   Are you sure you want to regenerate attendance based on the
-//                   selected filter?
+//                 <p className="mb-6 text-yellow-700">
+//                   This will overwrite your existing attendance data for the selected
+//                   filter. Are you sure you want to continue?
 //                 </p>
-
 //                 {regenError && (
-//                   <div className="text-red-600 text-sm mb-2">{regenError}</div>
+//                   <p className="mb-4 text-red-600 font-semibold">{regenError}</p>
 //                 )}
-
-//                 <div className="flex justify-end gap-3">
+//                 <div className="flex justify-end gap-4">
 //                   <button
 //                     onClick={() => setShowRegenerateDialog(false)}
-//                     className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
 //                     disabled={regenLoading}
+//                     className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 transition"
 //                   >
 //                     Cancel
 //                   </button>
 //                   <button
 //                     onClick={regenerateAttendance}
-//                     className="px-4 py-2 bg-yellow-500 text-white font-semibold rounded hover:bg-yellow-700"
 //                     disabled={regenLoading}
+//                     className="px-4 py-2 rounded bg-yellow-500 text-white font-bold hover:bg-yellow-600 transition"
 //                   >
-//                     {regenLoading ? "Regenerating..." : "Confirm"}
+//                     {regenLoading ? "Processing..." : "Yes, Regenerate"}
 //                   </button>
 //                 </div>
 //               </div>
 //             </div>
 //           )}
-//         </div>
-//         {/* Monthly Report Success Popup */}
-//         {showReportSuccessPopup && (
-//           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-//             <div className="bg-white p-6 rounded-lg w-96 shadow-xl border border-yellow-300 text-center">
-//               <h2 className="text-xl font-semibold text-yellow-900 mb-4">Success</h2>
-//               <p className="mb-6 text-yellow-800">{reportMessage}</p>
-//               <button
-//                 onClick={() => setShowReportSuccessPopup(false)}
-//                 className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-600 transition"
-//               >
-//                 Close
-//               </button>
-//             </div>
-//           </div>
-//         )}
 
+//           {/* Report Success Popup */}
+//           {showReportSuccessPopup && (
+//             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+//               <div className="bg-white p-6 rounded-lg w-80 shadow-xl border border-gray-300 text-center">
+//                 <p className="mb-4 text-yellow-900 font-semibold">{reportMessage}</p>
+//                 <button
+//                   onClick={() => setShowReportSuccessPopup(false)}
+//                   className="px-4 py-2 rounded bg-yellow-500 text-white font-bold hover:bg-yellow-600 transition"
+//                 >
+//                   OK
+//                 </button>
+//               </div>
+//             </div>
+//           )}
+//         </div>
 //       </main>
 //     </div>
 //   );
 // };
 
 // export default MyAttendance;
-
 import React, { useState } from "react";
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
 
@@ -624,21 +649,21 @@ const MyAttendance = () => {
   })();
 
   return (
-    <div className="flex min-h-screen bg-yellow-50">
+<div className="flex min-h-screen bg-gradient-to-br from-yellow-100 via-white to-yellow-200">
       {/* Sidebar */}
       <div className="w-64 hidden md:block">
         <EmployeeSidebar />
       </div>
 
       <main className="flex-1 flex items-center justify-center p-4 md:p-6">
-        <div className="w-full max-w-5xl bg-white rounded-xl shadow-lg border border-yellow-300 p-6 md:p-10">
-          <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 border-b border-yellow-300 pb-4 text-center">
+        <div className="w-full max-w-5xl backdrop-blur-xl bg-white/60 rounded-2xl shadow-2xl border border-white/40 p-6 md:p-10">
+          <h1 className="text-4xl font-extrabold mb-10 text-yellow-900 pb-4 text-center tracking-wide">
             My Attendance
           </h1>
 
           {/* Filter Type Selection */}
           <div className="mb-6 flex flex-wrap gap-4 justify-center">
-            <label className="text-yellow-900 font-semibold">
+            <label className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/40 shadow-sm cursor-pointer hover:bg-white/70 transition font-semibold text-yellow-900">
               <input
                 type="radio"
                 value="date"
@@ -648,7 +673,7 @@ const MyAttendance = () => {
               />
               Single Date
             </label>
-            <label className="text-yellow-900 font-semibold">
+            <label className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/40 shadow-sm cursor-pointer hover:bg-white/70 transition font-semibold text-yellow-900">
               <input
                 type="radio"
                 value="monthYear"
@@ -658,7 +683,7 @@ const MyAttendance = () => {
               />
               Month-Year
             </label>
-            <label className="text-yellow-900 font-semibold">
+            <label className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-md border border-white/40 shadow-sm cursor-pointer hover:bg-white/70 transition font-semibold text-yellow-900">
               <input
                 type="radio"
                 value="year"
@@ -753,7 +778,7 @@ const MyAttendance = () => {
             <>
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full rounded-lg border border-yellow-200 shadow-sm overflow-hidden">
+                <table className="w-full rounded-2xl overflow-hidden backdrop-blur-xl bg-white/60 border border-white/40 shadow-xl">
                   <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
                     <tr>
                       <th className="p-4 border-b border-yellow-300">S.No.</th>
@@ -773,7 +798,7 @@ const MyAttendance = () => {
                           className={`border-b border-yellow-100 ${status === "absent"
                               ? "bg-red-50 text-red-700"
                               : "text-yellow-900"
-                            } hover:bg-yellow-50 transition-colors duration-200`}
+                            } hover:bg-white/60 transition-colors duration-200`}
                         >
                           <td className="p-4">{index + 1}</td>
                           <td className="p-4">{new Date(date).toLocaleDateString()}</td>
