@@ -170,58 +170,66 @@ const d = new Date(
 
 
 
-  const saveAttendance = async () => {
-    if (!editEntry) return;
-    setLoadingSave(true);
-    setError("");
+const saveAttendance = async () => {
+  if (!editEntry) return;
+  setLoadingSave(true);
+  setError("");
 
-    try {
-      const attendanceDate = `${editEntry.date}T00:00:00.000Z`;
+  try {
+    const attendanceDate = `${editEntry.date}T00:00:00.000Z`;
 
-      // Helper to ensure ISO format from date and "HH:mm"
-      const formatToISO = (dateStr, timeStr) => {
-        const [hour, minute] = timeStr.split(":");
-        const date = new Date(dateStr);
-        date.setHours(parseInt(hour, 10));
-        date.setMinutes(parseInt(minute, 10));
-        date.setSeconds(0);
-        date.setMilliseconds(0);
-        return date.toISOString();
-      };
+    const formatToISO = (dateStr, timeStr) => {
+      if (!timeStr) return null; // prevent crash
+      const [hour, minute] = timeStr.split(":");
+      const date = new Date(dateStr);
+      date.setHours(parseInt(hour, 10));
+      date.setMinutes(parseInt(minute, 10));
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+      return date.toISOString();
+    };
 
-      const punchInISO = formatToISO(editEntry.date, editEntry.punchIn);
-      const punchOutISO = formatToISO(editEntry.date, editEntry.punchOut);
+    const punchInISO = formatToISO(editEntry.date, editEntry.punchIn);
+    const punchOutISO = formatToISO(editEntry.date, editEntry.punchOut);
 
-      const res = await fetch("https://backend.hrms.transev.site/hr/edit-attendance-entry", {
+    const payload = {
+      employeeId: selectedEmpId,
+      attendanceDate,
+      status: editEntry.status,
+      flags: ["manualEntry", "edited"],
+      comments: editEntry.comments,
+    };
+
+    if (punchInISO) payload.punchIn = punchInISO;
+    if (punchOutISO) payload.punchOut = punchOutISO;
+
+    // ✅ make sure res is defined here
+    const res = await fetch(
+      "https://backend.hrms.transev.site/hr/edit-attendance-entry",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("hr_token")}`,
         },
-        body: JSON.stringify({
-          employeeId: selectedEmpId,
-          attendanceDate,
-          punchIn: punchInISO,
-          punchOut: punchOutISO,
-          status: editEntry.status,
-          flags: ["manualEntry", "edited"],
-          comments: editEntry.comments,
-        }),
-      });
+        body: JSON.stringify(payload),
+      }
+    );
 
-      const json = await res.json();
-      if (!res.ok || json.status !== "success") throw new Error(json.message || "Save failed");
+    const json = await res.json();
+    if (!res.ok || json.status !== "success") throw new Error(json.message || "Save failed");
 
-      setAttendanceData((prev) =>
-        prev.map((it) => (it.id === editEntry.id ? { ...editEntry } : it))
-      );
-      setEditEntry(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoadingSave(false);
-    }
-  };
+    setAttendanceData((prev) =>
+      prev.map((it) => (it.id === editEntry.id ? { ...editEntry } : it))
+    );
+    setEditEntry(null);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoadingSave(false);
+  }
+};
+
   const getStatusLabel = (status) => {
     const labels = {
       fullDay: "Full Day",
