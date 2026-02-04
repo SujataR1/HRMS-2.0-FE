@@ -455,8 +455,12 @@
 // };
 
 // export default MyAttendance;
-import React, { useState } from "react";
+
+
+// import React, { useState } from "react";
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
+import React, { useState, useEffect } from "react";
+
 
 const MyAttendance = () => {
   const [filterType, setFilterType] = useState("monthYear"); // "date", "monthYear", or "year"
@@ -647,9 +651,13 @@ const MyAttendance = () => {
     }
     return attendanceData;
   })();
+  useEffect(() => {
+    setAttendanceData([]);
+    setError("");
+  }, [filterType]);
 
   return (
-<div className="flex min-h-screen bg-gradient-to-br from-yellow-100 via-white to-yellow-200">
+    <div className="flex min-h-screen bg-gradient-to-br from-yellow-100 via-white to-yellow-200">
       {/* Sidebar */}
       <div className="w-64 hidden md:block">
         <EmployeeSidebar />
@@ -796,8 +804,8 @@ const MyAttendance = () => {
                         <tr
                           key={id}
                           className={`border-b border-yellow-100 ${status === "absent"
-                              ? "bg-red-50 text-red-700"
-                              : "text-yellow-900"
+                            ? "bg-red-50 text-red-700"
+                            : "text-yellow-900"
                             } hover:bg-white/60 transition-colors duration-200`}
                         >
                           <td className="p-4">{index + 1}</td>
@@ -821,8 +829,8 @@ const MyAttendance = () => {
                     <div
                       key={id}
                       className={`border rounded-lg p-4 shadow-sm ${status === "absent"
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : "bg-yellow-50 text-yellow-900 border-yellow-200"
+                        ? "bg-red-50 text-red-700 border-red-200"
+                        : "bg-yellow-50 text-yellow-900 border-yellow-200"
                         }`}
                     >
                       <div className="flex justify-between mb-2 font-semibold text-lg">
@@ -859,7 +867,7 @@ const MyAttendance = () => {
 
           {/* Regenerate Confirmation Dialog */}
           {showRegenerateDialog && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+            <div className="fixed inset-0 flex items-center justify-center bg-transparent z-50">
               <div className="bg-white p-6 rounded-lg w-96 shadow-xl border border-gray-300">
                 <h2 className="text-xl font-bold mb-4 text-yellow-900">
                   Confirm Regenerate Attendance
@@ -893,7 +901,7 @@ const MyAttendance = () => {
 
           {/* Report Success Popup */}
           {showReportSuccessPopup && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+            <div className="fixed inset-0 flex items-center justify-center bg-transparent z-50">
               <div className="bg-white p-6 rounded-lg w-80 shadow-xl border border-gray-300 text-center">
                 <p className="mb-4 text-yellow-900 font-semibold">{reportMessage}</p>
                 <button
