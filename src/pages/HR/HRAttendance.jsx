@@ -1,4 +1,3 @@
-
 // import React, { useEffect, useState } from "react";
 // import HRSidebar from "../../components/Common/HRSidebar";
 
@@ -491,12 +490,12 @@ const HRAttendance = () => {
     hour = hour % 12 || 12;
     return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
   };
-const formatLocalDate = (date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+  const formatLocalDate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
   // Update date range based on selected filter
   useEffect(() => {
@@ -522,8 +521,8 @@ const formatLocalDate = (date) => {
         ? today
         : new Date(year, month, 0); // ✅ Last day of selected month
 
-start = formatLocalDate(startDateObj);
-end = formatLocalDate(endDateObj);
+      start = formatLocalDate(startDateObj);
+      end = formatLocalDate(endDateObj);
 
     } else {
       start = `${filterYear}-01-01`;
@@ -817,7 +816,10 @@ end = formatLocalDate(endDateObj);
                   <tbody className="divide-y divide-yellow-100">
                     {attendanceData.map((row, index) => (
                       <tr key={row.id} className="hover:bg-yellow-50">
-                        <td className="px-4 py-2">{new Date(row.date).getDate()}</td>
+                        <td className="px-4 py-2">
+                          {filterType === "year" ? index + 1 : new Date(row.date).getDate()}
+                        </td>
+
 
                         <td className="px-4 py-2">{row.date}</td>
                         <td className="px-4 py-2">{formatTime(row.punchIn)}</td>
