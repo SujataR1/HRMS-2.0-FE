@@ -1,5 +1,6 @@
-// import React, { useState } from "react";
 // import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
+// import React, { useState, useEffect } from "react";
+
 
 // const MyAttendance = () => {
 //   const [filterType, setFilterType] = useState("monthYear"); // "date", "monthYear", or "year"
@@ -190,9 +191,13 @@
 //     }
 //     return attendanceData;
 //   })();
+//   useEffect(() => {
+//     setAttendanceData([]);
+//     setError("");
+//   }, [filterType]);
 
 //   return (
-//     <div className="flex min-h-screen bg-yellow-50">
+//     <div className="flex min-h-screen bg-gradient-to-br from-yellow-100 via-white to-yellow-200">
 //       {/* Sidebar */}
 //       <div className="w-64 hidden md:block">
 //         <EmployeeSidebar />
@@ -339,8 +344,8 @@
 //                         <tr
 //                           key={id}
 //                           className={`border-b border-yellow-100 ${status === "absent"
-//                               ? "bg-red-50 text-red-700"
-//                               : "text-yellow-900"
+//                             ? "bg-red-50 text-red-700"
+//                             : "text-yellow-900"
 //                             } hover:bg-white/60 transition-colors duration-200`}
 //                         >
 //                           <td className="p-4">{index + 1}</td>
@@ -364,8 +369,8 @@
 //                     <div
 //                       key={id}
 //                       className={`border rounded-lg p-4 shadow-sm ${status === "absent"
-//                           ? "bg-red-50 text-red-700 border-red-200"
-//                           : "bg-yellow-50 text-yellow-900 border-yellow-200"
+//                         ? "bg-red-50 text-red-700 border-red-200"
+//                         : "bg-yellow-50 text-yellow-900 border-yellow-200"
 //                         }`}
 //                     >
 //                       <div className="flex justify-between mb-2 font-semibold text-lg">
@@ -402,7 +407,7 @@
 
 //           {/* Regenerate Confirmation Dialog */}
 //           {showRegenerateDialog && (
-//             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+//             <div className="fixed inset-0 flex items-center justify-center bg-transparent z-50">
 //               <div className="bg-white p-6 rounded-lg w-96 shadow-xl border border-gray-300">
 //                 <h2 className="text-xl font-bold mb-4 text-yellow-900">
 //                   Confirm Regenerate Attendance
@@ -436,7 +441,7 @@
 
 //           {/* Report Success Popup */}
 //           {showReportSuccessPopup && (
-//             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+//             <div className="fixed inset-0 flex items-center justify-center bg-transparent z-50">
 //               <div className="bg-white p-6 rounded-lg w-80 shadow-xl border border-gray-300 text-center">
 //                 <p className="mb-4 text-yellow-900 font-semibold">{reportMessage}</p>
 //                 <button
@@ -457,7 +462,6 @@
 // export default MyAttendance;
 
 
-// import React, { useState } from "react";
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
 import React, { useState, useEffect } from "react";
 
@@ -633,9 +637,12 @@ const MyAttendance = () => {
   };
 
   const filteredAttendanceData = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Month-Year filter (already correct, just kept clean)
     if (filterType === "monthYear") {
       const [month, year] = monthYear.split("-");
-      const today = new Date();
       const selectedMonth = parseInt(month, 10);
       const selectedYear = parseInt(year, 10);
 
@@ -645,12 +652,29 @@ const MyAttendance = () => {
       ) {
         return attendanceData.filter(({ date }) => {
           const attDate = new Date(date);
-          return attDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0);
+          attDate.setHours(0, 0, 0, 0);
+          return attDate <= today;
         });
       }
     }
+
+    // ✅ YEAR filter fix (THIS IS THE MISSING PART)
+    if (filterType === "year") {
+      const selectedYear = parseInt(year, 10);
+
+      // If current year → hide future dates
+      if (selectedYear === today.getFullYear()) {
+        return attendanceData.filter(({ date }) => {
+          const attDate = new Date(date);
+          attDate.setHours(0, 0, 0, 0);
+          return attDate <= today;
+        });
+      }
+    }
+
     return attendanceData;
   })();
+
   useEffect(() => {
     setAttendanceData([]);
     setError("");
@@ -743,8 +767,6 @@ const MyAttendance = () => {
                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
               />
             )}
-
-            {/* Buttons */}
             {/* Buttons */}
             <button
               onClick={fetchAttendance}
