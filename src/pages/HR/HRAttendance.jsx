@@ -1,3 +1,4 @@
+
 // import React, { useEffect, useState } from "react";
 // import HRSidebar from "../../components/Common/HRSidebar";
 
@@ -490,6 +491,12 @@ const HRAttendance = () => {
     hour = hour % 12 || 12;
     return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
   };
+const formatLocalDate = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
 
   // Update date range based on selected filter
   useEffect(() => {
@@ -515,8 +522,9 @@ const HRAttendance = () => {
         ? today
         : new Date(year, month, 0); // ✅ Last day of selected month
 
-      start = startDateObj.toISOString().slice(0, 10);
-      end = endDateObj.toISOString().slice(0, 10);
+start = formatLocalDate(startDateObj);
+end = formatLocalDate(endDateObj);
+
     } else {
       start = `${filterYear}-01-01`;
       end = `${filterYear}-12-31`;

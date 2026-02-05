@@ -347,6 +347,7 @@
 
 // export default Home;
 
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
@@ -499,7 +500,7 @@ const Home = () => {
         setLoginError(data?.message || "Invalid OTP");
       }
     } catch {
-      setLoginError("OTP verification failed");
+      setLoginError("Invalid or expired OTP");
     }
   };
 
