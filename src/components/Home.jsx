@@ -608,6 +608,19 @@ const Home = () => {
               >
                 Sign In
               </button>
+              {/* FORGOT PASSWORD */}
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/forgot-password/${selectedRole.toLowerCase()}`)
+                  }
+                  className="text-sm font-semibold text-emerald-600 hover:text-emerald-800 transition"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
             </form>
           ) : (
             <form onSubmit={handleVerifyOtp} className="space-y-6 text-center">
