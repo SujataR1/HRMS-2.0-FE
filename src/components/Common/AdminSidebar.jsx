@@ -18,6 +18,7 @@ const AdminSidebar = () => {
   { name: 'Employee Management' },
   { name: 'Profile', path: '/AdminProfile' },
   { name: 'Make HR', path: '/PromoteEmployeeToHR' },
+  { name: 'Delete HR', path: '/DeleteHr' },
   { name: 'All HR', path: '/HRDetailsPage' },
   { name: 'Shift Management', path: '/Adminshiftmanagement' },
   { name: 'Assign Shift to Employee', path: '/AdminAllShift' },
