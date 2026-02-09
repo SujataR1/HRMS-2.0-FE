@@ -58,6 +58,7 @@ import AdminProfile from './pages/Admin/Profile';
 import HRLeaveApprovals from './pages/HR/HRLeaveApprovals';
 import SideForgotPassword from './pages/Employee/SideForgotPassword';
 import MyHoliday from './pages/Employee/MyHoliday';
+import DeleteHr from './pages/Admin/DeleteHr';
 
 function App() {
   return (
@@ -125,7 +126,7 @@ function App() {
         <Route path="/AdminProfile" element={<AdminProfile />} />
         <Route path="/SideForgotPassword" element={<SideForgotPassword />} />
         <Route path="/MyHoliday" element={<MyHoliday />} />
-
+        <Route path="/DeleteHr" element={<DeleteHr />} />
         
          
       </Routes>
