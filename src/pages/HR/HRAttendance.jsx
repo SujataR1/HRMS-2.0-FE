@@ -631,8 +631,6 @@ const HRAttendance = () => {
   };
 
 
-
-
   const saveAttendance = async () => {
     if (!editEntry) return;
     setLoadingSave(true);

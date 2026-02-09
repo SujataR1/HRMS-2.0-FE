@@ -42,12 +42,12 @@ const LeaveFormAndView = () => {
     const [generatedLeaveId, setGeneratedLeaveId] = useState(null);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploading, setUploading] = useState(false);
-const isWithin30Minutes = (createdAt) => {
-  const createdTime = new Date(createdAt).getTime();
-  const now = new Date().getTime();
-  const diffInMinutes = (now - createdTime) / (1000 * 60);
-  return diffInMinutes <= 30;
-};
+    const isWithin30Minutes = (createdAt) => {
+        const createdTime = new Date(createdAt).getTime();
+        const now = new Date().getTime();
+        const diffInMinutes = (now - createdTime) / (1000 * 60);
+        return diffInMinutes <= 30;
+    };
 
 
 
@@ -727,43 +727,41 @@ const isWithin30Minutes = (createdAt) => {
 
                                                     {/*  Only show buttons if not cancelled */}
                                                     {leave.status !== "cancelled" && (
-  <div className="flex gap-2 mt-1 md:mt-0">
-    <button
-      onClick={() => handleEditClick(leave)}
-      disabled={!isWithin30Minutes(leave.createdAt)}
-      className={`inline-flex items-center px-4 py-1.5 text-sm font-semibold rounded-md shadow-sm transition-all duration-200 ${
-        isWithin30Minutes(leave.createdAt)
-          ? "bg-yellow-400 text-yellow-900 hover:bg-yellow-500 hover:shadow-md"
-          : "bg-gray-200 text-gray-400 cursor-not-allowed"
-      }`}
-      title={
-        isWithin30Minutes(leave.createdAt)
-          ? "Edit this leave"
-          : "Editing disabled after 30 minutes"
-      }
-    >
-      ✏️ Edit
-    </button>
+                                                        <div className="flex gap-2 mt-1 md:mt-0">
+                                                            <button
+                                                                onClick={() => handleEditClick(leave)}
+                                                                disabled={!isWithin30Minutes(leave.createdAt)}
+                                                                className={`inline-flex items-center px-4 py-1.5 text-sm font-semibold rounded-md shadow-sm transition-all duration-200 ${isWithin30Minutes(leave.createdAt)
+                                                                    ? "bg-yellow-400 text-yellow-900 hover:bg-yellow-500 hover:shadow-md"
+                                                                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                                                    }`}
+                                                                title={
+                                                                    isWithin30Minutes(leave.createdAt)
+                                                                        ? "Edit this leave"
+                                                                        : "Editing disabled after 30 minutes"
+                                                                }
+                                                            >
+                                                                ✏️ Edit
+                                                            </button>
 
-     {/* Cancel Button */}
-    <button
-      onClick={() => handleCancelLeave(leave.id)}
-      disabled={!isWithin30Minutes(leave.createdAt)}
-      className={`inline-flex items-center px-4 py-1.5 text-sm font-semibold rounded-md shadow-sm transition-all duration-200 ${
-        isWithin30Minutes(leave.createdAt)
-          ? "bg-red-100 text-red-600 hover:bg-red-200 hover:shadow-md"
-          : "bg-gray-200 text-gray-400 cursor-not-allowed"
-      }`}
-      title={
-        isWithin30Minutes(leave.createdAt)
-          ? "Cancel this leave"
-          : "Cancelling disabled after 30 minutes"
-      }
-    >
-      ❌ Cancel
-    </button>
-  </div>
-)}
+                                                            {/* Cancel Button */}
+                                                            <button
+                                                                onClick={() => handleCancelLeave(leave.id)}
+                                                                disabled={!isWithin30Minutes(leave.createdAt)}
+                                                                className={`inline-flex items-center px-4 py-1.5 text-sm font-semibold rounded-md shadow-sm transition-all duration-200 ${isWithin30Minutes(leave.createdAt)
+                                                                    ? "bg-red-100 text-red-600 hover:bg-red-200 hover:shadow-md"
+                                                                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                                                    }`}
+                                                                title={
+                                                                    isWithin30Minutes(leave.createdAt)
+                                                                        ? "Cancel this leave"
+                                                                        : "Cancelling disabled after 30 minutes"
+                                                                }
+                                                            >
+                                                                ❌ Cancel
+                                                            </button>
+                                                        </div>
+                                                    )}
 
                                                 </div>
                                             )}
@@ -771,8 +769,6 @@ const isWithin30Minutes = (createdAt) => {
                                     </tr>
                                 ))}
                             </tbody>
-
-
 
                         </table>
                     )}
