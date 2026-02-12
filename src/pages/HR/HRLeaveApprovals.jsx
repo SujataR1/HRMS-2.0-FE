@@ -83,13 +83,17 @@ const HRLeaveApprovals = () => {
         }
     };
     useEffect(() => {
-        fetchPendingLeaves(); // initial call
-        const intervalId = setInterval(fetchPendingLeaves, 10000);
+        fetchPendingLeaves();
+
+        const intervalId = setInterval(() => {
+            // ⛔ Do NOT refresh when modal is open
+            if (!leaveDetails) {
+                fetchPendingLeaves();
+            }
+        }, 10000);
+
         return () => clearInterval(intervalId);
-    }, []);
-
-
-
+    }, [leaveDetails]);
 
     const closeModal = () => {
         setLeaveDetails(null);
@@ -413,6 +417,28 @@ const HRLeaveApprovals = () => {
                                     </div>
                                 </div>
                             </div>
+                            {/* Application Notes */}
+                            <div className="mt-5">
+                                <label className="block text-sm font-medium text-yellow-700 mb-1">
+                                    Application Notes
+                                </label>
+                                <div className="p-3 border border-gray-300 rounded bg-gray-50 text-gray-800 whitespace-pre-wrap">
+                                    {leaveDetails.applicationNotes || "No notes provided"}
+                                </div>
+                            </div>
+
+                            {/* Created At */}
+                            <div className="mt-4">
+                                <label className="block text-sm font-medium text-yellow-700 mb-1">
+                                    Applied On
+                                </label>
+                                <p className="p-2 border border-gray-300 rounded bg-gray-50">
+                                    {leaveDetails.createdAt
+                                        ? dayjs(leaveDetails.createdAt).format("MMM D, YYYY • hh:mm A")
+                                        : "N/A"}
+                                </p>
+                            </div>
+
 
                             <button
                                 onClick={handleApproveOrReject}
@@ -537,8 +563,11 @@ const HRLeaveApprovals = () => {
                                             <th className="border border-gray-300 p-2">Type</th>
                                             <th className="border border-gray-300 p-2">From</th>
                                             <th className="border border-gray-300 p-2">To</th>
+                                            <th className="border border-gray-300 p-2">Application Notes</th>
+                                            <th className="border border-gray-300 p-2">Applied On</th>
                                             <th className="border border-gray-300 p-2">Status</th>
                                             <th className="border border-gray-300 p-2">Action</th>
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -551,8 +580,71 @@ const HRLeaveApprovals = () => {
                                                 <td className="border border-gray-300 p-2">{leave.employeeId}</td>
                                                 <td className="border border-gray-300 p-2">{leave.employeeName || "N/A"}</td>
                                                 <td className="border border-gray-300 p-2">{[leave.leaveType, ...(leave.paymentStatuses || [])].join(", ")} </td>
-                                                <td className="border border-gray-300 p-2">{dayjs(leave.fromDate).format("MMM D, YYYY")}</td>
-                                                <td className="border border-gray-300 p-2">{dayjs(leave.toDate).format("MMM D, YYYY")}</td>
+                                                <td className="border border-gray-300 p-2">
+                                                    {dayjs(leave.fromDate).format("MMM D, YYYY")}
+                                                </td>
+
+                                                <td className="border border-gray-300 p-2">
+                                                    {dayjs(leave.toDate).format("MMM D, YYYY")}
+                                                </td>
+
+                                                {/* Application Notes */}
+                                                <td className="border border-gray-300 p-2">
+                                                    {leave.applicationNotes ? (
+                                                        <div className="relative group inline-block">
+                                                            {/* Trigger */}
+                                                            <span
+                                                                tabIndex={0}
+                                                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium
+                   text-blue-700 bg-blue-50 border border-blue-200 rounded-full
+                   cursor-pointer hover:bg-blue-100"
+                                                            >
+                                                                📝 View Notes
+                                                            </span>
+
+                                                            {/* Popover */}
+                                                            <div
+                                                                className="absolute z-50 hidden group-hover:block group-focus-within:block
+                   left-0 top-full mt-3 w-96"
+                                                            >
+                                                                {/* Arrow */}
+                                                                <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-l border-t
+                        border-gray-300 rotate-45"></div>
+
+                                                                {/* Card */}
+                                                                <div className="relative bg-white border border-gray-300 rounded-xl shadow-xl">
+                                                                    {/* Header */}
+                                                                    <div className="flex items-center justify-between px-4 py-2 border-b">
+                                                                        <h4 className="text-sm font-semibold text-gray-800">
+                                                                            Application Notes
+                                                                        </h4>
+                                                                        <span className="text-xs text-gray-500">
+                                                                            Emp ID: {leave.employeeId}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {/* Body */}
+                                                                    <div className="px-4 py-3 max-h-64 overflow-y-auto
+                          text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                                                                        {leave.applicationNotes}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        "—"
+                                                    )}
+                                                </td>
+
+
+
+                                                {/* Applied On */}
+                                                <td className="border border-gray-300 p-2">
+                                                    {leave.createdAt
+                                                        ? dayjs(leave.createdAt).format("MMM D, YYYY • hh:mm A")
+                                                        : "—"}
+                                                </td>
+
                                                 <td
                                                     className={`border border-gray-300 p-2 ${leave.status === "pending"
                                                         ? "text-yellow-700"
@@ -565,7 +657,9 @@ const HRLeaveApprovals = () => {
                                                 >
                                                     {leave.status}
                                                 </td>
+
                                                 <td className="border border-gray-300 p-2">
+
                                                     <button
                                                         className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded"
                                                         onClick={(e) => {
@@ -584,7 +678,6 @@ const HRLeaveApprovals = () => {
                             )}
                         </div>
                     )}
-
                     {searchResults.length > 0 ? (
                         <div className="mt-6 overflow-x-auto">
                             <table className="w-full table-auto border border-gray-300">
@@ -597,7 +690,6 @@ const HRLeaveApprovals = () => {
                                         <th className="p-2 border">Type</th>
                                         <th className="p-2 border">Status</th>
                                         <th className="border border-gray-300 p-2">Action</th>
-
                                     </tr>
                                 </thead>
                                 <tbody>
