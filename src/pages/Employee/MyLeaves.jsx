@@ -475,6 +475,7 @@ const LeaveFormAndView = () => {
                                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
                                 />
                             )}
+                            {/* */}
 
                             {/* List selected attachments */}
                             <div className="space-y-2">
@@ -866,4 +867,3 @@ const LeaveFormAndView = () => {
 };
 
 export default LeaveFormAndView;
-
