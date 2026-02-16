@@ -502,7 +502,7 @@ const handleSubmit = async (e) => {
   ========================== */
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (otp.length !== 6) return;
+    if (otp.length !== 6)  return;
 
     try {
       const { data } = await axios.post(
