@@ -10,6 +10,7 @@ import {
   MdExpandLess,
   MdAssessment
 } from 'react-icons/md';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from "../../assets/TransmogriffyLogo.png";
 
@@ -30,6 +31,7 @@ const HRSidebar = () => {
     { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
     { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
     { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
+    { label: 'Teams', path: '/HRTeams',  icon: <MdCalendarToday size={18} />,  },
     { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
     { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
     { label: 'Employee Concerns', path: '/HRConcernList', icon: <MdEventNote size={18} /> },

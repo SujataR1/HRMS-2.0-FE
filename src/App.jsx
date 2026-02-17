@@ -61,6 +61,7 @@ import MyHoliday from './pages/Employee/MyHoliday';
 import DeleteHr from './pages/Admin/DeleteHr';
 import RegenerateAttendance from './pages/HR/RegenerateAttendance';
 
+import HRTeams from './pages/HR/HRTeams';
 
 
 function App() {
@@ -131,7 +132,9 @@ function App() {
         <Route path="/MyHoliday" element={<MyHoliday />} />
         <Route path="/DeleteHr" element={<DeleteHr />} />
         <Route path="/RegenerateAttendance" element={<RegenerateAttendance />} />
-        
+        <Route path="/HRTeams" element={<HRTeams />} />
+
+
       </Routes>
     </Router>
   );
