@@ -60,9 +60,8 @@ import SideForgotPassword from './pages/Employee/SideForgotPassword';
 import MyHoliday from './pages/Employee/MyHoliday';
 import DeleteHr from './pages/Admin/DeleteHr';
 import RegenerateAttendance from './pages/HR/RegenerateAttendance';
-
 import HRTeams from './pages/HR/HRTeams';
-
+import HRProjects from './pages/HR/Projects';
 
 function App() {
   return (
@@ -133,6 +132,7 @@ function App() {
         <Route path="/DeleteHr" element={<DeleteHr />} />
         <Route path="/RegenerateAttendance" element={<RegenerateAttendance />} />
         <Route path="/HRTeams" element={<HRTeams />} />
+        <Route path="/Projects" element={<HRProjects />} />
 
 
       </Routes>

@@ -31,6 +31,7 @@ const HRSidebar = () => {
     { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
     { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
     { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
+    { label: 'Projects', path: '/Projects', icon: <MdEventNote size={18} /> },
     { label: 'Teams', path: '/HRTeams',  icon: <MdCalendarToday size={18} />,  },
     { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
     { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
