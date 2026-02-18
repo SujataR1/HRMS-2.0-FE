@@ -478,6 +478,8 @@
 // };
 
 // export default MyAttendance;
+
+
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
 import React, { useState, useEffect } from "react";
 
@@ -501,6 +503,8 @@ const MyAttendance = () => {
   const [reportLoading, setReportLoading] = useState(false);
   const [reportMessage, setReportMessage] = useState("");
   const [showReportSuccessPopup, setShowReportSuccessPopup] = useState(false);
+  const [openComment, setOpenComment] = useState(null);
+
 
   const fetchAttendance = async () => {
     const token = localStorage.getItem("employee_token");
@@ -824,17 +828,20 @@ const MyAttendance = () => {
             <>
               {/* Desktop Table */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full rounded-2xl overflow-hidden backdrop-blur-xl bg-white/60 border border-white/40 shadow-xl">
+<table className="w-full text-sm border-separate border-spacing-y-2">
+
                   <thead className="bg-yellow-200 text-yellow-900 font-semibold text-left">
-                    <tr>
-                      <th className="p-4 border-b border-yellow-300">S.No.</th>
-                      <th className="p-4 border-b border-yellow-300">Date</th>
-                      <th className="p-4 border-b border-yellow-300">Day</th>
-                      <th className="p-4 border-b border-yellow-300">Status</th>
-                      <th className="p-4 border-b border-yellow-300">Check-In</th>
-                      <th className="p-4 border-b border-yellow-300">Check-Out</th>
-                      <th className="p-4 border-b border-yellow-300">Remarks</th>
-                      <th className="p-4 border-b border-yellow-300">Comments</th>
+                      <tr className="hover:bg-slate-50 transition-colors">
+
+                      <th className="p-4 border-b border-yellow-300 text-center w-16">S.No.</th>
+                      <th className="p-4 border-b border-yellow-300 text-center w-28">Date</th>
+                      <th className="p-4 border-b border-yellow-300 text-left w-32">Day</th>
+                      <th className="p-4 border-b border-yellow-300 text-left w-28">Status</th>
+                      <th className="p-4 border-b border-yellow-300 text-center w-32">Check-In</th>
+                      <th className="p-4 border-b border-yellow-300 text-center w-32">Check-Out</th>
+                      <th className="p-4 border-b border-yellow-300 text-left w-40">Remarks</th>
+                      <th className="p-4 border-b border-yellow-300 text-left w-40">Comments</th>
+
 
                     </tr>
                   </thead>
@@ -848,14 +855,62 @@ const MyAttendance = () => {
                             : "text-yellow-900"
                             } hover:bg-white/60 transition-colors duration-200`}
                         >
-                          <td className="p-4">{index + 1}</td>
-                          <td className="p-4">{new Date(date).toLocaleDateString()}</td>
-                          <td className="p-4">{day}</td>
-                          <td className="p-4 font-semibold">{formatStatus(status)}</td>
-                          <td className="p-4">{punchIn || "-"}</td>
-                          <td className="p-4">{punchOut || "-"}</td>
-                          <td className="p-4">{formatFlags(flags)}</td>
-                          <td className="p-4">{comments || "-"}</td>
+                          <td className="p-4 text-center w-16">{index + 1}</td>
+                          <td className="p-4 text-center w-28">
+                            {new Date(date).toLocaleDateString()}
+                          </td>
+                          <td className="p-4 text-left w-32">{day}</td>
+                          <td className="p-4 text-left w-28 font-semibold">
+                            {formatStatus(status)}
+                          </td>
+                          <td className="p-4 text-center w-32">{punchIn || "-"}</td>
+                          <td className="p-4 text-center w-32">{punchOut || "-"}</td>
+                          <td className="p-4 text-left w-40">
+  <div className="flex flex-wrap gap-2">
+    {flags?.length ? (
+      flags.map((flag) => (
+        <span
+          key={flag}
+          className="px-3 py-1 rounded-full text-xs font-medium
+                     bg-indigo-50 text-indigo-700
+                     border border-indigo-200"
+        >
+          {formatFlags([flag])}
+        </span>
+      ))
+    ) : (
+      <span className="text-slate-400">—</span>
+    )}
+  </div>
+</td>
+
+
+
+<td className="p-4 text-left w-40">
+  {comments ? (
+    <span
+      className="block truncate cursor-pointer text-slate-700 hover:underline"
+      onClick={() => setOpenComment(comments)}
+    >
+      {comments}
+    </span>
+  ) : (
+    "-"
+  )}
+</td>
+
+
+{/* <td className="p-4 text-left w-40">
+  {comments ? (
+    <span className="block truncate" title={comments}>
+      {comments}
+    </span>
+  ) : (
+    "-"
+  )}
+</td> */}
+
+
 
                         </tr>
                       )
@@ -962,6 +1017,51 @@ const MyAttendance = () => {
           )}
         </div>
       </main>
+
+
+{openComment && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    {/* Backdrop */}
+    <div
+      className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      onClick={() => setOpenComment(null)}
+    />
+
+    {/* Modal */}
+    <div className="relative w-full max-w-lg mx-4 rounded-2xl bg-white shadow-2xl border border-slate-200 animate-fadeIn">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b">
+        <h3 className="text-lg font-semibold text-slate-800">
+          Comment Details
+        </h3>
+        <button
+          onClick={() => setOpenComment(null)}
+          className="text-slate-400 hover:text-slate-600 text-xl leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-6 py-5 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap break-words max-h-[60vh] overflow-y-auto">
+        {openComment}
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 border-t flex justify-end bg-slate-50 rounded-b-2xl">
+        <button
+          onClick={() => setOpenComment(null)}
+          className="px-5 py-2 rounded-lg bg-yellow-500 text-white font-semibold shadow hover:bg-yellow-600 transition"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 };
