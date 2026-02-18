@@ -240,6 +240,46 @@ const HRProjects = () => {
             .finally(() => setUnassignLoading(false));
     };
 
+    /* ===================== UPDATE MEMBER ROLE ===================== */
+    const updateMemberRole = (employeeId, newRole) => {
+        if (!["lead", "contributor"].includes(newRole)) return;
+        if (!activeProject) return;
+
+
+        // Optimistic UI update
+        setMembers((prev) =>
+            prev.map((m) =>
+                m.employee.employeeId === employeeId
+                    ? { ...m, role: newRole }
+                    : m
+            )
+        );
+
+        fetch("https://backend.hrms.transev.site/hr/project/update-member-roles", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                projectId: activeProject.id,
+                role: newRole,
+                employeeIds: [employeeId],
+            }),
+        })
+            .then((res) => res.json())
+            .then((d) => {
+                if (d.status !== "success") {
+                    // rollback on failure
+                    fetchProjectMembers(activeProject.id, includeInactive);
+                    alert("Failed to update role");
+                }
+            })
+            .catch(() => {
+                fetchProjectMembers(activeProject.id, includeInactive);
+                alert("Error updating role");
+            });
+    };
 
 
 
@@ -515,9 +555,18 @@ const HRProjects = () => {
                                             </div>
 
                                             <div className="text-right">
-                                                <p className="text-sm font-semibold capitalize">
-                                                    {m.role}
-                                                </p>
+                                                <select
+                                                    value={m.role}
+                                                    onChange={(e) =>
+                                                        updateMemberRole(m.employee.employeeId, e.target.value)
+                                                    }
+                                                    className="text-sm border rounded-lg px-2 py-1 capitalize"
+                                                >
+                                                    <option value="lead">Lead</option>
+                                                    <option value="contributor">Contributor</option>
+                                                </select>
+
+
                                                 <p className="text-xs text-gray-500">
                                                     Joined: {new Date(m.joinedAt).toLocaleDateString()}
                                                 </p>
