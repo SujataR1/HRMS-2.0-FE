@@ -34,6 +34,12 @@
 //     hour = hour % 12 || 12;
 //     return `${hour.toString().padStart(2, "0")}:${minuteStr.padStart(2, "0")}:00 ${ampm}`;
 //   };
+//   const formatLocalDate = (date) => {
+//     const y = date.getFullYear();
+//     const m = String(date.getMonth() + 1).padStart(2, "0");
+//     const d = String(date.getDate()).padStart(2, "0");
+//     return `${y}-${m}-${d}`;
+//   };
 
 //   // Update date range based on selected filter
 //   useEffect(() => {
@@ -59,8 +65,9 @@
 //         ? today
 //         : new Date(year, month, 0); // ✅ Last day of selected month
 
-//       start = startDateObj.toISOString().slice(0, 10);
-//       end = endDateObj.toISOString().slice(0, 10);
+//       start = formatLocalDate(startDateObj);
+//       end = formatLocalDate(endDateObj);
+
 //     } else {
 //       start = `${filterYear}-01-01`;
 //       end = `${filterYear}-12-31`;
@@ -166,8 +173,6 @@
 //       setLoadingAttendance(false);
 //     }
 //   };
-
-
 
 
 //   const saveAttendance = async () => {
@@ -353,7 +358,10 @@
 //                   <tbody className="divide-y divide-yellow-100">
 //                     {attendanceData.map((row, index) => (
 //                       <tr key={row.id} className="hover:bg-yellow-50">
-//                         <td className="px-4 py-2">{new Date(row.date).getDate()}</td>
+//                         <td className="px-4 py-2">
+//                           {filterType === "year" ? index + 1 : new Date(row.date).getDate()}
+//                         </td>
+
 
 //                         <td className="px-4 py-2">{row.date}</td>
 //                         <td className="px-4 py-2">{formatTime(row.punchIn)}</td>
@@ -615,9 +623,11 @@ const HRAttendance = () => {
           date: dateStr,
           punchIn: entry?.punchIn || null,
           punchOut: entry?.punchOut || null,
-          status: entry?.status || "absent",  // or ""
+          status: entry?.status || "absent",
           comments: entry?.comments || "",
+          flags: entry?.flags || [],   // ✅ ADD THIS
         });
+
 
         current.setDate(current.getDate() + 1);
       }
@@ -700,6 +710,18 @@ const HRAttendance = () => {
       absent: "Absent",
     };
     return labels[status] || status;
+  };
+
+
+  const formatFlags = (flags) => {
+    if (!flags || flags.length === 0) return "-";
+    return flags
+      .map((f) =>
+        f
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (c) => c.toUpperCase())
+      )
+      .join(", ");
   };
 
 
@@ -804,7 +826,7 @@ const HRAttendance = () => {
                   <thead className="bg-yellow-100">
                     <tr>
                       <th className="px-4 py-2 text-left text-yellow-800 font-semibold">SL</th> {/* Added SL header */}
-                      {["Date", "Punch In", "Punch Out", "Status", "Comments", "Action"].map((h) => (
+                      {["Date", "Punch In", "Punch Out", "Status", "Flags", "Comments", "Action"].map((h) => (
                         <th key={h} className="px-4 py-2 text-left text-yellow-800 font-semibold">
                           {h}
                         </th>
@@ -823,7 +845,9 @@ const HRAttendance = () => {
                         <td className="px-4 py-2">{formatTime(row.punchIn)}</td>
                         <td className="px-4 py-2">{formatTime(row.punchOut)}</td>
                         <td className="px-4 py-2">{getStatusLabel(row.status)}</td>
+                        <td className="px-4 py-2">{formatFlags(row.flags)}</td>   {/* ✅ FLAGS */}
                         <td className="px-4 py-2">{row.comments || "-"}</td>
+
                         <td className="px-4 py-2">
                           <button
                             onClick={() => setEditEntry(row)}

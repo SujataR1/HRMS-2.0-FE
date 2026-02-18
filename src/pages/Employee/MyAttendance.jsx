@@ -173,9 +173,12 @@
 //   };
 
 //   const filteredAttendanceData = (() => {
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+
+//     // Month-Year filter (already correct, just kept clean)
 //     if (filterType === "monthYear") {
 //       const [month, year] = monthYear.split("-");
-//       const today = new Date();
 //       const selectedMonth = parseInt(month, 10);
 //       const selectedYear = parseInt(year, 10);
 
@@ -185,12 +188,29 @@
 //       ) {
 //         return attendanceData.filter(({ date }) => {
 //           const attDate = new Date(date);
-//           return attDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0);
+//           attDate.setHours(0, 0, 0, 0);
+//           return attDate <= today;
 //         });
 //       }
 //     }
+
+//     // ✅ YEAR filter fix (THIS IS THE MISSING PART)
+//     if (filterType === "year") {
+//       const selectedYear = parseInt(year, 10);
+
+//       // If current year → hide future dates
+//       if (selectedYear === today.getFullYear()) {
+//         return attendanceData.filter(({ date }) => {
+//           const attDate = new Date(date);
+//           attDate.setHours(0, 0, 0, 0);
+//           return attDate <= today;
+//         });
+//       }
+//     }
+
 //     return attendanceData;
 //   })();
+
 //   useEffect(() => {
 //     setAttendanceData([]);
 //     setError("");
@@ -283,8 +303,6 @@
 //                 className="border border-yellow-400 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 w-full max-w-xs md:w-48"
 //               />
 //             )}
-
-//             {/* Buttons */}
 //             {/* Buttons */}
 //             <button
 //               onClick={fetchAttendance}
@@ -460,8 +478,6 @@
 // };
 
 // export default MyAttendance;
-
-
 import EmployeeSidebar from "../../components/Common/EmployeeSidebar";
 import React, { useState, useEffect } from "react";
 
@@ -818,11 +834,13 @@ const MyAttendance = () => {
                       <th className="p-4 border-b border-yellow-300">Check-In</th>
                       <th className="p-4 border-b border-yellow-300">Check-Out</th>
                       <th className="p-4 border-b border-yellow-300">Remarks</th>
+                      <th className="p-4 border-b border-yellow-300">Comments</th>
+
                     </tr>
                   </thead>
                   <tbody>
                     {filteredAttendanceData.map(
-                      ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
+                      ({ id, date, day, status, punchIn, punchOut, flags, comments }, index) => (
                         <tr
                           key={id}
                           className={`border-b border-yellow-100 ${status === "absent"
@@ -837,6 +855,8 @@ const MyAttendance = () => {
                           <td className="p-4">{punchIn || "-"}</td>
                           <td className="p-4">{punchOut || "-"}</td>
                           <td className="p-4">{formatFlags(flags)}</td>
+                          <td className="p-4">{comments || "-"}</td>
+
                         </tr>
                       )
                     )}
@@ -847,7 +867,7 @@ const MyAttendance = () => {
               {/* Mobile Cards */}
               <div className="md:hidden space-y-4">
                 {filteredAttendanceData.map(
-                  ({ id, date, day, status, punchIn, punchOut, flags }, index) => (
+                  ({ id, date, day, status, punchIn, punchOut, flags, comments }, index) => (
                     <div
                       key={id}
                       className={`border rounded-lg p-4 shadow-sm ${status === "absent"
@@ -879,6 +899,11 @@ const MyAttendance = () => {
                           <span className="font-semibold">Remarks:</span>{" "}
                           {formatFlags(flags)}
                         </div>
+                        <div className="col-span-2">
+                          <span className="font-semibold">Comments:</span>{" "}
+                          {comments || "-"}
+                        </div>
+
                       </div>
                     </div>
                   )
