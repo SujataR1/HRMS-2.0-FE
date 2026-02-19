@@ -11,6 +11,16 @@ const HRProjects = () => {
     const [description, setDescription] = useState("");
     const [status, setStatus] = useState("planned");
 
+
+    // create task (NEW)
+    const [taskTitle, setTaskTitle] = useState("");
+    const [taskDescription, setTaskDescription] = useState("");
+    const [taskPriority, setTaskPriority] = useState("medium");
+    const [taskDueAt, setTaskDueAt] = useState("");
+    const [taskLoading, setTaskLoading] = useState(false);
+
+
+
     // edit project modal
     const [showEditModal, setShowEditModal] = useState(false);
     const [editName, setEditName] = useState("");
@@ -115,6 +125,45 @@ const HRProjects = () => {
             })
             .finally(() => setLoading(false));
     };
+
+    /* ===================== CREATE TASK ===================== */
+    const createTask = () => {
+        if (!activeProject) return alert("Select a project first");
+        if (!taskTitle.trim()) return alert("Task title is required");
+
+        setTaskLoading(true);
+
+        fetch("https://backend.hrms.transev.site/hr/task/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                projectId: activeProject.id, // ✅ FROM PROJECT CREATE / SELECT
+                title: taskTitle,
+                description: taskDescription || null,
+                priority: taskPriority,
+                dueAt: taskDueAt ? new Date(taskDueAt).toISOString() : null,
+            }),
+        })
+            .then((res) => res.json())
+            .then((d) => {
+                if (d.status === "success") {
+                    // reset form
+                    setTaskTitle("");
+                    setTaskDescription("");
+                    setTaskPriority("medium");
+                    setTaskDueAt("");
+                    alert("Task created successfully");
+                } else {
+                    alert(d.message || "Failed to create task");
+                }
+            })
+            .finally(() => setTaskLoading(false));
+    };
+
+
 
     /* ===================== GET PROJECT (ON CLICK) ===================== */
     const fetchProjectDetails = (projectId) => {
@@ -339,10 +388,15 @@ const HRProjects = () => {
                 <div className="grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
 
                     {/* LEFT */}
-                    <aside className="col-span-4 space-y-6">
+                    <aside className="col-span-4 space-y-6 sticky top-8 h-fit">
                         {/* CREATE */}
-                        <div className="bg-white rounded-2xl p-6 shadow-md border border-yellow-200">
-                            <h3 className="font-semibold mb-4">Create Project</h3>
+                        <div className="bg-gradient-to-br from-amber-100 to-white 
+                rounded-2xl p-6 border border-amber-200 shadow-sm">
+
+                            <h3 className="font-semibold text-lg mb-4 text-slate-800">
+                                ➕ Create New Project
+                            </h3>
+
 
                             <input
                                 value={name}
@@ -387,11 +441,17 @@ const HRProjects = () => {
                                 <div
                                     key={p.id}
                                     onClick={() => fetchProjectDetails(p.id)}
-                                    className={`p-4 rounded-xl cursor-pointer ${activeProject?.id === p.id
-                                        ? "bg-amber-100 border-l-4 border-amber-400"
-                                        : "hover:bg-yellow-50"
+                                    className={`p-4 rounded-xl cursor-pointer transition-all
+    ${activeProject?.id === p.id
+                                            ? "bg-amber-100 border-l-4 border-amber-500 shadow-sm"
+                                            : "hover:bg-yellow-50"
                                         }`}
                                 >
+                                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full 
+                 bg-amber-200 text-amber-800 capitalize">
+                                        {p.status}
+                                    </span>
+
                                     <p className="font-medium">{p.name}</p>
                                     <p className="text-xs capitalize text-slate-500">{p.status}</p>
                                 </div>
@@ -412,77 +472,117 @@ const HRProjects = () => {
 
                             {activeProject && (
                                 <>
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-2xl font-bold text-slate-800">
-                                            {activeProject.name}
-                                        </h2>
+                                    {/* ===== PROJECT HEADER (SLICK & COMPACT) ===== */}
+                                    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 flex items-center justify-between">
 
+                                        {/* LEFT */}
+                                        <div className="min-w-0">
+                                            <h2 className="text-lg font-semibold text-slate-800 truncate">
+                                                {activeProject.name}
+                                            </h2>
+
+                                            <div className="mt-0.5 flex items-center gap-3 text-xs text-slate-500">
+                                                <span className="capitalize font-medium text-amber-600">
+                                                    ● {activeProject.status}
+                                                </span>
+
+                                                <span>
+                                                    Created{" "}
+                                                    <b className="text-slate-700">
+                                                        {new Date(activeProject.createdAt).toLocaleDateString()}
+                                                    </b>
+                                                </span>
+
+                                                <span>
+                                                    Updated{" "}
+                                                    <b className="text-slate-700">
+                                                        {new Date(activeProject.updatedAt).toLocaleDateString()}
+                                                    </b>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* RIGHT */}
                                         <button
                                             onClick={openEditModal}
-                                            className="px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 font-medium"
+                                            className="shrink-0 rounded-lg border bg-white px-3 py-1.5 text-sm font-medium hover:bg-amber-100"
                                         >
-                                            Edit
+                                            ✏️ Edit
                                         </button>
                                     </div>
 
-                                    {/* Description */}
-                                    <div className="mb-4">
-                                        <p className="text-sm text-slate-500 mb-1">Description</p>
-                                        <p className="text-slate-700">
-                                            {activeProject.description || "No description provided"}
-                                        </p>
-                                    </div>
+                                    {/* ===== CREATE TASK (HORIZONTAL & CLEAN) ===== */}
+                                    <div className="mb-6 flex items-center gap-2 rounded-xl border bg-white px-3 py-2 shadow-sm focus-within:border-blue-500">
 
-                                    {/* Status */}
-                                    <div className="mb-4">
-                                        <p className="text-sm text-slate-500 mb-1">Status</p>
-                                        <p className="capitalize font-semibold text-amber-600">
-                                            {activeProject.status}
-                                        </p>
-                                    </div>
+                                        <input
+                                            value={taskTitle}
+                                            onChange={(e) => setTaskTitle(e.target.value)}
+                                            placeholder="New task title"
+                                            className="flex-[2] bg-transparent outline-none text-sm font-medium placeholder:text-slate-400"
+                                        />
 
-                                    {/* Created At */}
-                                    <div className="mb-2">
-                                        <p className="text-sm text-slate-500 mb-1">Created At</p>
-                                        <p className="text-slate-700">
-                                            {new Date(activeProject.createdAt).toLocaleString()}
-                                        </p>
-                                    </div>
+                                        <input
+                                            value={taskDescription}
+                                            onChange={(e) => setTaskDescription(e.target.value)}
+                                            placeholder="Short note"
+                                            className="flex-[3] bg-transparent outline-none text-xs text-slate-500 placeholder:text-slate-400"
+                                        />
 
-                                    {/* Updated At */}
-                                    <div>
-                                        <p className="text-sm text-slate-500 mb-1">Last Updated</p>
-                                        <p className="text-slate-700">
-                                            {new Date(activeProject.updatedAt).toLocaleString()}
-                                        </p>
+                                        <select
+                                            value={taskPriority}
+                                            onChange={(e) => setTaskPriority(e.target.value)}
+                                            className="text-xs rounded-lg bg-slate-100 px-2 py-1 outline-none"
+                                        >
+                                            <option value="low">Low</option>
+                                            <option value="medium">Med</option>
+                                            <option value="high">High</option>
+                                        </select>
+
+                                        <input
+                                            type="date"
+                                            value={taskDueAt}
+                                            onChange={(e) => setTaskDueAt(e.target.value)}
+                                            className="text-xs rounded-lg bg-slate-100 px-2 py-1 outline-none"
+                                        />
+
+                                        <button
+                                            onClick={createTask}
+                                            disabled={!taskTitle}
+                                            className="h-8 w-8 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 disabled:opacity-40"
+                                        >
+                                            +
+                                        </button>
                                     </div>
                                 </>
                             )}
 
-                            {/* Members Toggle */}
-                            <div className="flex items-center gap-2 mt-6">
-                                <input
-                                    type="checkbox"
-                                    checked={includeInactive}
-                                    onChange={(e) => {
-                                        const value = e.target.checked;
-                                        setIncludeInactive(value);
-                                        fetchProjectMembers(activeProject.id, value);
-                                    }}
-                                />
-                                <span className="text-sm text-slate-600">
-                                    Show inactive members
-                                </span>
-                            </div>
-                            {/* Assign Members */}
-                            <div className="mt-6 p-4 rounded-xl border bg-amber-50">
-                                <h3 className="font-semibold mb-3">Add Member</h3>
+
+                            {/* ===== MEMBERS CONTROL BAR ===== */}
+                            <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border bg-white px-4 py-3 shadow-sm">
+
+                                {/* Toggle */}
+                                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={includeInactive}
+                                        onChange={(e) => {
+                                            const value = e.target.checked;
+                                            setIncludeInactive(value);
+                                            fetchProjectMembers(activeProject.id, value);
+                                        }}
+                                        className="accent-amber-500"
+                                    />
+                                    Show inactive
+                                </label>
+
+                                {/* Divider */}
+                                <div className="h-5 w-px bg-slate-200" />
 
                                 {/* Role */}
                                 <select
                                     value={assignRole}
                                     onChange={(e) => setAssignRole(e.target.value)}
-                                    className="w-full mb-2 px-3 py-2 rounded-xl border"
+                                    className="rounded-lg bg-slate-100 px-2 py-1 text-xs outline-none"
                                 >
                                     <option value="contributor">Contributor</option>
                                     <option value="lead">Lead</option>
@@ -491,99 +591,128 @@ const HRProjects = () => {
                                 </select>
 
                                 {/* Employee Search */}
-                                <input
-                                    value={employeeSearch}
-                                    onChange={(e) => setEmployeeSearch(e.target.value)}
-                                    placeholder="Search employee by name or ID"
-                                    className="w-full mb-2 px-3 py-2 rounded-xl border"
-                                />
+                                <div className="relative flex-1 min-w-[220px]">
+                                    <input
+                                        value={employeeSearch}
+                                        onChange={(e) => setEmployeeSearch(e.target.value)}
+                                        placeholder="Search employee"
+                                        className="w-full rounded-lg border px-3 py-1.5 text-xs outline-none focus:border-amber-400"
+                                    />
 
-                                {/* Dropdown */}
-                                {filteredEmployees.length > 0 && (
-                                    <div className="max-h-40 overflow-y-auto border rounded-xl mb-3 bg-white">
-                                        {filteredEmployees.map((e) => (
-                                            <div
-                                                key={e.employeeId}
-                                                onClick={() => {
-                                                    setSelectedEmployee(e);
-                                                    setEmployeeSearch(`${e.employeeId} - ${e.name}`);
-                                                }}
-                                                className="px-4 py-2 cursor-pointer hover:bg-yellow-50"
-                                            >
-                                                {e.employeeId} – {e.name}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                    {/* Dropdown */}
+                                    {filteredEmployees.length > 0 && (
+                                        <div className="absolute z-10 mt-1 w-full max-h-40 overflow-y-auto rounded-lg border bg-white shadow">
+                                            {filteredEmployees.map((e) => (
+                                                <div
+                                                    key={e.employeeId}
+                                                    onClick={() => {
+                                                        setSelectedEmployee(e);
+                                                        setEmployeeSearch(`${e.employeeId} - ${e.name}`);
+                                                    }}
+                                                    className="cursor-pointer px-3 py-2 text-xs hover:bg-amber-50"
+                                                >
+                                                    {e.employeeId} — {e.name}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
 
+                                {/* Assign Button */}
                                 <button
                                     onClick={assignMembers}
                                     disabled={assignLoading || !selectedEmployee}
-                                    className={`px-4 py-2 rounded-xl text-white ${assignLoading || !selectedEmployee
-                                        ? "bg-gray-300 cursor-not-allowed"
-                                        : "bg-amber-400 hover:bg-amber-500"
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-medium text-white transition
+      ${assignLoading || !selectedEmployee
+                                            ? "bg-slate-300 cursor-not-allowed"
+                                            : "bg-amber-500 hover:bg-amber-600"
                                         }`}
                                 >
-                                    {assignLoading ? "Assigning..." : "Assign Member"}
+                                    {assignLoading ? "Assigning..." : "Add"}
                                 </button>
                             </div>
 
 
-                            {/* Members List */}
+
+                            {/* ===== PROJECT MEMBERS (COMPACT) ===== */}
                             <div className="mt-6">
-                                <h3 className="text-lg font-semibold mb-3">Project Members</h3>
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-sm font-semibold text-slate-700">
+                                        Project Members
+                                    </h3>
+                                    <span className="text-xs text-slate-400">
+                                        {members.length} total
+                                    </span>
+                                </div>
 
                                 {membersLoading && (
-                                    <p className="text-sm text-gray-500">Loading members...</p>
+                                    <p className="text-xs text-slate-400">Loading members...</p>
                                 )}
 
                                 {!membersLoading && members.length === 0 && (
-                                    <p className="text-sm text-gray-500">No members found</p>
+                                    <p className="text-xs text-slate-400">No members found</p>
                                 )}
 
-                                <div className="space-y-3">
-                                    {members.map((m) => (
-                                        <div
-                                            key={m.id}
-                                            className="flex justify-between items-center p-3 rounded-xl border bg-gray-50"
-                                        >
-                                            <div>
-                                                <p className="font-medium">{m.employee.name}</p>
-                                                <p className="text-xs text-gray-500">
-                                                    Employee ID: {m.employee.employeeId}
-                                                </p>
+                                <div className="divide-y rounded-xl border bg-white">
+                                    {members.map((m) => {
+                                        const isActive = m.leftAt === null; // ✅ DEFINE IT HERE
+
+                                        return (
+                                            <div
+                                                key={m.id}
+                                                className={`flex justify-between items-center p-3 rounded-xl border
+        ${isActive ? "bg-white" : "bg-slate-50 opacity-70"}
+      `}
+                                            >
+                                                {/* LEFT */}
+                                                <div>
+                                                    <p className="font-medium text-sm">{m.employee.name}</p>
+                                                    <p className="text-[11px] text-gray-500">
+                                                        ID: {m.employee.employeeId}
+                                                    </p>
+                                                </div>
+
+                                                {/* RIGHT */}
+                                                <div className="text-right space-y-1">
+                                                    <select
+                                                        value={m.role}
+                                                        disabled={!isActive}
+                                                        onChange={(e) =>
+                                                            updateMemberRole(m.employee.employeeId, e.target.value)
+                                                        }
+                                                        className="text-xs border rounded-lg px-2 py-1 capitalize disabled:bg-slate-100"
+                                                    >
+                                                        <option value="lead">Lead</option>
+                                                        <option value="contributor">Contributor</option>
+                                                    </select>
+
+                                                    <p className="text-[11px] text-gray-500">
+                                                        Joined: {new Date(m.joinedAt).toLocaleDateString()}
+                                                    </p>
+
+                                                    {isActive ? (
+                                                        <button
+                                                            onClick={() => {
+                                                                setMemberToRemove(m);
+                                                                setShowUnassignModal(true);
+                                                            }}
+                                                            className="text-xs text-red-600 hover:underline"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    ) : (
+                                                        <span className="inline-block text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                                                            Inactive
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
+                                        );
+                                    })}
 
-                                            <div className="text-right">
-                                                <select
-                                                    value={m.role}
-                                                    onChange={(e) =>
-                                                        updateMemberRole(m.employee.employeeId, e.target.value)
-                                                    }
-                                                    className="text-sm border rounded-lg px-2 py-1 capitalize"
-                                                >
-                                                    <option value="lead">Lead</option>
-                                                    <option value="contributor">Contributor</option>
-                                                </select>
-
-
-                                                <p className="text-xs text-gray-500">
-                                                    Joined: {new Date(m.joinedAt).toLocaleDateString()}
-                                                </p>
-                                                <button
-                                                    onClick={() => {
-                                                        setMemberToRemove(m);
-                                                        setShowUnassignModal(true);
-                                                    }}
-                                                    className="text-xs text-red-600 hover:underline"
-                                                >
-                                                    Remove
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
                                 </div>
                             </div>
+
                         </div>
                     </section>
                 </div>
@@ -591,67 +720,109 @@ const HRProjects = () => {
 
             {/* ===================== EDIT MODAL ===================== */}
             {showEditModal && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-8 w-[420px]">
-                        <h3 className="font-semibold mb-4">Edit Project</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-full max-w-md rounded-xl bg-white shadow-lg">
 
-                        <input
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="w-full mb-3 px-4 py-2 rounded-xl border"
-                        />
-
-                        <textarea
-                            value={editDescription}
-                            onChange={(e) => setEditDescription(e.target.value)}
-                            className="w-full mb-3 px-4 py-2 rounded-xl border"
-                        />
-
-                        <select
-                            value={editStatus}
-                            onChange={(e) => setEditStatus(e.target.value)}
-                            className="w-full mb-4 px-4 py-2 rounded-xl border"
-                        >
-                            {PROJECT_STATUS.map((s) => (
-                                <option key={s.value} value={s.value}>
-                                    {s.label}
-                                </option>
-                            ))}
-                        </select>
-
-                        <div className="flex justify-end gap-3">
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b px-5 py-3">
+                            <h3 className="text-sm font-semibold text-slate-800">
+                                Edit Project
+                            </h3>
                             <button
                                 onClick={() => setShowEditModal(false)}
-                                className="px-4 py-2 rounded-xl border"
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-5 py-4 space-y-3">
+                            <input
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="Project name"
+                                className="w-full rounded-lg border px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
+                            />
+
+                            <textarea
+                                value={editDescription}
+                                onChange={(e) => setEditDescription(e.target.value)}
+                                placeholder="Project description"
+                                rows={3}
+                                className="w-full rounded-lg border px-3 py-2 text-sm resize-none focus:border-amber-400 focus:outline-none"
+                            />
+
+                            <select
+                                value={editStatus}
+                                onChange={(e) => setEditStatus(e.target.value)}
+                                className="w-full rounded-lg border bg-white px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
+                            >
+                                {PROJECT_STATUS.map((s) => (
+                                    <option key={s.value} value={s.value}>
+                                        {s.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-2 border-t px-5 py-3">
+                            <button
+                                onClick={() => setShowEditModal(false)}
+                                className="rounded-lg border px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={updateProject}
-                                className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-white"
+                                className="rounded-lg bg-amber-400 px-4 py-1.5 text-sm font-medium text-white hover:bg-amber-500"
                             >
-                                Save Changes
+                                Save
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-            {showUnassignModal && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl p-6 w-[360px]">
-                        <h3 className="font-semibold mb-2">Remove project member?</h3>
-                        <p className="text-sm text-slate-600 mb-4">
-                            Are you sure you want to remove{" "}
-                            <b>{memberToRemove?.employee.name}</b> from this project?
-                        </p>
 
-                        <div className="flex justify-end gap-3">
+            {showUnassignModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-full max-w-sm rounded-xl bg-white shadow-lg">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b px-5 py-3">
+                            <h3 className="text-sm font-semibold text-slate-800">
+                                Remove member
+                            </h3>
                             <button
                                 onClick={() => {
                                     setShowUnassignModal(false);
                                     setMemberToRemove(null);
                                 }}
-                                className="px-4 py-2 rounded-xl border"
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-5 py-4">
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                Remove <span className="font-medium text-slate-800">
+                                    {memberToRemove?.employee.name}
+                                </span>{" "}
+                                from this project?
+                            </p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-2 border-t px-5 py-3">
+                            <button
+                                onClick={() => {
+                                    setShowUnassignModal(false);
+                                    setMemberToRemove(null);
+                                }}
+                                className="rounded-lg border px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
                             >
                                 Cancel
                             </button>
@@ -659,14 +830,15 @@ const HRProjects = () => {
                             <button
                                 onClick={unassignMember}
                                 disabled={unassignLoading}
-                                className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white"
+                                className="rounded-lg bg-red-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
                             >
-                                {unassignLoading ? "Removing..." : "Remove"}
+                                {unassignLoading ? "Removing…" : "Remove"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
         </div>
     );
 };
