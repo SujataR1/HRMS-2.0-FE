@@ -52,6 +52,23 @@ const HRProjects = () => {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
 
 
+    // TASK FILTERS
+    const [filterStatus, setFilterStatus] = useState("");
+    const [filterPriority, setFilterPriority] = useState("");
+    const [filterAssignedTo, setFilterAssignedTo] = useState("");
+    const [filterDueFrom, setFilterDueFrom] = useState("");
+    const [filterDueTo, setFilterDueTo] = useState("");
+
+
+    /* ===================== TASK DETAILS ===================== */
+    const [activeTaskId, setActiveTaskId] = useState(null);
+    const [taskLoadingDetails, setTaskLoadingDetails] = useState(false);
+    const [activeTask, setActiveTask] = useState(null);
+    const [tasks, setTasks] = useState([]);
+    const [taskStatus, setTaskStatus] = useState("todo");
+
+    const [showTasks, setShowTasks] = useState(false);
+
     const token = localStorage.getItem("hr_token");
 
     const PROJECT_STATUS = [
@@ -127,40 +144,145 @@ const HRProjects = () => {
     };
 
     /* ===================== CREATE TASK ===================== */
-    const createTask = () => {
+    /* ===================== CREATE TASK ===================== */
+    const createTask = async () => {
         if (!activeProject) return alert("Select a project first");
         if (!taskTitle.trim()) return alert("Task title is required");
 
         setTaskLoading(true);
 
-        fetch("https://backend.hrms.transev.site/hr/task/create", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                projectId: activeProject.id, // ✅ FROM PROJECT CREATE / SELECT
-                title: taskTitle,
-                description: taskDescription || null,
-                priority: taskPriority,
-                dueAt: taskDueAt ? new Date(taskDueAt).toISOString() : null,
-            }),
-        })
-            .then((res) => res.json())
-            .then((d) => {
-                if (d.status === "success") {
-                    // reset form
-                    setTaskTitle("");
-                    setTaskDescription("");
-                    setTaskPriority("medium");
-                    setTaskDueAt("");
-                    alert("Task created successfully");
-                } else {
-                    alert(d.message || "Failed to create task");
+        try {
+            const createRes = await fetch(
+                "https://backend.hrms.transev.site/hr/task/create",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        projectId: activeProject.id,
+                        title: taskTitle.trim(),
+                        description: taskDescription?.trim() || null,
+                        priority: taskPriority,
+                        status: taskStatus, // ✅ ADD HERE
+                        dueAt: taskDueAt
+                            ? new Date(taskDueAt).toISOString()
+                            : null,
+                    }),
                 }
-            })
-            .finally(() => setTaskLoading(false));
+            );
+
+            const createData = await createRes.json();
+            console.log("Create Response:", createData);
+
+            if (createData.status !== "success") {
+                alert("Failed to create task");
+                return;
+            }
+
+            await fetchTasks(); // ✅ correct place
+            setTaskTitle("");
+            setTaskDescription("");
+            setTaskDueAt("");
+            setTaskPriority("medium");
+
+        } catch (err) {
+            console.error(err);
+            alert("Something went wrong");
+        } finally {
+            setTaskLoading(false);
+        }
+
+    };
+    useEffect(() => {
+        if (activeProject) {
+            fetchTasks();
+        }
+    }, [activeProject, filterStatus, filterPriority, filterDueFrom, filterDueTo]);
+
+    const fetchTasks = async () => {
+        if (!activeProject) return;
+
+        // ✅ ADD THIS BLOCK HERE
+        const payload = {
+            projectId: activeProject.id,
+            onlyIds: false,
+        };
+
+        if (filterStatus) payload.status = filterStatus;
+        if (filterPriority) payload.priority = filterPriority;
+        if (filterDueFrom) payload.dueFrom = filterDueFrom;
+        if (filterDueTo) payload.dueTo = filterDueTo;
+
+        // ✅ fetch uses payload
+        const res = await fetch(
+            "https://backend.hrms.transev.site/hr/task/get-by-project",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            }
+        );
+
+        const data = await res.json();
+        if (data.status === "success") {
+            setTasks(data.data);
+        }
+    };
+
+
+
+
+    /* ===================== EDIT TASK ===================== */
+    const editTask = async ({ taskId, priority, dueAt }) => {
+        if (!taskId) return;
+
+        try {
+            const res = await fetch(
+                "https://backend.hrms.transev.site/hr/task/edit",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        taskId,
+                        priority,
+                        dueAt,
+                    }),
+                }
+            );
+
+            const data = await res.json();
+
+            if (data.status !== "success") {
+                alert("Failed to update task");
+                return;
+            }
+
+            // ✅ Refresh list + active task
+            await fetchTasks();
+
+            if (activeTaskId === taskId) {
+                setActiveTask((prev) =>
+                    prev
+                        ? {
+                            ...prev,
+                            priority,
+                            dueAt,
+                        }
+                        : prev
+                );
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Something went wrong while updating task");
+        }
     };
 
 
@@ -168,7 +290,6 @@ const HRProjects = () => {
     /* ===================== GET PROJECT (ON CLICK) ===================== */
     const fetchProjectDetails = (projectId) => {
         setDetailsLoading(true);
-        setActiveProject(null);
 
 
         // 🔥 RESET & LOAD MEMBERS
@@ -188,7 +309,11 @@ const HRProjects = () => {
             .then((d) => {
                 if (d.status === "success") {
                     setActiveProject(d.data);
+                    setShowTasks(false); // ✅ IMPORTANT
+                    setTasks([]);
+
                 }
+
             })
             .finally(() => setDetailsLoading(false));
     };
@@ -217,7 +342,6 @@ const HRProjects = () => {
             .catch(() => setMembers([]))
             .finally(() => setMembersLoading(false));
     };
-
 
     /* ===================== ASSIGN MEMBERS ===================== */
     const assignMembers = () => {
@@ -534,8 +658,9 @@ const HRProjects = () => {
                                             className="text-xs rounded-lg bg-slate-100 px-2 py-1 outline-none"
                                         >
                                             <option value="low">Low</option>
-                                            <option value="medium">Med</option>
+                                            <option value="medium">Medium</option>
                                             <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
                                         </select>
 
                                         <input
@@ -553,6 +678,195 @@ const HRProjects = () => {
                                             +
                                         </button>
                                     </div>
+                                    {/* ===== ACTIVE TASK PREVIEW ===== */}
+                                    {activeTask && (
+                                        <div className="mb-6 rounded-xl border bg-slate-50 px-4 py-3">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-sm font-semibold text-slate-800">
+                                                    {activeTask.title}
+                                                </h4>
+
+                                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] text-blue-700 capitalize">
+                                                    {activeTask.status}
+                                                </span>
+                                            </div>
+
+                                            {activeTask.description && (
+                                                <p className="mt-1 text-xs text-slate-600">
+                                                    {activeTask.description}
+                                                </p>
+                                            )}
+
+                                            <div className="mt-2 flex items-center gap-3 text-[11px] text-slate-500">
+                                                <span>Priority: <b>{activeTask.priority}</b></span>
+
+                                                {activeTask.dueAt && (
+                                                    <span>
+                                                        Due:{" "}
+                                                        <b>{new Date(activeTask.dueAt).toLocaleDateString()}</b>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="mb-4 flex flex-wrap gap-2 items-center">
+                                        {/* Status */}
+                                        {/* Status FILTER */}
+                                        <select
+                                            value={filterStatus}
+                                            onChange={(e) => setFilterStatus(e.target.value)}
+                                            className="text-xs rounded-lg bg-slate-100 px-2 py-1 outline-none"
+                                        >
+                                            <option value="">All</option>
+                                            <option value="todo">To do</option>
+                                            <option value="in_progress">In progress</option>
+                                            <option value="blocked">Blocked</option>
+                                            <option value="done">Done</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+
+                                        {/* Priority */}
+                                        <select
+                                            value={filterPriority}
+                                            onChange={(e) => setFilterPriority(e.target.value)}
+                                            className="rounded-lg border px-2 py-1 text-xs"
+                                        >
+                                            <option value="">All Priority</option>
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+
+                                        {/* Assigned */}
+                                        <select
+                                            value={filterAssignedTo}
+                                            onChange={(e) => setFilterAssignedTo(e.target.value)}
+                                            className="rounded-lg border px-2 py-1 text-xs"
+                                        >
+                                            <option value="">All Employees</option>
+                                            {members.map((m) => (
+                                                <option key={m.employee.employeeId} value={m.employee.employeeId}>
+                                                    {m.employee.name}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        {/* Due Date Filter */}
+                                        <div className="flex items-center gap-2 text-xs">
+                                            <span className="text-slate-500">Due</span>
+
+                                            <span className="text-slate-500">From</span>
+                                            <input
+                                                type="date"
+                                                value={filterDueFrom}
+                                                onChange={(e) => setFilterDueFrom(e.target.value)}
+                                                className="rounded-lg border px-2 py-1 text-xs"
+                                            />
+
+                                            <span className="text-slate-500">To</span>
+                                            <input
+                                                type="date"
+                                                value={filterDueTo}
+                                                onChange={(e) => setFilterDueTo(e.target.value)}
+                                                className="rounded-lg border px-2 py-1 text-xs"
+                                            />
+                                        </div>
+
+                                        <button
+                                            onClick={fetchTasks}
+                                            className="rounded-lg bg-amber-500 text-white px-3 py-1 text-xs hover:bg-amber-600"
+                                        >
+                                            Filter
+                                        </button>
+                                    </div>
+
+                                    {/* ===== TASK LIST ===== */}
+                                    {/* ===== TASK LIST ===== */}
+                                    {tasks.length === 0 && (
+                                        <p className="text-[11px] text-slate-500 mb-3 italic">
+                                            No tasks yet
+                                        </p>
+                                    )}
+
+                                    {tasks.map((task) => {
+                                        const isActive = activeTaskId === task.id;
+
+                                        return (
+                                            <div
+                                                key={task.id}
+                                                onClick={() => setActiveTaskId(task.id)}
+                                                className={`
+                mb-2 p-3 rounded-lg cursor-pointer
+                border transition-all duration-150
+                ${isActive
+                                                        ? "border-slate-300 bg-slate-50"
+                                                        : "border-transparent hover:border-slate-200 hover:bg-slate-50/70"}
+            `}
+                                            >
+                                                {/* Title + Status */}
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <p className="text-sm font-medium text-slate-900 truncate">
+                                                        {task.title}
+                                                    </p>
+
+                                                    <span
+                                                        className={`
+                        text-[10px] capitalize px-2 py-[2px] rounded-full
+                        ${task.status === "done" && "bg-emerald-50 text-emerald-600"}
+                        ${task.status === "in_progress" && "bg-sky-50 text-sky-600"}
+                        ${task.status === "blocked" && "bg-rose-50 text-rose-600"}
+                        ${task.status === "todo" && "bg-slate-100 text-slate-500"}
+                    `}
+                                                    >
+                                                        {task.status.replace("_", " ")}
+                                                    </span>
+                                                </div>
+
+                                                {/* Meta */}
+                                                <div className="flex flex-wrap gap-3 text-[11px] text-slate-500 mt-1">
+                                                    <span>
+                                                        Priority:
+                                                        <b
+                                                            className={`
+                            ml-1
+                            ${task.priority === "urgent" && "text-rose-600"}
+                            ${task.priority === "high" && "text-orange-600"}
+                            ${task.priority === "medium" && "text-sky-600"}
+                            ${task.priority === "low" && "text-slate-600"}
+                        `}
+                                                        >
+                                                            {task.priority}
+                                                        </b>
+                                                    </span>
+
+                                                    {task.dueAt && (
+                                                        <span>
+                                                            Due:
+                                                            <b className="ml-1 text-slate-700">
+                                                                {new Date(task.dueAt).toLocaleDateString()}
+                                                            </b>
+                                                        </span>
+                                                    )}
+
+                                                    {task.assignments?.length > 0 && (
+                                                        <span className="truncate">
+                                                            {task.assignments.length} assignee
+                                                            {task.assignments.length > 1 ? "s" : ""}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Description */}
+                                                {task.description && (
+                                                    <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                                                        {task.description}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </>
                             )}
 
