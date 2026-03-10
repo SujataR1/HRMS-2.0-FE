@@ -60,6 +60,12 @@ const HRProjects = () => {
     const [filterDueTo, setFilterDueTo] = useState("");
 
 
+    // assign task modal
+    const [showAssignTaskModal, setShowAssignTaskModal] = useState(false);
+    const [assignTaskId, setAssignTaskId] = useState(null);
+    const [selectedMemberIds, setSelectedMemberIds] = useState([]);
+
+
     /* ===================== TASK DETAILS ===================== */
     const [activeTaskId, setActiveTaskId] = useState(null);
     const [taskLoadingDetails, setTaskLoadingDetails] = useState(false);
@@ -67,7 +73,17 @@ const HRProjects = () => {
     const [tasks, setTasks] = useState([]);
     const [taskStatus, setTaskStatus] = useState("todo");
 
+
     const [showTasks, setShowTasks] = useState(false);
+
+
+
+
+    // edit task modal
+    const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+    const [editTaskId, setEditTaskId] = useState(null);
+    const [editTaskPriority, setEditTaskPriority] = useState("medium");
+    const [editTaskDueAt, setEditTaskDueAt] = useState("");
 
     const token = localStorage.getItem("hr_token");
 
@@ -196,13 +212,15 @@ const HRProjects = () => {
 
     };
     useEffect(() => {
-        if (activeProject) {
-            fetchTasks();
-        }
-    }, [activeProject, filterStatus, filterPriority, filterDueFrom, filterDueTo]);
+        if (!activeProject) return;
+        if (!filterStatus) return; // 🔥 DO NOT LOAD UNTIL STATUS IS SELECTED
+
+        fetchTasks();
+    }, [filterStatus]);
 
     const fetchTasks = async () => {
         if (!activeProject) return;
+        if (!filterStatus) return; // 🔥 extra safety
 
         // ✅ ADD THIS BLOCK HERE
         const payload = {
@@ -285,6 +303,41 @@ const HRProjects = () => {
         }
     };
 
+    const openAssignTaskModal = (task) => {
+        setAssignTaskId(task.id);
+        setSelectedMemberIds(
+            task.assignments?.map((a) => a.projectMemberId) || []
+        );
+        setShowAssignTaskModal(true);
+    };
+
+    const openEditTaskModal = (task) => {
+        setEditTaskId(task.id);
+        setEditTaskPriority(task.priority);
+        setEditTaskDueAt(
+            task.dueAt ? task.dueAt.split("T")[0] : ""
+        );
+        setShowEditTaskModal(true);
+    };
+    const assignTask = async ({ taskId, projectMemberIds }) => {
+        try {
+            await fetch("https://backend.hrms.transev.site/hr/task/assign", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    taskId,
+                    projectMemberIds,
+                }),
+            });
+
+            fetchTasks(); // refresh list
+        } catch (err) {
+            console.error("Assign task failed", err);
+        }
+    };
 
 
     /* ===================== GET PROJECT (ON CLICK) ===================== */
@@ -309,8 +362,8 @@ const HRProjects = () => {
             .then((d) => {
                 if (d.status === "success") {
                     setActiveProject(d.data);
-                    setShowTasks(false); // ✅ IMPORTANT
                     setTasks([]);
+                    setFilterStatus(""); // 🔥 reset status filter
 
                 }
 
@@ -710,8 +763,8 @@ const HRProjects = () => {
                                         </div>
                                     )}
 
-                                    <div className="mb-4 flex flex-wrap gap-2 items-center">
-                                        {/* Status */}
+                                    <div className="mb-4 flex items-center gap-2">
+
                                         {/* Status FILTER */}
                                         <select
                                             value={filterStatus}
@@ -726,60 +779,6 @@ const HRProjects = () => {
                                             <option value="cancelled">Cancelled</option>
                                         </select>
 
-                                        {/* Priority */}
-                                        <select
-                                            value={filterPriority}
-                                            onChange={(e) => setFilterPriority(e.target.value)}
-                                            className="rounded-lg border px-2 py-1 text-xs"
-                                        >
-                                            <option value="">All Priority</option>
-                                            <option value="low">Low</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="high">High</option>
-                                            <option value="urgent">Urgent</option>
-                                        </select>
-
-                                        {/* Assigned */}
-                                        <select
-                                            value={filterAssignedTo}
-                                            onChange={(e) => setFilterAssignedTo(e.target.value)}
-                                            className="rounded-lg border px-2 py-1 text-xs"
-                                        >
-                                            <option value="">All Employees</option>
-                                            {members.map((m) => (
-                                                <option key={m.employee.employeeId} value={m.employee.employeeId}>
-                                                    {m.employee.name}
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                        {/* Due Date Filter */}
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <span className="text-slate-500">Due</span>
-
-                                            <span className="text-slate-500">From</span>
-                                            <input
-                                                type="date"
-                                                value={filterDueFrom}
-                                                onChange={(e) => setFilterDueFrom(e.target.value)}
-                                                className="rounded-lg border px-2 py-1 text-xs"
-                                            />
-
-                                            <span className="text-slate-500">To</span>
-                                            <input
-                                                type="date"
-                                                value={filterDueTo}
-                                                onChange={(e) => setFilterDueTo(e.target.value)}
-                                                className="rounded-lg border px-2 py-1 text-xs"
-                                            />
-                                        </div>
-
-                                        <button
-                                            onClick={fetchTasks}
-                                            className="rounded-lg bg-amber-500 text-white px-3 py-1 text-xs hover:bg-amber-600"
-                                        >
-                                            Filter
-                                        </button>
                                     </div>
 
                                     {/* ===== TASK LIST ===== */}
@@ -796,7 +795,10 @@ const HRProjects = () => {
                                         return (
                                             <div
                                                 key={task.id}
-                                                onClick={() => setActiveTaskId(task.id)}
+                                                onClick={() => {
+                                                    setActiveTaskId(task.id);
+                                                    setActiveTask(task);
+                                                }}
                                                 className={`
                 mb-2 p-3 rounded-lg cursor-pointer
                 border transition-all duration-150
@@ -806,7 +808,16 @@ const HRProjects = () => {
             `}
                                             >
                                                 {/* Title + Status */}
-                                                <div className="flex justify-between items-center mb-1">
+                                                <div className="flex justify-between items-center mb-1 gap-2">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openAssignTaskModal(task);
+                                                        }}
+                                                        className="text-[10px] px-2 py-0.5 rounded-md border hover:bg-slate-100"
+                                                    >
+                                                        👤 Assign
+                                                    </button>
                                                     <p className="text-sm font-medium text-slate-900 truncate">
                                                         {task.title}
                                                     </p>
@@ -822,6 +833,15 @@ const HRProjects = () => {
                                                     >
                                                         {task.status.replace("_", " ")}
                                                     </span>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openEditTaskModal(task);
+                                                        }}
+                                                        className="text-[10px] px-2 py-0.5 rounded-md border hover:bg-slate-100"
+                                                    >
+                                                        ✏️ Edit
+                                                    </button>
                                                 </div>
 
                                                 {/* Meta */}
@@ -1152,8 +1172,147 @@ const HRProjects = () => {
                     </div>
                 </div>
             )}
+            {showEditTaskModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-full max-w-sm rounded-xl bg-white shadow-lg">
 
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b px-5 py-3">
+                            <h3 className="text-sm font-semibold text-slate-800">
+                                Edit Task
+                            </h3>
+                            <button
+                                onClick={() => setShowEditTaskModal(false)}
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-5 py-4 space-y-3">
+
+                            {/* Priority */}
+                            <select
+                                value={editTaskPriority}
+                                onChange={(e) => setEditTaskPriority(e.target.value)}
+                                className="w-full rounded-lg border px-3 py-2 text-sm"
+                            >
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+
+                            {/* Due Date */}
+                            <input
+                                type="date"
+                                value={editTaskDueAt}
+                                onChange={(e) => setEditTaskDueAt(e.target.value)}
+                                className="w-full rounded-lg border px-3 py-2 text-sm"
+                            />
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-2 border-t px-5 py-3">
+                            <button
+                                onClick={() => setShowEditTaskModal(false)}
+                                className="rounded-lg border px-3 py-1.5 text-sm"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    await editTask({
+                                        taskId: editTaskId,
+                                        priority: editTaskPriority,
+                                        dueAt: editTaskDueAt
+                                            ? new Date(editTaskDueAt).toISOString()
+                                            : null,
+                                    });
+                                    setShowEditTaskModal(false);
+                                }}
+                                className="rounded-lg bg-amber-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-amber-600"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+            )}
+
+            {showAssignTaskModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-full max-w-sm rounded-xl bg-white shadow-lg">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b px-5 py-3">
+                            <h3 className="text-sm font-semibold text-slate-800">
+                                Assign Task
+                            </h3>
+                            <button
+                                onClick={() => setShowAssignTaskModal(false)}
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-5 py-4 space-y-2 max-h-64 overflow-y-auto">
+
+{members.map((m) => (
+    <label
+        key={m.id}
+        className="flex items-center gap-2 text-sm"
+    >
+        <input
+            type="checkbox"
+            checked={selectedMemberIds.includes(m.id)}
+            onChange={(e) => {
+                setSelectedMemberIds((prev) =>
+                    e.target.checked
+                        ? [...prev, m.id]
+                        : prev.filter((id) => id !== m.id)
+                );
+            }}
+        />
+        <span>{m.employee.name}</span>
+    </label>
+))}
+
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-2 border-t px-5 py-3">
+                            <button
+                                onClick={() => setShowAssignTaskModal(false)}
+                                className="rounded-lg border px-3 py-1.5 text-sm"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    await assignTask({
+                                        taskId: assignTaskId,
+                                        projectMemberIds: selectedMemberIds,
+                                    });
+                                    setShowAssignTaskModal(false);
+                                }}
+                                className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-emerald-600"
+                            >
+                                Assign
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+
     );
 };
 
