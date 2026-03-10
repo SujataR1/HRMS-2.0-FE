@@ -37,9 +37,11 @@ const overviewCards = [
   { label: "Present Days", icon: <MdCheckCircle /> },
   { label: "Absent Days", icon: <MdCancel /> },
   { label: "Late Entries", icon: <MdWatchLater /> },
+  { label: "Overtime Days", icon: <MdWatchLater /> },
   { label: "Weekly Offs", icon: <MdCalendarToday /> },
   { label: "Holidays", icon: <MdCalendarToday /> },
   { label: "Approved Leaves", icon: <MdCalendarToday /> },
+  { label: "Total Days", icon: <MdCalendarToday /> },
 ];
 
 const lineData = {
@@ -57,14 +59,14 @@ const lineData = {
 
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
-const [darkMode, setDarkMode] = useState(() => {
-  const saved = localStorage.getItem("darkMode");
-  return saved === "true";
-});
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("darkMode");
+    return saved === "true";
+  });
 
-useEffect(() => {
-  localStorage.setItem("darkMode", darkMode);
-}, [darkMode]);
+  useEffect(() => {
+    localStorage.setItem("darkMode", darkMode);
+  }, [darkMode]);
 
   const [profile, setProfile] = useState(null);
   const [profilePicture, setProfilePicture] = useState(null);
@@ -79,6 +81,8 @@ useEffect(() => {
   const [weeklyOffCount, setWeeklyOffCount] = useState(0);
   const [approvedLeavesCount, setApprovedLeavesCount] = useState(0);
   const [holidaysCount, setHolidaysCount] = useState(0);
+  const [overtimeCount, setOvertimeCount] = useState(0);
+  const [totalCalendarDays, setTotalCalendarDays] = useState(0);
 
   // Filters
   const [filterType, setFilterType] = useState("monthYear");
@@ -184,6 +188,8 @@ useEffect(() => {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
+
+            // Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify(bodyPayload),
@@ -198,7 +204,8 @@ useEffect(() => {
         late = 0,
         weeklyOffs = 0,
         approvedLeaves = 0,
-        holidays = 0;
+        holidays = 0,
+        overtime = 0;  
 
       result.data.forEach((day) => {
         const dayDate = new Date(day.date);
@@ -210,6 +217,12 @@ useEffect(() => {
             present++;
             if (day.flags?.includes("late")) late++;
             break;
+
+          case "overtime":
+            present++;      // overtime day is also a present day
+            overtime++;     // count overtime separately
+            break;
+
           case "absent":
             absent++;
             break;
@@ -227,6 +240,9 @@ useEffect(() => {
             break;
         }
       });
+      // ✅ TOTAL UNIQUE CALENDAR DAYS (NO DOUBLE COUNT)
+      const totalDays = present + weeklyOffs + holidays;
+      setTotalCalendarDays(totalDays);
 
       setPresentDays(present);
       setAbsentDays(absent);
@@ -234,6 +250,7 @@ useEffect(() => {
       setWeeklyOffCount(weeklyOffs);
       setApprovedLeavesCount(approvedLeaves);
       setHolidaysCount(holidays);
+      setOvertimeCount(overtime);
     } catch (err) {
       setError(err.message || "Error fetching attendance");
     } finally {
@@ -365,15 +382,22 @@ useEffect(() => {
               "Present Days": presentDays,
               "Absent Days": absentDays,
               "Late Entries": lateEntries,
+              "Overtime Days": overtimeCount,
               "Weekly Offs": weeklyOffCount,
               Holidays: holidaysCount,
               "Approved Leaves": approvedLeavesCount,
+              "Total Days": totalCalendarDays,
             };
             return (
               <div
                 key={item.label}
-                className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-800" : "bg-white"
-                  }`}
+                onClick={() =>
+                  navigate("/MyAttendance", {
+                    state: { type: item.label },
+                  })
+                }
+                className={`p-4 rounded-lg shadow cursor-pointer hover:scale-105 transition-transform
+    ${darkMode ? "bg-gray-800" : "bg-white"}`}
               >
                 <div className="text-3xl text-yellow-500 mb-2">{item.icon}</div>
                 <div className="text-sm">{item.label}</div>
