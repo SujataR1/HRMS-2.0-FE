@@ -241,8 +241,15 @@ const EmployeeDashboard = () => {
         }
       });
       // ✅ TOTAL UNIQUE CALENDAR DAYS (NO DOUBLE COUNT)
-      const totalDays = present + weeklyOffs + holidays;
-      setTotalCalendarDays(totalDays);
+// ✅ TOTAL DAYS INCLUDING ALL STATUSES
+const totalDays =
+  present +
+  absent +
+  approvedLeaves +
+  weeklyOffs +
+  holidays;
+
+setTotalCalendarDays(totalDays);
 
       setPresentDays(present);
       setAbsentDays(absent);
@@ -278,6 +285,7 @@ const EmployeeDashboard = () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
 
       {/* Sidebar */}
       <aside
@@ -358,6 +366,7 @@ const EmployeeDashboard = () => {
                 onChange={(e) => setFilterYear(e.target.value)}
               />
             )}
+            {/*  */}
 
             {/* ADD THIS HERE */}
             {filterType === "monthYear" && (
