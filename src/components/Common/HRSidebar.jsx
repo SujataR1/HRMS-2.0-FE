@@ -1,3 +1,154 @@
+// import React, { useState, useEffect } from 'react';
+// import { FaSignOutAlt } from 'react-icons/fa';
+// import {
+//   MdDashboard,
+//   MdPeople,
+//   MdAccessTime,
+//   MdCalendarToday,
+//   MdEventNote,
+//   MdExpandMore,
+//   MdExpandLess,
+//   MdAssessment
+// } from 'react-icons/md';
+
+// import { useNavigate, useLocation } from 'react-router-dom';
+// import logo from "../../assets/TransmogriffyLogo.png";
+
+// const HRSidebar = () => {
+//   const [employeeMenuOpen, setEmployeeMenuOpen] = useState(false);
+//   const navigate = useNavigate();
+//   const location = useLocation();
+
+//   const menuItems = [
+//     { label: 'Dashboard', path: '/HRDashboard', icon: <MdDashboard size={18} /> },
+//     { label: 'Profile', path: '/HrProfile', icon: <MdEventNote size={18} /> },
+//     { label: 'Employee Management', icon: <MdPeople size={18} /> },
+//     { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
+//     { label: 'Regenerate Attendance', path: '/RegenerateAttendance', icon: <MdEventNote size={18} /> },
+//     { label: 'Attendance Report Generate ', path: '/HRAttendanceReportGenerate', icon: <MdAssessment size={18} /> },
+//     { label: 'Leave Management', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
+//     { label: 'Leave Approval', path: '/HRLeaveApproval', icon: <MdCalendarToday size={18} /> },
+//     { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
+//     { label: 'Assign Shift to Employee', path: '/HRShiftsList', icon: <MdEventNote size={18} /> },
+//     { label: 'Holiday Calendar', path: '/HRHolidayCalendar', icon: <MdCalendarToday size={18} /> },
+//     { label: 'Projects', path: '/Projects', icon: <MdEventNote size={18} /> },
+//     { label: 'Teams', path: '/HRTeams',  icon: <MdCalendarToday size={18} />,  },
+//     { label: 'Performance Review', path: '/PerformanceReview', icon: <MdEventNote size={18} /> },
+//     { label: 'Training', path: '/HRTraining', icon: <MdEventNote size={18} /> },
+//     { label: 'Employee Concerns', path: '/HRConcernList', icon: <MdEventNote size={18} /> },
+//   ];
+
+//   const employeeSubItems = [
+//     { name: 'Create New Employee', path: '/HRCreateEmployee' },
+//     { name: 'Create Employee Details', path: '/HRCreateEmployeeDetails' },
+//     { name: 'All Employees List', path: '/EmployeeList' },
+//   ];
+
+//   useEffect(() => {
+//     if (employeeSubItems.some(sub => location.pathname.startsWith(sub.path))) {
+//       setEmployeeMenuOpen(true);
+//     }
+//   }, [location.pathname]);
+
+//   const handleLogout = async () => {
+//     try {
+//       const token = localStorage.getItem('hr_token');
+//       localStorage.removeItem('hr_token');
+
+//       if (token) {
+//         await fetch('https://backend.hrms.transev.site/hr/logout', {
+//           method: 'POST',
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             'Content-Type': 'application/json',
+//           },
+//           body: JSON.stringify({}),
+//         });
+//       }
+
+//       window.location.href = '/';
+//     } catch (err) {
+//       console.error('Logout error:', err);
+//       window.location.href = '/';
+//     }
+//   };
+
+//   return (
+//     <div className="w-64 h-screen bg-yellow-50 shadow-xl fixed flex flex-col border-r border-yellow-300">
+//       {/* Logo */}
+//       <div className="pt-6 pb-4 flex flex-col items-center border-b border-yellow-300 select-none">
+//         <img src={logo} alt="Company Logo" className="w-24 h-auto" />
+//       </div>
+
+//       {/* Sidebar Menu */}
+//       <ul className="text-yellow-900 text-sm font-medium flex-1 overflow-y-auto px-2 py-4 space-y-1">
+//         {menuItems.map(({ label, icon, path }) => {
+//           if (label === 'Employee Management') {
+//             return (
+//               <li
+//                 key={label}
+//                 className="px-4 py-3 rounded-lg cursor-pointer hover:bg-yellow-100 transition-all duration-300 text-yellow-900 select-none"
+//               >
+//                 <div
+//                   className="flex justify-between items-center"
+//                   onClick={() => setEmployeeMenuOpen(!employeeMenuOpen)}
+//                 >
+//                   <div className="flex items-center gap-3 font-medium">
+//                     {icon}
+//                     {label}
+//                   </div>
+//                   {employeeMenuOpen ? <MdExpandLess size={18} /> : <MdExpandMore size={18} />}
+//                 </div>
+
+//                 {employeeMenuOpen && (
+//                   <ul className="mt-2 ml-4 border-l border-yellow-200 pl-3 space-y-1">
+//                     {employeeSubItems.map(({ name, path }) => (
+//                       <li
+//                         key={name}
+//                         onClick={() => navigate(path)}
+//                         className={`py-2 px-2 rounded-md text-sm cursor-pointer hover:bg-yellow-100 ${
+//                           location.pathname === path ? 'bg-yellow-200 font-semibold' : ''
+//                         }`}
+//                       >
+//                         {name}
+//                       </li>
+//                     ))}
+//                   </ul>
+//                 )}
+//               </li>
+//             );
+//           }
+
+//           return (
+//             <li
+//               key={label}
+//               className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-300 ${
+//                 location.pathname === path
+//                   ? 'bg-yellow-200 text-yellow-900 shadow-inner font-semibold'
+//                   : 'hover:bg-yellow-100 hover:text-yellow-700'
+//               }`}
+//               onClick={() => path && navigate(path)}
+//             >
+//               {icon}
+//               {label}
+//             </li>
+//           );
+//         })}
+
+//         {/* Logout */}
+//         <li
+//           className="px-4 py-3 text-red-600 hover:bg-red-100 flex items-center gap-3 mt-6 rounded-lg cursor-pointer transition-all duration-300"
+//           onClick={handleLogout}
+//         >
+//           <FaSignOutAlt size={16} />
+//           Logout
+//         </li>
+//       </ul>
+//     </div>
+//   );
+// };
+
+// export default HRSidebar;
 import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
 import {
@@ -50,26 +201,45 @@ const HRSidebar = () => {
     }
   }, [location.pathname]);
 
+  // FIXED LOGOUT FUNCTION
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem('hr_token');
+      
+      // Clear token FIRST to prevent any further authenticated requests
       localStorage.removeItem('hr_token');
+      
+      // Optional: Clear all other auth-related data
+      sessionStorage.clear(); // Clears any session storage data
 
+      // Call logout API if token exists (don't await to avoid delays)
       if (token) {
-        await fetch('https://backend.hrms.transev.site/hr/logout', {
+        fetch('https://backend.hrms.transev.site/hr/logout', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({}),
-        });
+        }).catch(err => console.error('Logout API error:', err)); // Don't block logout if API fails
       }
 
-      window.location.href = '/';
+      // CRITICAL: Use replace to remove current page from history
+      // This prevents back button from returning to dashboard
+      navigate('/', { replace: true });
+      
+      // Optional: Add a small delay before clearing any additional state
+      setTimeout(() => {
+        // Force clear any remaining navigation state
+        window.history.pushState(null, '', '/');
+      }, 100);
+      
     } catch (err) {
       console.error('Logout error:', err);
-      window.location.href = '/';
+      // Even if there's an error, ensure user is logged out locally
+      localStorage.removeItem('hr_token');
+      sessionStorage.clear();
+      navigate('/', { replace: true });
     }
   };
 
