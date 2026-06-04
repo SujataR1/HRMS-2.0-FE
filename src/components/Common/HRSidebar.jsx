@@ -1,3 +1,5 @@
+
+
 // import React, { useState, useEffect } from 'react';
 // import { FaSignOutAlt } from 'react-icons/fa';
 // import {
@@ -50,26 +52,45 @@
 //     }
 //   }, [location.pathname]);
 
+//   // FIXED LOGOUT FUNCTION
 //   const handleLogout = async () => {
 //     try {
 //       const token = localStorage.getItem('hr_token');
+      
+//       // Clear token FIRST to prevent any further authenticated requests
 //       localStorage.removeItem('hr_token');
+      
+//       // Optional: Clear all other auth-related data
+//       sessionStorage.clear(); // Clears any session storage data
 
+//       // Call logout API if token exists (don't await to avoid delays)
 //       if (token) {
-//         await fetch('https://backend.hrms.transev.site/hr/logout', {
+//         fetch('https://backend.hrms.transev.site/hr/logout', {
 //           method: 'POST',
 //           headers: {
 //             Authorization: `Bearer ${token}`,
 //             'Content-Type': 'application/json',
 //           },
 //           body: JSON.stringify({}),
-//         });
+//         }).catch(err => console.error('Logout API error:', err)); // Don't block logout if API fails
 //       }
 
-//       window.location.href = '/';
+//       // CRITICAL: Use replace to remove current page from history
+//       // This prevents back button from returning to dashboard
+//       navigate('/', { replace: true });
+      
+//       // Optional: Add a small delay before clearing any additional state
+//       setTimeout(() => {
+//         // Force clear any remaining navigation state
+//         window.history.pushState(null, '', '/');
+//       }, 100);
+      
 //     } catch (err) {
 //       console.error('Logout error:', err);
-//       window.location.href = '/';
+//       // Even if there's an error, ensure user is logged out locally
+//       localStorage.removeItem('hr_token');
+//       sessionStorage.clear();
+//       navigate('/', { replace: true });
 //     }
 //   };
 
@@ -149,6 +170,9 @@
 // };
 
 // export default HRSidebar;
+
+
+
 import React, { useState, useEffect } from 'react';
 import { FaSignOutAlt } from 'react-icons/fa';
 import {
@@ -159,7 +183,8 @@ import {
   MdEventNote,
   MdExpandMore,
   MdExpandLess,
-  MdAssessment
+  MdAssessment,
+  MdFreeBreakfast
 } from 'react-icons/md';
 
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -177,6 +202,7 @@ const HRSidebar = () => {
     { label: 'Attendance', path: '/HRAttendance', icon: <MdAccessTime size={18} /> },
     { label: 'Regenerate Attendance', path: '/RegenerateAttendance', icon: <MdEventNote size={18} /> },
     { label: 'Attendance Report Generate ', path: '/HRAttendanceReportGenerate', icon: <MdAssessment size={18} /> },
+    { label: 'Employee Break Analysis', path: '/EmployeeBreakAnalysis', icon: <MdFreeBreakfast size={18} /> },
     { label: 'Leave Management', path: '/HRLeave', icon: <MdCalendarToday size={18} /> },
     { label: 'Leave Approval', path: '/HRLeaveApproval', icon: <MdCalendarToday size={18} /> },
     { label: 'Shift Management', path: '/HRShiftmanagement', icon: <MdEventNote size={18} /> },
