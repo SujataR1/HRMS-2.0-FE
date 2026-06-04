@@ -381,7 +381,6 @@
 // };
 
 // export default MyHoliday;
-
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf/dist/jspdf.umd.min.js";
 import { applyPlugin } from "jspdf-autotable";
@@ -434,6 +433,7 @@ const MyHoliday = () => {
   const [downloading, setDownloading] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [viewMode, setViewMode] = useState("calendar");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem("employee_token");
   
@@ -572,18 +572,20 @@ const MyHoliday = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
-        <EmployeeSidebar />
-        <div className="flex-1 ml-64 flex items-center justify-center">
-          <div className="text-center">
-            <div className="relative">
-              <div className="w-20 h-20 border-4 border-gray-100 border-t-amber-500 rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <FaCalendarAlt className="text-amber-500 text-2xl animate-pulse" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-50">
+        <div className="flex">
+          <EmployeeSidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+          <div className="flex-1 flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="relative">
+                <div className="w-20 h-20 border-4 border-gray-100 border-t-amber-500 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <FaCalendarAlt className="text-amber-500 text-2xl animate-pulse" />
+                </div>
               </div>
+              <p className="mt-6 text-gray-500 font-medium">Loading holiday calendar...</p>
+              <p className="text-gray-400 text-sm mt-1">Getting ready for your days off 🎉</p>
             </div>
-            <p className="mt-6 text-gray-500 font-medium">Loading holiday calendar...</p>
-            <p className="text-gray-400 text-sm mt-1">Getting ready for your days off 🎉</p>
           </div>
         </div>
       </div>
@@ -591,366 +593,374 @@ const MyHoliday = () => {
   }
 
   return (
-    <div className={`flex min-h-screen bg-gradient-to-br ${seasonalGradients[currentSeason]} transition-all duration-1000`}>
-      <EmployeeSidebar />
-      
-      <main className="flex-1 ml-64">
-        <div className="max-w-7xl mx-auto px-8 py-8">
-          {/* Animated Header */}
-          <div className="mb-10 animate-fadeIn">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-2xl blur opacity-30 animate-pulse"></div>
-                  <div className="relative w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <FaCalendarAlt className="text-white text-2xl" />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Holiday Calendar</h1>
-                  <div className="flex items-center gap-2 mt-1">
-                    {seasonIcon}
-                    <p className="text-gray-500 text-sm capitalize">{currentSeason} vibes</p>
-                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                    <p className="text-gray-500 text-sm">{holidays.length} holidays total</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* View Toggle */}
-              <div className="flex gap-2 bg-white rounded-xl shadow-sm p-1">
-                <button
-                  onClick={() => setViewMode("calendar")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    viewMode === "calendar" 
-                      ? "bg-amber-500 text-white shadow-md" 
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  📅 Calendar
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    viewMode === "list" 
-                      ? "bg-amber-500 text-white shadow-md" 
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  📋 List View
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Upcoming Holidays Cards */}
-          <div className="mb-10">
-            <div className="flex items-center gap-2 mb-4">
-              <FaStar className="text-amber-400 text-sm" />
-              <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Upcoming Celebrations</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {upcomingHolidays.map((holiday, idx) => {
-                const daysUntil = Math.ceil(
-                  (new Date(holiday.date) - new Date()) / (1000 * 60 * 60 * 24)
-                );
-                return (
-                  <div
-                    key={holiday.id}
-                    className="group relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-400/20 to-transparent rounded-bl-3xl"></div>
-                    <div className="p-5">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl flex items-center justify-center">
-                          {daysUntil === 0 ? (
-                            <FaFire className="text-amber-500 text-lg" />
-                          ) : (
-                            <FaGift className="text-amber-500 text-lg" />
-                          )}
-                        </div>
-                        {daysUntil === 0 ? (
-                          <span className="px-2 py-1 bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold animate-pulse">
-                            TODAY
-                          </span>
-                        ) : daysUntil <= 3 ? (
-                          <span className="px-2 py-1 bg-amber-100 text-amber-600 rounded-lg text-xs font-semibold">
-                            {daysUntil} days left
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-xs">
-                            {daysUntil} days left
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-lg font-bold text-gray-800 mb-1">{holiday.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {new Date(holiday.date).toLocaleDateString('en-IN', {
-                          weekday: 'long',
-                          day: '2-digit',
-                          month: 'long'
-                        })}
-                      </p>
-                    </div>
-                    <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {viewMode === "calendar" ? (
-            // Calendar View
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 px-6 py-5">
-                <div className="flex items-center justify-between">
+    <div className={`min-h-screen bg-gradient-to-br ${seasonalGradients[currentSeason]} transition-all duration-1000`}>
+      <div className="flex">
+        {/* Sidebar */}
+        <EmployeeSidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+        
+        {/* Main Content - Centered */}
+        <div className="flex-1 w-full min-w-0">
+          <div className="px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
+            <div className="max-w-7xl mx-auto">
+              {/* Animated Header */}
+              <div className="mb-8 md:mb-10 animate-fadeIn">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <button
-                      onClick={prevMonth}
-                      className="w-10 h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center transition-all duration-200 group"
-                    >
-                      <FaChevronLeft className="text-gray-500 group-hover:text-amber-500 transition-colors" />
-                    </button>
-                    <div className="text-center">
-                      <h2 className="text-2xl font-bold text-gray-800">
-                        {currentDate.toLocaleString("default", { month: "long" })}
-                      </h2>
-                      <p className="text-gray-400 text-sm">{year}</p>
+                    <div className="relative">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-2xl blur opacity-30 animate-pulse"></div>
+                      <div className="relative w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <FaCalendarAlt className="text-white text-xl md:text-2xl" />
+                      </div>
                     </div>
-                    <button
-                      onClick={nextMonth}
-                      className="w-10 h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center transition-all duration-200 group"
-                    >
-                      <FaChevronRight className="text-gray-500 group-hover:text-amber-500 transition-colors" />
-                    </button>
+                    <div>
+                      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">Holiday Calendar</h1>
+                      <div className="flex items-center gap-2 mt-1">
+                        {seasonIcon}
+                        <p className="text-gray-500 text-xs md:text-sm capitalize">{currentSeason} vibes</p>
+                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                        <p className="text-gray-500 text-xs md:text-sm">{holidays.length} holidays total</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">Week starting from Monday</p>
+                  
+                  {/* View Toggle */}
+                  <div className="flex gap-2 bg-white rounded-xl shadow-sm p-1 self-start md:self-auto">
+                    <button
+                      onClick={() => setViewMode("calendar")}
+                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
+                        viewMode === "calendar" 
+                          ? "bg-amber-500 text-white shadow-md" 
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      📅 Calendar
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
+                        viewMode === "list" 
+                          ? "bg-amber-500 text-white shadow-md" 
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      📋 List View
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6">
-                <div className="grid grid-cols-7 gap-3 mb-4">
-                  {daysOfWeek.map((day, i) => (
-                    <div key={i} className="text-center">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        {day}
-                      </p>
-                    </div>
-                  ))}
+              {/* Upcoming Holidays Cards */}
+              <div className="mb-8 md:mb-10">
+                <div className="flex items-center gap-2 mb-4">
+                  <FaStar className="text-amber-400 text-xs md:text-sm" />
+                  <h2 className="text-xs md:text-sm font-semibold text-gray-600 uppercase tracking-wide">Upcoming Celebrations</h2>
                 </div>
-
-                <div className="grid grid-cols-7 gap-3">
-                  {calendarDays.map((date, idx) => {
-                    if (!date) return <div key={idx} className="h-28" />;
-                    
-                    const dateStr = formatDate(date);
-                    const isToday = dateStr === todayStr;
-                    const holiday = holidays.find((h) => h.date === dateStr);
-                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+                  {upcomingHolidays.map((holiday, idx) => {
+                    const daysUntil = Math.ceil(
+                      (new Date(holiday.date) - new Date()) / (1000 * 60 * 60 * 24)
+                    );
                     return (
                       <div
-                        key={idx}
-                        onClick={() => holiday && setSelectedHoliday(holiday)}
-                        className={`
-                          relative h-28 rounded-xl p-2 transition-all duration-300 cursor-pointer
-                          ${isToday 
-                            ? 'bg-gradient-to-br from-amber-50 to-yellow-50 ring-2 ring-amber-400 shadow-lg' 
-                            : holiday 
-                              ? 'bg-gradient-to-br from-amber-50/50 to-yellow-50/50 hover:shadow-md' 
-                              : isWeekend 
-                                ? 'bg-gray-50/50' 
-                                : 'bg-white hover:bg-gray-50 hover:shadow-md'
-                          }
-                        `}
+                        key={holiday.id}
+                        className="group relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
                       >
-                        <div className="flex flex-col h-full">
-                          <span className={`
-                            text-sm font-medium 
-                            ${isToday ? 'text-amber-700' : holiday ? 'text-amber-600' : isWeekend ? 'text-gray-400' : 'text-gray-700'}
-                          `}>
-                            {date.getDate()}
-                          </span>
-                          {holiday && (
-                            <div className="mt-auto">
-                              <div className="px-2 py-1 bg-amber-100 rounded-lg text-center">
-                                <p className="text-[10px] font-semibold text-amber-700 truncate">
-                                  {holiday.name}
-                                </p>
-                              </div>
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-400/20 to-transparent rounded-bl-3xl"></div>
+                        <div className="p-4 md:p-5">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl flex items-center justify-center">
+                              {daysUntil === 0 ? (
+                                <FaFire className="text-amber-500 text-base md:text-lg" />
+                              ) : (
+                                <FaGift className="text-amber-500 text-base md:text-lg" />
+                              )}
                             </div>
-                          )}
+                            {daysUntil === 0 ? (
+                              <span className="px-2 py-1 bg-rose-100 text-rose-600 rounded-lg text-[10px] md:text-xs font-semibold animate-pulse">
+                                TODAY
+                              </span>
+                            ) : daysUntil <= 3 ? (
+                              <span className="px-2 py-1 bg-amber-100 text-amber-600 rounded-lg text-[10px] md:text-xs font-semibold">
+                                {daysUntil} days left
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-[10px] md:text-xs">
+                                {daysUntil} days left
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="text-base md:text-lg font-bold text-gray-800 mb-1">{holiday.name}</h3>
+                          <p className="text-xs md:text-sm text-gray-500">
+                            {new Date(holiday.date).toLocaleDateString('en-IN', {
+                              weekday: 'long',
+                              day: '2-digit',
+                              month: 'long'
+                            })}
+                          </p>
                         </div>
-                        {isToday && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                        )}
+                        <div className="h-1 bg-gradient-to-r from-amber-400 to-amber-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                       </div>
                     );
                   })}
                 </div>
               </div>
-            </div>
-          ) : (
-            // List View
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 px-6 py-5">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <h3 className="text-lg font-bold text-gray-800">🎯 All Holidays</h3>
-                  
-                  <div className="flex flex-wrap gap-3">
-                    <select
-                      className="border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:border-amber-400 focus:outline-none transition-colors"
-                      value={filterYear}
-                      onChange={(e) => setFilterYear(e.target.value)}
-                    >
-                      <option value="all">📅 All Years</option>
-                      {[2023, 2024, 2025, 2026, 2027].map((y) => (
-                        <option key={y} value={y}>{y}</option>
-                      ))}
-                    </select>
 
-                    <select
-                      className="border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:border-amber-400 focus:outline-none transition-colors"
-                      value={filterMonth}
-                      onChange={(e) => setFilterMonth(e.target.value)}
-                    >
-                      <option value="all">🗓️ All Months</option>
-                      {[
-                        "January", "February", "March", "April", "May", "June",
-                        "July", "August", "September", "October", "November", "December",
-                      ].map((m, i) => (
-                        <option key={i} value={i}>{m}</option>
-                      ))}
-                    </select>
+              {viewMode === "calendar" ? (
+                // Calendar View - Responsive
+                <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                  <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 px-4 md:px-6 py-4 md:py-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex items-center justify-between sm:justify-start gap-4">
+                        <button
+                          onClick={prevMonth}
+                          className="w-8 h-8 md:w-10 md:h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center transition-all duration-200 group"
+                        >
+                          <FaChevronLeft className="text-gray-500 group-hover:text-amber-500 transition-colors text-sm md:text-base" />
+                        </button>
+                        <div className="text-center">
+                          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                            {currentDate.toLocaleString("default", { month: "long" })}
+                          </h2>
+                          <p className="text-gray-400 text-xs md:text-sm">{year}</p>
+                        </div>
+                        <button
+                          onClick={nextMonth}
+                          className="w-8 h-8 md:w-10 md:h-10 rounded-xl hover:bg-gray-100 flex items-center justify-center transition-all duration-200 group"
+                        >
+                          <FaChevronRight className="text-gray-500 group-hover:text-amber-500 transition-colors text-sm md:text-base" />
+                        </button>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p className="text-[10px] md:text-xs text-gray-400">Week starting from Monday</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              
-              <div className="p-6">
-                <div className="max-h-96 overflow-y-auto custom-scroll">
-                  {filteredHolidays.length > 0 ? (
-                    <div className="space-y-2">
-                      {filteredHolidays
-                        .sort((a, b) => new Date(a.date) - new Date(b.date))
-                        .map((holiday, idx) => {
-                          const holidayDate = new Date(holiday.date);
-                          const isPast = holidayDate < new Date();
-                          const isToday = formatDate(holidayDate) === todayStr;
+
+                  <div className="p-4 md:p-6 overflow-x-auto">
+                    <div className="min-w-[600px]">
+                      <div className="grid grid-cols-7 gap-2 md:gap-3 mb-4">
+                        {daysOfWeek.map((day, i) => (
+                          <div key={i} className="text-center">
+                            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              {day}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-2 md:gap-3">
+                        {calendarDays.map((date, idx) => {
+                          if (!date) return <div key={idx} className="h-20 md:h-28" />;
                           
+                          const dateStr = formatDate(date);
+                          const isToday = dateStr === todayStr;
+                          const holiday = holidays.find((h) => h.date === dateStr);
+                          const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
                           return (
                             <div
-                              key={holiday.id}
+                              key={idx}
+                              onClick={() => holiday && setSelectedHoliday(holiday)}
                               className={`
-                                group flex items-center justify-between p-4 rounded-xl transition-all duration-300 cursor-pointer
+                                relative h-20 md:h-28 rounded-xl p-1 md:p-2 transition-all duration-300 cursor-pointer
                                 ${isToday 
-                                  ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-500' 
-                                  : isPast 
-                                    ? 'hover:bg-gray-50' 
-                                    : 'hover:bg-amber-50/30'
+                                  ? 'bg-gradient-to-br from-amber-50 to-yellow-50 ring-2 ring-amber-400 shadow-lg' 
+                                  : holiday 
+                                    ? 'bg-gradient-to-br from-amber-50/50 to-yellow-50/50 hover:shadow-md' 
+                                    : isWeekend 
+                                      ? 'bg-gray-50/50' 
+                                      : 'bg-white hover:bg-gray-50 hover:shadow-md'
                                 }
                               `}
-                              onClick={() => setSelectedHoliday(holiday)}
                             >
-                              <div className="flex items-center gap-4">
-                                <div className={`
-                                  w-12 h-12 rounded-xl flex items-center justify-center text-lg
-                                  ${isToday ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-600'}
+                              <div className="flex flex-col h-full">
+                                <span className={`
+                                  text-[11px] md:text-sm font-medium 
+                                  ${isToday ? 'text-amber-700' : holiday ? 'text-amber-600' : isWeekend ? 'text-gray-400' : 'text-gray-700'}
                                 `}>
-                                  {isToday ? <FaFire /> : <FaCrown />}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-gray-800 group-hover:text-amber-600 transition-colors">
-                                    {holiday.name}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-xs text-gray-500">
-                                      {holidayDate.toLocaleDateString('en-IN', {
-                                        weekday: 'long',
-                                        day: '2-digit',
-                                        month: 'long'
-                                      })}
-                                    </p>
-                                    {isToday && (
-                                      <span className="px-2 py-0.5 bg-amber-100 text-amber-600 rounded-full text-[10px] font-semibold">
-                                        Today
-                                      </span>
-                                    )}
+                                  {date.getDate()}
+                                </span>
+                                {holiday && (
+                                  <div className="mt-auto">
+                                    <div className="px-1 md:px-2 py-0.5 md:py-1 bg-amber-100 rounded-lg text-center">
+                                      <p className="text-[8px] md:text-[10px] font-semibold text-amber-700 truncate">
+                                        {holiday.name.length > 15 ? holiday.name.substring(0, 12) + '...' : holiday.name}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
+                                )}
                               </div>
-                              <div className="text-right">
-                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
-                                  <FaHeart className="text-gray-400 group-hover:text-amber-500 text-sm transition-colors" />
-                                </div>
-                              </div>
+                              {isToday && (
+                                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 md:w-2 md:h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                              )}
                             </div>
                           );
                         })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-16">
-                      <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaCalendarAlt className="text-gray-400 text-2xl" />
                       </div>
-                      <p className="text-gray-500 font-medium">No holidays found</p>
-                      <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
                     </div>
-                  )}
+                  </div>
                 </div>
+              ) : (
+                // List View - Responsive
+                <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                  <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 px-4 md:px-6 py-4 md:py-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <h3 className="text-base md:text-lg font-bold text-gray-800">🎯 All Holidays</h3>
+                      
+                      <div className="flex flex-wrap gap-3">
+                        <select
+                          className="border border-gray-200 rounded-xl px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-gray-50 focus:border-amber-400 focus:outline-none transition-colors"
+                          value={filterYear}
+                          onChange={(e) => setFilterYear(e.target.value)}
+                        >
+                          <option value="all">📅 All Years</option>
+                          {[2023, 2024, 2025, 2026, 2027].map((y) => (
+                            <option key={y} value={y}>{y}</option>
+                          ))}
+                        </select>
 
-                {/* Download Button */}
-                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
-                  <button
-                    onClick={downloadHolidayPDF}
-                    disabled={downloading}
-                    className="group inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all duration-200 disabled:opacity-50"
-                  >
-                    {downloading ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Generating PDF...
-                      </>
-                    ) : (
-                      <>
-                        <FaDownload className="group-hover:-translate-y-0.5 transition-transform" />
-                        Download Holiday List
-                      </>
-                    )}
-                  </button>
+                        <select
+                          className="border border-gray-200 rounded-xl px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm bg-gray-50 focus:border-amber-400 focus:outline-none transition-colors"
+                          value={filterMonth}
+                          onChange={(e) => setFilterMonth(e.target.value)}
+                        >
+                          <option value="all">🗓️ All Months</option>
+                          {[
+                            "January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December",
+                          ].map((m, i) => (
+                            <option key={i} value={i}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 md:p-6">
+                    <div className="max-h-96 overflow-y-auto custom-scroll">
+                      {filteredHolidays.length > 0 ? (
+                        <div className="space-y-2">
+                          {filteredHolidays
+                            .sort((a, b) => new Date(a.date) - new Date(b.date))
+                            .map((holiday, idx) => {
+                              const holidayDate = new Date(holiday.date);
+                              const isPast = holidayDate < new Date();
+                              const isToday = formatDate(holidayDate) === todayStr;
+                              
+                              return (
+                                <div
+                                  key={holiday.id}
+                                  className={`
+                                    group flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 rounded-xl transition-all duration-300 cursor-pointer
+                                    ${isToday 
+                                      ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-500' 
+                                      : isPast 
+                                        ? 'hover:bg-gray-50' 
+                                        : 'hover:bg-amber-50/30'
+                                    }
+                                  `}
+                                  onClick={() => setSelectedHoliday(holiday)}
+                                >
+                                  <div className="flex items-center gap-3 md:gap-4">
+                                    <div className={`
+                                      w-8 h-8 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-base md:text-lg
+                                      ${isToday ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-600'}
+                                    `}>
+                                      {isToday ? <FaFire className="text-sm md:text-base" /> : <FaCrown className="text-sm md:text-base" />}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm md:text-base font-semibold text-gray-800 group-hover:text-amber-600 transition-colors">
+                                        {holiday.name}
+                                      </p>
+                                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                                        <p className="text-[10px] md:text-xs text-gray-500">
+                                          {holidayDate.toLocaleDateString('en-IN', {
+                                            weekday: 'long',
+                                            day: '2-digit',
+                                            month: 'long'
+                                          })}
+                                        </p>
+                                        {isToday && (
+                                          <span className="px-2 py-0.5 bg-amber-100 text-amber-600 rounded-full text-[8px] md:text-[10px] font-semibold">
+                                            Today
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="mt-3 sm:mt-0 text-right">
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                                      <FaHeart className="text-gray-400 group-hover:text-amber-500 text-xs md:text-sm transition-colors" />
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 md:py-16">
+                          <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FaCalendarAlt className="text-gray-400 text-xl md:text-2xl" />
+                          </div>
+                          <p className="text-gray-500 font-medium">No holidays found</p>
+                          <p className="text-gray-400 text-xs md:text-sm mt-1">Try adjusting your filters</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Download Button */}
+                    <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+                      <button
+                        onClick={downloadHolidayPDF}
+                        disabled={downloading}
+                        className="group inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-medium text-xs md:text-sm hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                      >
+                        {downloading ? (
+                          <>
+                            <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <>
+                            <FaDownload className="group-hover:-translate-y-0.5 transition-transform text-xs md:text-sm" />
+                            Download Holiday List
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </main>
+      </div>
 
       {/* Holiday Detail Modal */}
       {selectedHoliday && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn" onClick={() => setSelectedHoliday(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 transform animate-scaleIn" onClick={(e) => e.stopPropagation()}>
-            <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-6 rounded-t-3xl">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn" onClick={() => setSelectedHoliday(null)}>
+          <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-md w-full mx-4 transform animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-5 md:p-6 rounded-t-2xl md:rounded-t-3xl">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="text-amber-100 text-xs font-semibold uppercase tracking-wide">Holiday Details</p>
-                  <h3 className="text-white text-2xl font-bold mt-1">{selectedHoliday.name}</h3>
+                  <p className="text-amber-100 text-[10px] md:text-xs font-semibold uppercase tracking-wide">Holiday Details</p>
+                  <h3 className="text-white text-lg md:text-2xl font-bold mt-1">{selectedHoliday.name}</h3>
                 </div>
                 <button
                   onClick={() => setSelectedHoliday(null)}
-                  className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors"
+                  className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded-lg flex items-center justify-center hover:bg-white/30 transition-colors text-sm"
                 >
                   ✕
                 </button>
               </div>
             </div>
-            <div className="p-6">
-              <div className="space-y-4">
+            <div className="p-5 md:p-6">
+              <div className="space-y-3 md:space-y-4">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                  <FaCalendarAlt className="text-amber-500 text-lg" />
+                  <FaCalendarAlt className="text-amber-500 text-base md:text-lg" />
                   <div>
-                    <p className="text-xs text-gray-500">Date</p>
-                    <p className="font-medium text-gray-800">
+                    <p className="text-[10px] md:text-xs text-gray-500">Date</p>
+                    <p className="text-sm md:text-base font-medium text-gray-800">
                       {new Date(selectedHoliday.date).toLocaleDateString('en-IN', {
                         weekday: 'long',
                         day: '2-digit',
@@ -961,10 +971,10 @@ const MyHoliday = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                  <FaRegClock className="text-amber-500 text-lg" />
+                  <FaRegClock className="text-amber-500 text-base md:text-lg" />
                   <div>
-                    <p className="text-xs text-gray-500">Status</p>
-                    <p className="font-medium text-gray-800">
+                    <p className="text-[10px] md:text-xs text-gray-500">Status</p>
+                    <p className="text-sm md:text-base font-medium text-gray-800">
                       {new Date(selectedHoliday.date) > new Date() ? 'Upcoming' : 'Past'}
                     </p>
                   </div>
@@ -972,7 +982,7 @@ const MyHoliday = () => {
               </div>
               <button
                 onClick={() => setSelectedHoliday(null)}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-200"
+                className="w-full mt-5 md:mt-6 py-2.5 md:py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-200 text-sm md:text-base"
               >
                 Close
               </button>
