@@ -63,6 +63,7 @@ import RegenerateAttendance from './pages/HR/RegenerateAttendance';
 import HRTeams from './pages/HR/HRTeams';
 import HRProjects from './pages/HR/Projects';
 import EmployeeBreakAnalysis from "./pages/HR/EmployeeBreakAnalysis";
+import EmployeeBreakAnalysisNew from './pages/Employee/EmployeeBreakAnalysisNew';
 
 function App() {
   return (
@@ -135,7 +136,7 @@ function App() {
         <Route path="/HRTeams" element={<HRTeams />} />
         <Route path="/Projects" element={<HRProjects />} />
         <Route path="/EmployeeBreakAnalysis" element={<EmployeeBreakAnalysis />} />
-
+        <Route path="/EmployeeBreakAnalysisNew" element={<EmployeeBreakAnalysisNew />} />
 
       </Routes>
     </Router>
