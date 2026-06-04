@@ -351,7 +351,6 @@
 // };
 
 // export default EmployeeSidebar;
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   FaSignOutAlt, 
@@ -508,7 +507,6 @@ const EmployeeSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
 
   const handleNavigation = useCallback((path) => {
     if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
-    // Use window.location for hard navigation to avoid React Router re-render shaking
     window.location.href = path;
   }, [setIsMobileMenuOpen]);
 
@@ -530,15 +528,15 @@ const EmployeeSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         onClick={() => setIsMobileMenuOpen && setIsMobileMenuOpen(false)}
       />
 
-      {/* Sidebar - CRITICAL: No transforms on desktop, only on mobile */}
+      {/* Sidebar - Fixed full height on desktop */}
       <div
         className={`
-          h-full w-72 bg-white shadow-2xl overflow-y-auto overflow-x-hidden flex-shrink-0
-          ${isMobileMenuOpen ? 'fixed top-0 left-0 z-50 translate-x-0' : 'fixed top-0 left-0 -translate-x-full'}
-          lg:relative lg:translate-x-0 lg:block lg:z-0
+          w-72 bg-white shadow-2xl overflow-y-auto overflow-x-hidden flex-shrink-0
+          ${isMobileMenuOpen ? 'fixed top-0 left-0 bottom-0 z-50 translate-x-0' : 'fixed top-0 left-0 bottom-0 -translate-x-full'}
+          lg:relative lg:translate-x-0 lg:block lg:z-0 lg:h-screen lg:sticky lg:top-0
           transition-transform duration-300 ease-out will-change-transform
         `}
-        style={{ transform: 'translateZ(0)' }}
+        style={{ transform: 'translateZ(0)', height: '100vh' }}
       >
         {/* Top Gradient Line */}
         <div className="h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400"></div>
