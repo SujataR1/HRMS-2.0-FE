@@ -30,13 +30,16 @@ import {
 } from 'react-icons/md';
 import EmployeeSidebar from '../../components/Common/EmployeeSidebar';
 
-const EmployeeBreakAnalysisNew = () => {
+
+  const EmployeeBreakAnalysisNew = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [employeeProfile, setEmployeeProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBreakDetail, setSelectedBreakDetail] = useState(null);
+
+
   const [activeTab, setActiveTab] = useState('breakdown');
   const [selectedYear, setSelectedYear] = useState(2026);
   const [selectedMonth, setSelectedMonth] = useState(5);
@@ -44,6 +47,7 @@ const EmployeeBreakAnalysisNew = () => {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
 
   const formatMinutes = useCallback((minutes) => {
     if (!minutes || minutes === 0) return '0m';
@@ -54,11 +58,13 @@ const EmployeeBreakAnalysisNew = () => {
     return `${hours}h ${mins}m`;
   }, []);
 
+
   const showNotificationMessage = (message) => {
     setNotificationMessage(message);
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 3000);
   };
+
 
   const fetchEmployeeProfile = async (token) => {
     try {
@@ -69,6 +75,8 @@ const EmployeeBreakAnalysisNew = () => {
           'Content-Type': 'application/json',
         },
       });
+
+
       const result = await response.json();
       if (result.status === 'success') {
         setEmployeeProfile(result.data);
@@ -80,6 +88,7 @@ const EmployeeBreakAnalysisNew = () => {
       return null;
     }
   };
+
 
   const fetchAttendanceData = async (token, monthYear) => {
     try {
@@ -102,10 +111,12 @@ const EmployeeBreakAnalysisNew = () => {
     }
   };
 
+
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     
+
     const token = localStorage.getItem('employee_token') || localStorage.getItem('employeeToken');
     if (!token) {
       setError('No authentication token found. Please login again.');
@@ -590,3 +601,4 @@ const EmployeeBreakAnalysisNew = () => {
 };
 
 export default EmployeeBreakAnalysisNew;
+

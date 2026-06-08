@@ -64,6 +64,8 @@ import HRTeams from './pages/HR/HRTeams';
 import HRProjects from './pages/HR/Projects';
 import EmployeeBreakAnalysis from "./pages/HR/EmployeeBreakAnalysis";
 import EmployeeBreakAnalysisNew from './pages/Employee/EmployeeBreakAnalysisNew';
+import HRAttendancePunches from './pages/HR/HRAttendancePunches';
+import EmployeePunchDetails from './pages/Employee/EmployeePunchDetails';
 
 function App() {
   return (
@@ -137,6 +139,8 @@ function App() {
         <Route path="/Projects" element={<HRProjects />} />
         <Route path="/EmployeeBreakAnalysis" element={<EmployeeBreakAnalysis />} />
         <Route path="/EmployeeBreakAnalysisNew" element={<EmployeeBreakAnalysisNew />} />
+        <Route path="/HRAttendancePunches" element={<HRAttendancePunches />} />
+        <Route path="/EmployeePunchDetails" element={<EmployeePunchDetails />} />
 
       </Routes>
     </Router>
