@@ -406,6 +406,7 @@ const EmployeeSidebar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
         { label: 'My Leaves', path: '/MyLeaves', icon: <FaFileAlt size={12} /> },
         { label: 'My Holidays', path: '/MyHoliday', icon: <FaCalendarAlt size={12} /> },
         { label: 'Shift Details', path: '/EmployeeShiftDetails', icon: <FaClock size={12} /> },
+        { label: 'Punch Details', path: '/EmployeePunchDetails', icon: <FaCoffee size={12} /> },
         { label: 'Break Analysis', path: '/EmployeeBreakAnalysisNew', icon: <FaCoffee size={12} /> },
       ]
     },
